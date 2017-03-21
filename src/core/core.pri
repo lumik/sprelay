@@ -1,0 +1,2 @@
+SOURCES += $$PWD/k8090.cpp
+HEADERS  += $$PWD/k8090.h

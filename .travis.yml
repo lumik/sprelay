@@ -1,0 +1,21 @@
+sudo: required
+dist: trusty
+language: cpp
+
+before_install:
+  - sudo add-apt-repository --yes ppa:beineri/opt-qt542-trusty
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get -y install qt54serialport qt54tools
+
+# before_script:
+# enable graphical window for gui testing
+#   - "export DISPLAY=:99.0"
+#   - "sh -e /etc/init.d/xvfb start"
+#   - sleep 3 # give xvfb some time to start
+
+script:
+  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && /opt/qt54/bin/qmake  "CONFIG+=release test" ../sprelay.pro -r
+  - make
+  - cd ../bin && ./sprelayunittests
