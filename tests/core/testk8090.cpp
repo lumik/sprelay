@@ -31,7 +31,7 @@
 class TestK8090: public QObject
 {
     Q_OBJECT
-private slots:
+private slots:  // NOLINT(whitespace/indent)
     void hexToByte();
 };
 
@@ -53,7 +53,7 @@ void TestK8090::hexToByte()
         }
     }
 
-    delete[] bMsg; // hexToByte created new variable, don't forget to delete it
+    delete[] bMsg;  // hexToByte created new variable, don't forget to delete it
 
     QCOMPARE(ok, true);
 }

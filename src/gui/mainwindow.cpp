@@ -52,7 +52,7 @@ MainWindow::MainWindow()
     portsLabel->setBuddy(portsComboBox);  // buddy accepts focus instead of label (for editing)
     int index = 0;
 //    refreshingPortsComboBoxContent = true;
-    foreach (const K8090Traits::ComPortParams &comPortParams, K8090::availablePorts()) {
+    foreach (const K8090Traits::ComPortParams &comPortParams, K8090::availablePorts()) {  // NOLINT(whitespace/parens)
         portsComboBox->insertItem(index++, comPortParams.portName);
     }
     if (connected_) {
@@ -68,7 +68,8 @@ MainWindow::MainWindow()
 
     connect(connectButton, &QPushButton::clicked, this, &MainWindow::onConnectButtonClicked);
     connect(refreshPortsButton, &QPushButton::clicked, this, &MainWindow::onRefreshPortsButtonClicked);
-    connect(portsComboBox, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged), this, &MainWindow::onPortsComboBoxCurrentIndexChanged);
+    connect(portsComboBox, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onPortsComboBoxCurrentIndexChanged);
 
     mainHLayout = new QHBoxLayout;
     cWidget->setLayout(mainHLayout);
@@ -113,7 +114,7 @@ void MainWindow::onRefreshPortsButtonClicked()
         QString msg;
         QString currPort = portsComboBox->currentText();
         QStringList comPortNames;
-        foreach (const K8090Traits::ComPortParams &comPortParams, K8090::availablePorts()) {
+        foreach (const K8090Traits::ComPortParams &comPortParams, K8090::availablePorts()) {  // NOLINT
             msg.append("Port name: " % comPortParams.portName % "\n" %
                        "Description: " % comPortParams.description % "\n" %
                        "Manufacturer: " % comPortParams.manufacturer % "\n" %

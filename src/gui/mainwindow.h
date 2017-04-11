@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef GUI_MAINWINDOW_H_
+#define GUI_MAINWINDOW_H_
 
 #include <QMainWindow>
 
@@ -37,16 +37,16 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:
-    explicit MainWindow();
+public:  // NOLINT(whitespace/indent)
+    MainWindow();
     ~MainWindow();
 
-private slots:
+private slots:  // NOLINT(whitespace/indent)
     void onConnectButtonClicked();
     void onPortsComboBoxCurrentIndexChanged(const QString &portName);
     void onRefreshPortsButtonClicked();
 
-private:
+private:  // NOLINT(whitespace/indent)
     K8090 *k8090;
     QString comPortName_;
     bool connected_;
@@ -66,4 +66,4 @@ private:
     QComboBox *portsComboBox;
 };
 
-#endif // MAINWINDOW_H
+#endif  // GUI_MAINWINDOW_H_

@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef K8090_H
-#define K8090_H
+#ifndef CORE_K8090_H_
+#define CORE_K8090_H_
 
 #include <QObject>
 
@@ -80,30 +80,30 @@ struct ComPortParams
     quint16 productIdentifier;
     quint16 vendorIdentifier;
 };
-}
+}  // namespace K8090Traits
 
 class K8090 : public QObject
 {
     Q_OBJECT
-public:
+public:  // NOLINT(whitespace/indent)
     explicit K8090(QObject *parent = 0);
     virtual ~K8090();
 
     static QList<K8090Traits::ComPortParams> availablePorts();
 
 
-signals:
+signals:  // NOLINT(whitespace/indent)
 
-public slots:
+public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
 
-protected slots:
+protected slots:  // NOLINT(whitespace/indent)
     void onSendToSerial(const unsigned char *buffer, int n);
 
-private slots:
+private slots:  // NOLINT(whitespace/indent)
     void onReadyData();
 
-private:
+private:  // NOLINT(whitespace/indent)
     void sendCommand();
 
     void sendSwitchRelayOnCommand();
@@ -150,4 +150,4 @@ private:
     static const QString firmwareVersionCmd;
 };
 
-#endif // K8090_H
+#endif  // CORE_K8090_H_
