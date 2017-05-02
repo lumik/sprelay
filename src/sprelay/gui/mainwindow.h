@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef GUI_MAINWINDOW_H_
-#define GUI_MAINWINDOW_H_
+#ifndef SPRELAY_GUI_MAINWINDOW_H_
+#define SPRELAY_GUI_MAINWINDOW_H_
 
 #include <QMainWindow>
 
@@ -66,4 +66,4 @@ private:  // NOLINT(whitespace/indent)
     QComboBox *portsComboBox;
 };
 
-#endif  // GUI_MAINWINDOW_H_
+#endif  // SPRELAY_GUI_MAINWINDOW_H_

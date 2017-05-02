@@ -1,17 +1,6 @@
-QT       += core gui widgets serialport
+TEMPLATE = subdirs
 
-TARGET = sprelay
-TEMPLATE = app
+CONFIG += ordered
 
-include(../sprelay.pri)
-include(gui/gui.pri)
-include(core/core.pri)
-
-SOURCES += main.cpp
-
-DESTDIR = $$PWD/../bin
-
-INCLUDEPATH += \
-    $$PWD \
-    gui \
-    core
+SUBDIRS = \
+    sprelay

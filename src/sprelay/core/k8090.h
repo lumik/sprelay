@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef CORE_K8090_H_
-#define CORE_K8090_H_
+#ifndef SPRELAY_CORE_K8090_H_
+#define SPRELAY_CORE_K8090_H_
 
 #include <QObject>
 
@@ -150,4 +150,4 @@ private:  // NOLINT(whitespace/indent)
     static const QString firmwareVersionCmd;
 };
 
-#endif  // CORE_K8090_H_
+#endif  // SPRELAY_CORE_K8090_H_
