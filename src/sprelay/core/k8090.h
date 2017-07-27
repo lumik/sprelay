@@ -108,7 +108,22 @@ private:  // NOLINT(whitespace/indent)
 
     void sendSwitchRelayOnCommand();
     void sendSwitchRelayOffCommand();
+    void sendtoggleRelayCommand();
+    void sendsetButtonMode();
+    void sendStartRelayTimer (unsigned int Time);
+    void sendStartRelayTimer ();
+    void sendSetRelayTimer (unsigned int Time);
+    void sendQueryTimerDelay();
+    void sendQueryButtonMode ();
+    void sendQueryRelayStatus ();
+    void sendButtonStatus ();
+    void sendRelayStatus ();
+    void sendRessetfactorydefaults ();
+    void sendJumperStatus();
+    void sendFirmwareVersion();
 
+    unsigned char lowByt (unsigned int number);
+    unsigned char highByt(unsigned int number);
     static const quint16 productID;
     static const quint16 vendorID;
 
