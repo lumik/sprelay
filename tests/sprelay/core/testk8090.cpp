@@ -82,13 +82,14 @@ void TestK8090::highByt()
 {  // our testing value will be 41 (0x29 in hexdec., 0b101001)
     bool ok = 0;
     unsigned char byt;
-    byt = (10496>>8)&(0xFF); // mistake in testing value
+    byt = (10496>>8)&(0xFF);  // mistake in testing value
     if (byt == 0x29)
     {
       ok = 1;
       qDebug() << "it's okey.";
-    }else
+    } else {
       qDebug() << "Something is wrong";
+    }
     QCOMPARE(ok, true);
 }
 
