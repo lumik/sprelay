@@ -33,8 +33,12 @@ class TestK8090: public QObject
     Q_OBJECT
 private slots:  // NOLINT(whitespace/indent)
     void hexToByte();
+    void lowByt (); // we are going to test saving numbers into to separated bytes.
+    void highByt();
 };
-
+/*!
+ * \brief TestK8090::hextoByte()
+ */
 void TestK8090::hexToByte()
 {
     unsigned char *bMsg;
@@ -57,6 +61,35 @@ void TestK8090::hexToByte()
 
     QCOMPARE(ok, true);
 }
+/*!
+ * \brief TestK8090::lowByt
+ */
+void TestK8090::lowByt ()
+{  //our testing value will be 41 (0x29 in hexdec., 0b101001)
+    bool ok = 0;
+    unsigned char byt;
+    byt = (41)&(0xFF);
+    if (byt== 0x29)
+    {
+      ok=1;
+    }
+    QCOMPARE(ok,true);
+}
+/*!
+ * \brief TestK8090::highByt
+ */
+void TestK8090::highByt ()
+{  //our testing value will be 41 (0x29 in hexdec., 0b101001)
+    bool ok = 0;
+    unsigned char byt;
+    byt = (296>>8)&(0xFF);
+    if (byt == 0x29)
+    {
+      ok=1;
+    }
+    QCOMPARE(ok,true);
+}
+
 
 QTEST_MAIN(TestK8090)
 #include "testk8090.moc"

@@ -226,7 +226,7 @@ void K8090::sendSwitchRelayOnCommand()
 }
 
 /*!
-   \brief K8090::sendSwitchRelayOnCommand
+   \brief K8090::sendSwitchRelayOffCommand
  */
 void K8090::sendSwitchRelayOffCommand()
 {
@@ -242,6 +242,215 @@ void K8090::sendSwitchRelayOffCommand()
     qDebug() << byteToHex(cmd, n);
     onSendToSerial(cmd, n);
 }
+void K8090::sendtoggleRelayCommand()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::ToggleRelay)][ii];
+    cmd[2] = (unsigned char) RelayID::One;
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::ToggleRelay;
+    qDebug() << byteToHex(cmd, n)<<" Relay toggled";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendtoggleRelayCommand()
+  Function will toggle first relay.
+  */
+void K8090::sendsetButtonMode()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::SetButtonMode)][ii];
+    cmd[2] = (unsigned char) RelayID::One;
+    cmd[3] = (unsigned char) RelayID::Two;
+    cmd[4] = (unsigned char) RelayID::One;
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::SetButtonMode;
+    qDebug() << byteToHex(cmd, n)<<" Set button mode";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendsetButtonMode()
+  Configure the mode of each of the buttons.
+  */
+void K8090::sendStartRelayTimer (unsigned int Time) // didn't tested for more than few seconds.
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::StartRelayTimer)][ii];
+    cmd[2] = (unsigned char) RelayID::One;
+    cmd[3] = highByt(Time);
+    cmd[4] = lowByt(Time);
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::StartRelayTimer;
+    qDebug() << byteToHex(cmd, n)<<" Timer started " << Time;
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendStartRelayTimer()
+  Start a timer for the first relay.
+   \param Time
+  */
+void K8090::sendSetRelayTimer (unsigned int Time) // don't know, if it works.
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::SetRelayTimerDelay)][ii];
+    cmd[2] = (unsigned char) RelayID::One;
+    cmd[3] = highByt(Time);
+    cmd[4] = lowByt(Time);
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::SetRelayTimerDelay;
+    qDebug() << byteToHex(cmd, n)<<" Timer set on " << Time;
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendSetRelayTimer(unsigned int Time)
+  set a timer for the first relay.
+  \param Time
+  */
+void K8090::sendQueryRelayStatus () // don't know, if it works.
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::QueryRelayStatus)][ii];
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::QueryRelayStatus;
+    qDebug() << byteToHex(cmd, n)<<" request for relay status";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendQueryRelayStatus()
+  Query the current status of all relays (on/off) and their timers (active/inactive).
+  */
+void K8090::sendQueryTimerDelay()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::QueryTimerDelay)][ii];
+    cmd[2] = (unsigned char) RelayID::One;
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::QueryTimerDelay;
+    qDebug() << byteToHex(cmd, n)<<" request for first relay timer status";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendQueryTimer Delay()
+ Query the current timer delay for first relay.
+  */
+void K8090::sendQueryButtonMode ()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::QueryButtonMode)][ii];
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::QueryButtonMode;
+    qDebug() << byteToHex(cmd, n)<<"zažiadali sme o status časovača 1";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendQueryButtonMode()
+ Query the current mode of each button.
+  */
+void K8090::sendRessetfactorydefaults ()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::ResetFactoryDefaults)][ii];
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::ResetFactoryDefaults;
+    qDebug() << byteToHex(cmd, n)<<"Zresetované";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendRessetfactorydefaults()
+Reset the board to factory defaults. All buttons are set to toggle mode and all timer delays are set to 5 seconds.
+  */
+void K8090::sendJumperStatus()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::JumperStatus)][ii];
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::JumperStatus;
+    qDebug() << byteToHex(cmd, n)<<"niečo robí";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendJumperStatus()
+ QChecks the position of the 'Event' jumper. If the jumper is set, the buttons no longer interact with the
+relays but button events are still sent to the computer.
+  */
+void K8090::sendFirmwareVersion()
+{
+    int n = 7;  // Number of command bytes.
+    unsigned char * cmd = new unsigned char[n];
+    int ii;
+    for (ii = 0; ii < 2; ++ii)
+        cmd[ii] = bCommands[static_cast<int>(Command::FirmwareVersion)][ii];
+    cmd[5] = checkSum(cmd, 5);
+    cmd[6] = bEtxByte;
+    lastCommand = Command::FirmwareVersion;
+    qDebug() << byteToHex(cmd, n)<<"v hexadecimálnej sústave vypíše parametre dosky";
+    onSendToSerial(cmd, n);
+}
+/*!
+  \brief K8090::sendFirmwareVersion()
+Queries the firmware version of the board. The version number consists of the year and week
+combination of the date the firmware was compiled.
+  */
+
+unsigned char K8090::lowByt (unsigned int cislo)
+{
+    unsigned char bytarr[2];
+    bytarr[0] = (cislo)&(0xFF);
+    bytarr[1] = (cislo>>8)&(0xFF);
+    return bytarr[0];
+}
+/*!
+  \brief K8090::lowByt()
+Save first 8 bits of 16 bit integer.
+  */
+unsigned char K8090::highByt (unsigned int cislo)
+{
+    unsigned char bytarr[2];
+    bytarr[0] = cislo&0xFF;
+    bytarr[1] = (cislo>>8)&0xFF;
+    return bytarr[1];
+}
+/*!
+  \brief K8090::lowByt()
+Save second 8 bits of 16 bit integer.
+  */
+
 
 /*!
    \brief K8090::hexToByte
