@@ -33,7 +33,7 @@ class TestK8090: public QObject
     Q_OBJECT
 private slots:  // NOLINT(whitespace/indent)
     void hexToByte();
-    void lowByt (); // we are going to test saving numbers into to separated bytes.
+    void lowByt();  // we are going to test saving numbers into to separated bytes.
     void highByt();
 };
 /*!
@@ -64,33 +64,32 @@ void TestK8090::hexToByte()
 /*!
  * \brief TestK8090::lowByt
  */
-void TestK8090::lowByt ()
-{  //our testing value will be 41 (0x29 in hexdec., 0b101001)
+void TestK8090::lowByt()
+{  // our testing value will be 41 (0x29 in hexdec., 0b101001)
     bool ok = 0;
     unsigned char byt;
     byt = (41)&(0xFF);
-    if (byt== 0x29)
+    if (byt == 0x29)
     {
-      ok=1;
+      ok = 1;
     }
-    QCOMPARE(ok,true);
+    QCOMPARE(ok, true);
 }
 /*!
  * \brief TestK8090::highByt
  */
-void TestK8090::highByt ()
-{  //our testing value will be 41 (0x29 in hexdec., 0b101001)
+void TestK8090::highByt()
+{  // our testing value will be 41 (0x29 in hexdec., 0b101001)
     bool ok = 0;
     unsigned char byt;
-    byt = (10496>>8)&(0xFF); //mistake in testing value
+    byt = (10496>>8)&(0xFF); // mistake in testing value
     if (byt == 0x29)
     {
-      ok=1;
+      ok = 1;
       qDebug() << "it's okey.";
-    }
-    else
-        qDebug()<<"Something is wrong";
-    QCOMPARE(ok,true);
+    }else
+      qDebug() << "Something is wrong";
+    QCOMPARE(ok, true);
 }
 
 
