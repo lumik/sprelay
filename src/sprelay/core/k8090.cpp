@@ -169,8 +169,16 @@ void K8090::connectK8090()
     serialPort_->setParity(QSerialPort::NoParity);
     serialPort_->setStopBits(QSerialPort::OneStop);
     serialPort_->setFlowControl(QSerialPort::NoFlowControl);
-
-    sendSwitchRelayOffCommand();
+bool controlarr[8];
+controlarr[0]=true;
+controlarr[1]=false;
+controlarr[2]=true;
+controlarr[3]=false;
+controlarr[4]=false;
+controlarr[5]=false;
+controlarr[6]=false;
+controlarr[7]=true;
+sendCommand(controlarr,14);
 }
 
 /*!
@@ -199,25 +207,66 @@ void K8090::onReadyData()
 
     lastCommand = Command::None;
 }
+/*!
+ * \brief K8090::choose
+ * \param Relays
+ * \return
+ */
+unsigned char K8090::choose(bool Relays[8])
+{int i;
+unsigned char diff;
+unsigned char bitarr;
+ bitarr = 0;
+ for(i = 0; i<8;i++)
+ {if (Relays[i] == true)
+     {diff = 1 << i;
+      bitarr = (bitarr|diff);
+     }
+ }
+ return bitarr;
+}
 
 /*!
     \brief K8090::sendCommand
 */
-void K8090::sendCommand()
+void K8090::sendCommand(int param)
 {
+    switch(param)
+    {
+    case 18: sendQueryRelayStatus(); break;
+    case 21: sendQueryButtonMode(); break;
+    case 66: sendRessetfactorydefaults(); break;
+    case 70: sendJumperStatus(); break;
+    case 71: sendFirmwareVersion(); break;
+    default: qDebug()<<"Wrong choice";
+    }
+
+}
+
+void K8090::sendCommand(bool Relays[8], int param)
+{ unsigned char chosen;
+  chosen = choose(Relays);
+  switch(param)
+  {
+  case 11: sendSwitchRelayOnCommand(chosen);break;
+  case 12: sendSwitchRelayOffCommand(chosen);break;
+  case 14: sendtoggleRelayCommand(chosen);break;
+  default: qDebug()<<"Wrong choice";
+  }
 }
 
 /*!
-   \brief K8090::sendSwitchRelayOnCommand
+ * \brief K8090::sendSwitchRelayOnCommand
+ * \param chosen
  */
-void K8090::sendSwitchRelayOnCommand()
+void K8090::sendSwitchRelayOnCommand(unsigned char chosen)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::SwitchRelayOn)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
+    cmd[2] = chosen;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SwitchRelayOn;
@@ -228,28 +277,28 @@ void K8090::sendSwitchRelayOnCommand()
 /*!
    \brief K8090::sendSwitchRelayOffCommand
  */
-void K8090::sendSwitchRelayOffCommand()
+void K8090::sendSwitchRelayOffCommand(unsigned char chosen)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::SwitchRelayOff)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
+    cmd[2] = chosen;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SwitchRelayOff;
     qDebug() << byteToHex(cmd, n);
     onSendToSerial(cmd, n);
 }
-void K8090::sendtoggleRelayCommand()
+void K8090::sendtoggleRelayCommand(unsigned char chosen)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::ToggleRelay)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
+    cmd[2] = chosen;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::ToggleRelay;
