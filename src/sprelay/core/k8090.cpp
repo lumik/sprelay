@@ -170,15 +170,35 @@ void K8090::connectK8090()
     serialPort_->setStopBits(QSerialPort::OneStop);
     serialPort_->setFlowControl(QSerialPort::NoFlowControl);
 bool controlarr[8];
+bool controlarr1[8];
+bool controlarr2[8];
 controlarr[0]=true;
 controlarr[1]=false;
-controlarr[2]=true;
+controlarr[2]=false;
 controlarr[3]=false;
 controlarr[4]=false;
 controlarr[5]=false;
 controlarr[6]=false;
-controlarr[7]=true;
-sendCommand(controlarr,14);
+controlarr[7]=false;
+controlarr1[0]=false;
+controlarr1[1]=false;
+controlarr1[2]=true;
+controlarr1[3]=false;
+controlarr1[4]=false;
+controlarr1[5]=false;
+controlarr1[6]=false;
+controlarr1[7]=false;
+controlarr2[0]=false;
+controlarr2[1]=false;
+controlarr2[2]=false;
+controlarr2[3]=false;
+controlarr2[4]=false;
+controlarr2[5]=false;
+controlarr2[6]=false;
+controlarr2[7]=true;
+
+sendCommand(controlarr2, 41,10);
+sendCommand(controlarr,controlarr1,controlarr2, 21, true);
 }
 
 /*!
@@ -244,7 +264,8 @@ void K8090::sendCommand(int param)
 }
 
 void K8090::sendCommand(bool Relays[8], int param)
-{ unsigned char chosen;
+{
+  unsigned char chosen;
   chosen = choose(Relays);
   switch(param)
   {
@@ -254,6 +275,47 @@ void K8090::sendCommand(bool Relays[8], int param)
   default: qDebug()<<"Wrong choice";
   }
 }
+void K8090::sendCommand(bool Relays[8], int param, unsigned int Time)
+{
+    unsigned char chosen;
+    chosen = choose(Relays);
+    switch(param)
+    {
+    case 41: sendStartRelayTimer(chosen, Time );break;
+    case 42: sendSetRelayTimer(chosen, Time );break;
+    default: qDebug()<<"Wrong choice";
+    }
+}
+void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused) //Query timer delay. 1 will be used for
+ { if (param == 44)                                                           //Total delay Time and 2 for remaining
+    {unsigned char chosen;                                                    // delay time
+     chosen = choose(Relays);
+     unsigned char choise;
+     if (option)
+     {
+      choise =  1 << 0;
+     }else{
+          choise =  1 << 1;
+         }
+     sendQueryTimerDelay(chosen, choise);
+     }
+
+ }
+void K8090::sendCommand(bool Relays1[8],bool Relays2[8],bool Relays3[8], int param, bool notused)
+{ if (param == 21)                                                           //Total delay Time and 2 for remaining
+   {unsigned char chosen1;                                                    // delay time
+    unsigned char chosen2;
+    unsigned char chosen3;
+    chosen1 = choose(Relays1);
+    chosen2 = choose(Relays2);
+    chosen3 = choose(Relays3);
+    sendsetButtonMode(chosen1,chosen2,chosen3);
+    }else{
+        qDebug()<<"Wrong choise.";
+    }
+
+}
+
 
 /*!
  * \brief K8090::sendSwitchRelayOnCommand
@@ -309,16 +371,16 @@ void K8090::sendtoggleRelayCommand(unsigned char chosen)
   \brief K8090::sendtoggleRelayCommand()
   Function will toggle first relay.
   */
-void K8090::sendsetButtonMode()
+void K8090::sendsetButtonMode(unsigned char choose1,unsigned char choose2,unsigned char choose3)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::SetButtonMode)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
-    cmd[3] = (unsigned char) RelayID::Two;
-    cmd[4] = (unsigned char) RelayID::One;
+    cmd[2] = choose1;
+    cmd[3] = choose2;
+    cmd[4] = choose3;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SetButtonMode;
@@ -329,14 +391,14 @@ void K8090::sendsetButtonMode()
   \brief K8090::sendsetButtonMode()
   Configure the mode of each of the buttons.
   */
-void K8090::sendStartRelayTimer(unsigned int Time)  // Didn't tested for more than few seconds.
+void K8090::sendStartRelayTimer( unsigned char chosen, unsigned int Time)  // Didn't tested for more than few seconds.
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::StartRelayTimer)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
+    cmd[2] = chosen;
     cmd[3] = highByt(Time);
     cmd[4] = lowByt(Time);
     cmd[5] = checkSum(cmd, 5);
@@ -350,14 +412,14 @@ void K8090::sendStartRelayTimer(unsigned int Time)  // Didn't tested for more th
   Start a timer for the first relay.
    \param Time
   */
-void K8090::sendSetRelayTimer(unsigned int Time)  // don't know, if it works.
+void K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)  // don't know, if it works.
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::SetRelayTimerDelay)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
+    cmd[2] = chosen;
     cmd[3] = highByt(Time);
     cmd[4] = lowByt(Time);
     cmd[5] = checkSum(cmd, 5);
@@ -388,14 +450,15 @@ void K8090::sendQueryRelayStatus()  // don't know, if it works.
   \brief K8090::sendQueryRelayStatus()
   Query the current status of all relays (on/off) and their timers (active/inactive).
   */
-void K8090::sendQueryTimerDelay()
+void K8090::sendQueryTimerDelay(unsigned char choose, unsigned char option)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::QueryTimerDelay)][ii];
-    cmd[2] = (unsigned char) RelayID::One;
+    cmd[2] = choose;
+    cmd[3] = option;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryTimerDelay;
@@ -412,7 +475,7 @@ void K8090::sendQueryButtonMode()
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
-        cmd[ii] = bCommands[static_cast<int>(Command::QueryButtonMode)][ii];
+    cmd[ii] = bCommands[static_cast<int>(Command::QueryButtonMode)][ii];
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryButtonMode;
