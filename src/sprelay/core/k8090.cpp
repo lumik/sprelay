@@ -172,33 +172,34 @@ void K8090::connectK8090()
 bool controlarr[8];
 bool controlarr1[8];
 bool controlarr2[8];
-controlarr[0]=true;
-controlarr[1]=false;
-controlarr[2]=false;
-controlarr[3]=false;
-controlarr[4]=false;
-controlarr[5]=false;
-controlarr[6]=false;
-controlarr[7]=false;
-controlarr1[0]=false;
-controlarr1[1]=false;
-controlarr1[2]=true;
-controlarr1[3]=false;
-controlarr1[4]=false;
-controlarr1[5]=false;
-controlarr1[6]=false;
-controlarr1[7]=false;
-controlarr2[0]=false;
-controlarr2[1]=false;
-controlarr2[2]=false;
-controlarr2[3]=false;
-controlarr2[4]=false;
-controlarr2[5]=false;
-controlarr2[6]=false;
-controlarr2[7]=true;
+controlarr[0] = true;
+controlarr[1] = false;
+controlarr[2] = false;
+controlarr[3] = false;
+controlarr[4] = false;
+controlarr[5] = false;
+controlarr[6] = false;
+controlarr[7] = false;
+controlarr1[0] = false;
+controlarr1[1] = false;
+controlarr1[2] = true;
+controlarr1[3] = false;
+controlarr1[4] = false;
+controlarr1[5] = false;
+controlarr1[6] = false;
+controlarr1[7] = false;
+controlarr2[0] = false;
+controlarr2[1] = false;
+controlarr2[2] = false;
+controlarr2[3] = false;
+controlarr2[4] = false;
+controlarr2[5] = false;
+controlarr2[6] = false;
+controlarr2[7] = true;
 
-sendCommand(controlarr2, 41,10);
-sendCommand(controlarr,controlarr1,controlarr2, 21, true);
+sendCommand(controlarr2, 41, 10);
+sendCommand(controlarr, controlarr1, controlarr2, 21, true);
+sendCommand(70);
 }
 
 /*!
@@ -233,16 +234,17 @@ void K8090::onReadyData()
  * \return
  */
 unsigned char K8090::choose(bool Relays[8])
-{int i;
-unsigned char diff;
-unsigned char bitarr;
- bitarr = 0;
- for(i = 0; i<8;i++)
- {if (Relays[i] == true)
+{
+   int i;
+   unsigned char diff;
+   unsigned char bitarr;
+   bitarr = 0;
+   for(i = 0; i < 8;i++)
+   {if (Relays[i] == true)
      {diff = 1 << i;
       bitarr = (bitarr|diff);
      }
- }
+}
  return bitarr;
 }
 
@@ -251,44 +253,44 @@ unsigned char bitarr;
 */
 void K8090::sendCommand(int param)
 {
-    switch(param)
+    switch (param)
     {
     case 18: sendQueryRelayStatus(); break;
     case 21: sendQueryButtonMode(); break;
     case 66: sendRessetfactorydefaults(); break;
     case 70: sendJumperStatus(); break;
     case 71: sendFirmwareVersion(); break;
-    default: qDebug()<<"Wrong choice";
+    default: qDebug() << "Wrong choice";
     }
-
 }
 
 void K8090::sendCommand(bool Relays[8], int param)
 {
   unsigned char chosen;
   chosen = choose(Relays);
-  switch(param)
+  switch (param)
   {
-  case 11: sendSwitchRelayOnCommand(chosen);break;
-  case 12: sendSwitchRelayOffCommand(chosen);break;
-  case 14: sendtoggleRelayCommand(chosen);break;
-  default: qDebug()<<"Wrong choice";
+  case 11: sendSwitchRelayOnCommand(chosen); break;
+  case 12: sendSwitchRelayOffCommand(chosen); break;
+  case 14: sendtoggleRelayCommand(chosen); break;
+  default: qDebug() << "Wrong choice";
   }
 }
 void K8090::sendCommand(bool Relays[8], int param, unsigned int Time)
 {
     unsigned char chosen;
     chosen = choose(Relays);
-    switch(param)
+    switch (param)
     {
-    case 41: sendStartRelayTimer(chosen, Time );break;
-    case 42: sendSetRelayTimer(chosen, Time );break;
-    default: qDebug()<<"Wrong choice";
+    case 41: sendStartRelayTimer(chosen, Time); break;
+    case 42: sendSetRelayTimer(chosen, Time); break;
+    default: qDebug() << "Wrong choice";
     }
 }
-void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused) //Query timer delay. 1 will be used for
- { if (param == 44)                                                           //Total delay Time and 2 for remaining
-    {unsigned char chosen;                                                    // delay time
+void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused)  //Query timer delay. 1 will be used for
+ {
+    if (param == 44)                                                            //Total delay Time and 2 for remaining
+    {unsigned char chosen;                                                     // delay time
      chosen = choose(Relays);
      unsigned char choise;
      if (option)
@@ -309,11 +311,10 @@ void K8090::sendCommand(bool Relays1[8],bool Relays2[8],bool Relays3[8], int par
     chosen1 = choose(Relays1);
     chosen2 = choose(Relays2);
     chosen3 = choose(Relays3);
-    sendsetButtonMode(chosen1,chosen2,chosen3);
+    sendsetButtonMode(chosen1, chosen2, chosen3);
     }else{
-        qDebug()<<"Wrong choise.";
+        qDebug() << "Wrong choise.";
     }
-
 }
 
 
@@ -371,7 +372,7 @@ void K8090::sendtoggleRelayCommand(unsigned char chosen)
   \brief K8090::sendtoggleRelayCommand()
   Function will toggle first relay.
   */
-void K8090::sendsetButtonMode(unsigned char choose1,unsigned char choose2,unsigned char choose3)
+void K8090::sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsigned char choose3)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
@@ -391,7 +392,7 @@ void K8090::sendsetButtonMode(unsigned char choose1,unsigned char choose2,unsign
   \brief K8090::sendsetButtonMode()
   Configure the mode of each of the buttons.
   */
-void K8090::sendStartRelayTimer( unsigned char chosen, unsigned int Time)  // Didn't tested for more than few seconds.
+void K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)  // Didn't tested for more than few seconds.
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
