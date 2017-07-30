@@ -104,16 +104,20 @@ private slots:  // NOLINT(whitespace/indent)
     void onReadyData();
 
 private:  // NOLINT(whitespace/indent)
-    void sendCommand();
+    unsigned char choose(bool Relays[8]);
+    void sendCommand(int param);
+    void sendCommand(bool Relays[8], int param);
+    void sendCommand(bool Relays[8], int param, unsigned int Time);
+    void sendCommand(bool Relays[8], int param,  bool option, bool notused);
+    void sendCommand(bool Relays1[8],bool Relays2[8],bool Relays3[8], int param, bool notused);
 
-    void sendSwitchRelayOnCommand();
-    void sendSwitchRelayOffCommand();
-    void sendtoggleRelayCommand();
-    void sendsetButtonMode();
-    void sendStartRelayTimer(unsigned int Time);
-    void sendStartRelayTimer();
-    void sendSetRelayTimer(unsigned int Time);
-    void sendQueryTimerDelay();
+    void sendSwitchRelayOnCommand(unsigned char chosen);
+    void sendSwitchRelayOffCommand(unsigned char chosen);
+    void sendtoggleRelayCommand(unsigned char chosen);
+    void sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsigned char choose3);
+    void sendStartRelayTimer(unsigned char chosen, unsigned int Time);
+    void sendSetRelayTimer(unsigned char chosen, unsigned int Time);
+    void sendQueryTimerDelay(unsigned char chosen, unsigned char option);
     void sendQueryButtonMode();
     void sendQueryRelayStatus();
     void sendButtonStatus();
