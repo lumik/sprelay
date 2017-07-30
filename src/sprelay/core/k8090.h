@@ -109,7 +109,7 @@ private:  // NOLINT(whitespace/indent)
     void sendCommand(bool Relays[8], int param);
     void sendCommand(bool Relays[8], int param, unsigned int Time);
     void sendCommand(bool Relays[8], int param,  bool option, bool notused);
-    void sendCommand(bool Relays1[8],bool Relays2[8],bool Relays3[8], int param, bool notused);
+    void sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int param, bool notused);
 
     void sendSwitchRelayOnCommand(unsigned char chosen);
     void sendSwitchRelayOffCommand(unsigned char chosen);
