@@ -64,7 +64,6 @@ const QString K8090::firmwareVersionCmd = "71";
     \class K8090
     \brief The class that provides the interface for %Velleman K8090 relay card
     controlling through serial port.
-
     \remark reentrant, thread-safe
 */
 
@@ -72,18 +71,14 @@ const QString K8090::firmwareVersionCmd = "71";
 /*!
     \brief Array of 4 byte (3 leading bytes and one command byte) commands used
     to control the relay.
-
     It is filled by fillCommandsArrays() static method, the first command is
     the command with the most important priority, the last is the least
     important. They should be accessed using the K8090Traits::Command enum
     values.
-
     Example, which shows how to build the whole command read status:
-
     \code
     int n = 6; // number of command bytes
     unsigned char cmd[n]; // array of command bytes
-
     // copying the first two bytes of command to command byte array
     for (int ii = 0; ii < 4; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::ReadStatus)][ii];
@@ -99,7 +94,6 @@ unsigned char K8090::bEtxByte;
 /*!
     \brief Array of QString representation of command bytes used to control the
     bath.
-
     To assemble the full command, it is necessary to prepend the commandBase
     and append byte, which contains number of data bytes, folowed bytes
     containing data and ended with checksum (See CheckSum(const unsigned char,
@@ -145,7 +139,14 @@ QList<ComPortParams> K8090::availablePorts()
     }
     return comPortParamsList;
 }
-
+/*!
+ * \fn K8090::connectK8090()
+ * \brief Function controll if is connected some device and also if is used right device. Then are set port characteristics (port name,
+ * baud rate, data bits and others).
+ *
+ *   In this state are also declared 3 boolen arrays and some commands. If button "Connect" is clicked,
+ * function will try to find device and than execute commands. If function don't find device, compiler will message "Card not found!!!"
+ */
 void K8090::connectK8090()
 {
     bool cardFound = false;
@@ -174,7 +175,7 @@ bool controlarr1[8];
 bool controlarr2[8];
 controlarr[0] = true;
 controlarr[1] = false;
-controlarr[2] = false;
+controlarr[2] = true;
 controlarr[3] = false;
 controlarr[4] = false;
 controlarr[5] = false;
@@ -197,15 +198,17 @@ controlarr2[5] = false;
 controlarr2[6] = false;
 controlarr2[7] = true;
 
-sendCommand(controlarr2, 41, 10);
-sendCommand(controlarr, controlarr1, controlarr2, 21, true);
+sendCommand(controlarr, 11);
+completedTaskControl();
+sendCommand(controlarr1, 12);
 sendCommand(70);
 }
 
 /*!
-   \brief K8090::onSendToSerial
-   \param buffer
-   \param n
+ * \fn K8090::onSendToSerial()
+ * \param const unsigned char *buffer
+ * \param int n
+ * \brief Function will send byte array to serial port
  */
 void K8090::onSendToSerial(const unsigned char *buffer, int n)
 {
@@ -215,7 +218,10 @@ void K8090::onSendToSerial(const unsigned char *buffer, int n)
     serialPort_->write(reinterpret_cast<char*>(const_cast<unsigned char*>(buffer)), n);
     delete[] buffer;
 }
-
+/*!
+ * \fn K8090::onReadyData()
+ * \brief Function will catch data from relay card.
+ */
 void K8090::onReadyData()
 {
     qDebug() << "R8090::onReadyData";
@@ -229,8 +235,9 @@ void K8090::onReadyData()
     lastCommand = Command::None;
 }
 /*!
- * \brief K8090::choose
- * \param Relays
+ * \fn K8090::choose
+ * \param Relays[8]
+ * \brief Function will make from boolean array corresponding byte.
  * \return
  */
 unsigned char K8090::choose(bool Relays[8])
@@ -249,7 +256,9 @@ unsigned char K8090::choose(bool Relays[8])
 }
 
 /*!
-    \brief K8090::sendCommand
+  *\fn K8090::sendCommand(int param)
+  *\param int param
+  *\brief Function will send according to parameter corresponding command. Function is overloaded.
 */
 void K8090::sendCommand(int param)
 {
@@ -263,7 +272,13 @@ void K8090::sendCommand(int param)
      default: qDebug() << "Wrong choice";
      }
 }
-
+/*!
+  *\fn K8090::sendCommand(bool Relays[8], int param)
+  *\param int param
+  *\param bool Realys[8]
+  *\brief Function will send according to parameter corresponding command. Function is overloaded.
+  * Function is using method choose, which makes from boolen array byte.
+*/
 void K8090::sendCommand(bool Relays[8], int param)
 {
     unsigned char chosen;
@@ -276,6 +291,14 @@ void K8090::sendCommand(bool Relays[8], int param)
       default: qDebug() << "Wrong choice";
       }
 }
+/*!
+  *\fn K8090::sendCommand(bool Relays[8], int param, unsigned int Time)
+  *\param int param
+  *\param bool Realys[8]
+  *\param unsigned int Time
+  *\brief Function will send according to parameter corresponding command. Function is overloaded.
+  * Function is using method choose, which makes from boolen array byte. Parameter Time is 2 byte integer, which is decompposed into two separated bytes.
+  */
 void K8090::sendCommand(bool Relays[8], int param, unsigned int Time)
 {
     unsigned char chosen;
@@ -302,6 +325,15 @@ void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused)  /
     sendQueryTimerDelay(chosen, choise);
     }
 }
+/*!
+  *\fn K8090::sendCommand(bool Relays[8], int param, unsigned int Time)
+  *\param int param
+  *\param bool Realys[8]
+  *\param bool option
+  *\param bool notused
+  *\brief Function will send according to parameter corresponding command. Function is overloaded.
+  * Function is using method choose, which makes from boolen array byte. Parameter option represent option between total delay time (TRUE) and remaining delay time (FALSE)
+  */
 void K8090::sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int param, bool notused)
 {
     if (param == 21)                                                           // Total delay Time and 2 for remaining
@@ -317,11 +349,21 @@ void K8090::sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int p
         qDebug() << "Wrong choise.";
      }
 }
-
+/*!
+  *\fn K8090::sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int param, bool notused)
+  *\param int param
+  *\param bool Realys1[8]
+  *\param bool Realys2[8]
+  *\param bool Realys3[8]
+  *\param bool notused
+  *\brief Function will send according to parameter corresponding command. Function is overloaded.
+  * Function is using method choose, which makes from boolen array byte. Relays1 correspond to relays, which will be set on momentary mode, Relays2 correspond to relays, which will be set on toggle mode, Relays3 correspond to relays, which will be set on timed mode,
+  */
 
 /*!
- * \brief K8090::sendSwitchRelayOnCommand
+ * \fn K8090::sendSwitchRelayOnCommand
  * \param chosen
+ * \brief Switch on corresponding Relay or Relays
  */
 void K8090::sendSwitchRelayOnCommand(unsigned char chosen)
 {
@@ -336,10 +378,13 @@ void K8090::sendSwitchRelayOnCommand(unsigned char chosen)
     lastCommand = Command::SwitchRelayOn;
     qDebug() << byteToHex(cmd, n);
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 
 /*!
-   \brief K8090::sendSwitchRelayOffCommand
+ * \fn K8090::sendSwitchRelayOffCommand
+ * \param chosen
+ * \brief Switch off corresponding Relay or Relays
  */
 void K8090::sendSwitchRelayOffCommand(unsigned char chosen)
 {
@@ -354,7 +399,13 @@ void K8090::sendSwitchRelayOffCommand(unsigned char chosen)
     lastCommand = Command::SwitchRelayOff;
     qDebug() << byteToHex(cmd, n);
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
+/*!
+ * \fn K8090::sendtoggleRelayCommand
+ * \param chosen
+ * \brief Toggle corresponding Relay or Relays.
+ */
 void K8090::sendtoggleRelayCommand(unsigned char chosen)
 {
     int n = 7;  // Number of command bytes.
@@ -368,11 +419,15 @@ void K8090::sendtoggleRelayCommand(unsigned char chosen)
     lastCommand = Command::ToggleRelay;
     qDebug() << byteToHex(cmd, n) << " Relay toggled";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendtoggleRelayCommand()
-  Function will toggle first relay.
-  */
+ * \fn sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsigned char choose3)
+ * \param unsigned char chose1
+ * \param unsigned char chose2
+ * \param unsigned char chose3
+ * \brief Set Momentary, Toggle and Timed mode to corresponding relays.
+ */
 void K8090::sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsigned char choose3)
 {
     int n = 7;  // Number of command bytes.
@@ -388,11 +443,9 @@ void K8090::sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsi
     lastCommand = Command::SetButtonMode;
     qDebug() << byteToHex(cmd, n) << " Set button mode";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
-/*!
-  \brief K8090::sendsetButtonMode()
-  Configure the mode of each of the buttons.
-  */
+
 void K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)  // Didn't tested for more than few seconds.
 {
     int n = 7;  // Number of command bytes.
@@ -408,11 +461,12 @@ void K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)  // Did
     lastCommand = Command::StartRelayTimer;
     qDebug() << byteToHex(cmd, n) << " Timer started " << Time;
     onSendToSerial(cmd, n);
+    completedTaskControl(Time);
 }
 /*!
-  \brief K8090::sendStartRelayTimer()
-  Start a timer for the first relay.
-   \param Time
+  *\fn K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)
+  *\param Time
+  *\brief Start Timer for corresponding time and relays.
   */
 void K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)  // don't know, if it works.
 {
@@ -429,11 +483,12 @@ void K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)  // don't
     lastCommand = Command::SetRelayTimerDelay;
     qDebug() << byteToHex(cmd, n) << " Timer set on " << Time;
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendSetRelayTimer(unsigned int Time)
-  set a timer for the first relay.
-  \param Time
+  *\fn K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)
+  *\param Time
+  *\brief Set Timer for corresponding time and relays.
   */
 void K8090::sendQueryRelayStatus()  // don't know, if it works.
 {
@@ -447,10 +502,11 @@ void K8090::sendQueryRelayStatus()  // don't know, if it works.
     lastCommand = Command::QueryRelayStatus;
     qDebug() << byteToHex(cmd, n) << " request for relay status";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendQueryRelayStatus()
-  Query the current status of all relays (on/off) and their timers (active/inactive).
+  *\fn K8090::sendQueryRelayStatus()
+  *\brief Query the current status of all relays (on/off) and their timers (active/inactive).
   */
 void K8090::sendQueryTimerDelay(unsigned char choose, unsigned char option)
 {
@@ -466,10 +522,11 @@ void K8090::sendQueryTimerDelay(unsigned char choose, unsigned char option)
     lastCommand = Command::QueryTimerDelay;
     qDebug() << byteToHex(cmd, n) << " request for first relay timer status";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendQueryTimer Delay()
- Query the current timer delay for first relay.
+  *\fn K8090::sendQueryTimer Delay()
+  *\brief Query the current timer delay for first relay.
   */
 void K8090::sendQueryButtonMode()
 {
@@ -483,10 +540,11 @@ void K8090::sendQueryButtonMode()
     lastCommand = Command::QueryButtonMode;
     qDebug() << byteToHex(cmd, n) << "zažiadali sme o status časovača 1";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendQueryButtonMode()
- Query the current mode of each button.
+  *\fn K8090::sendQueryButtonMode()
+  *\brief Query the current mode of each button.
   */
 void K8090::sendRessetfactorydefaults()
 {
@@ -500,10 +558,11 @@ void K8090::sendRessetfactorydefaults()
     lastCommand = Command::ResetFactoryDefaults;
     qDebug() << byteToHex(cmd, n) << "Zresetované";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendRessetfactorydefaults()
-Reset the board to factory defaults. All buttons are set to toggle mode and all timer delays are set to 5 seconds.
+  *\fn K8090::sendRessetfactorydefaults()
+  *\brief Reset the board to factory defaults. All buttons are set to toggle mode and all timer delays are set to 5 seconds.
   */
 void K8090::sendJumperStatus()
 {
@@ -517,10 +576,11 @@ void K8090::sendJumperStatus()
     lastCommand = Command::JumperStatus;
     qDebug() << byteToHex(cmd, n) << "niečo robí";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendJumperStatus()
- QChecks the position of the 'Event' jumper. If the jumper is set, the buttons no longer interact with the
+  *\fn K8090::sendJumperStatus()
+  *\brief QChecks the position of the 'Event' jumper. If the jumper is set, the buttons no longer interact with the
 relays but button events are still sent to the computer.
   */
 void K8090::sendFirmwareVersion()
@@ -535,34 +595,67 @@ void K8090::sendFirmwareVersion()
     lastCommand = Command::FirmwareVersion;
     qDebug() << byteToHex(cmd, n) << "v hexadecimálnej sústave vypíše parametre dosky";
     onSendToSerial(cmd, n);
+    completedTaskControl();
 }
 /*!
-  \brief K8090::sendFirmwareVersion()
-Queries the firmware version of the board. The version number consists of the year and week
+  *\fn K8090::sendFirmwareVersion()
+  *\brief Queries the firmware version of the board. The version number consists of the year and week
 combination of the date the firmware was compiled.
   */
+void K8090::completedTaskControl()
+{
+    bool result;
+    result = serialPort_->waitForReadyRead(300);
+    if (result)
+    {completedTaskControl();
+     qDebug()<<"Still in progress, I'm waiting for end of command.";
+    }else{
+     qDebug()<<"Done. I'm ready for other commands";
+     return;
+    }
 
-unsigned char K8090::lowByt(unsigned int cislo)
+}
+/*!
+  *\fn K8090::completedTaskControl()
+  *\brief Controll if all commands is executed and Relay card don't response anymore.
+  */
+void K8090::completedTaskControl(int Time)  // Version for Timers
+{bool result;
+    result = serialPort_->waitForReadyRead(300+Time*1000);
+    if (result)
+    {completedTaskControl();
+     qDebug()<<"Still in progress, I'm waiting for end of command.";
+    }else{
+     qDebug()<<"Done. I'm ready for other commands";
+     return;
+    }
+}
+/*!
+  *\fn K8090::completedTaskControl(int Time)
+  *\param int Time
+  *\brief Controll if all commands is executed and Relay card don't response anymore.
+  */
+unsigned char K8090::lowByt(unsigned int number)
 {
     unsigned char bytarr[2];
-    bytarr[0] = (cislo)&(0xFF);
-    bytarr[1] = (cislo>>8)&(0xFF);
+    bytarr[0] = (number)&(0xFF);
+    bytarr[1] = (number>>8)&(0xFF);
     return bytarr[0];
 }
 /*!
-  \brief K8090::lowByt()
-Save first 8 bits of 16 bit integer.
+  *\fn K8090::lowByt(number)
+  *\brief Save first 8 bits of 16 bit integer.
   */
-unsigned char K8090::highByt(unsigned int cislo)
+unsigned char K8090::highByt(unsigned int number)
 {
     unsigned char bytarr[2];
-    bytarr[0] = cislo&0xFF;
-    bytarr[1] = (cislo>>8)&0xFF;
+    bytarr[0] = number&0xFF;
+    bytarr[1] = (number>>8)&0xFF;
     return bytarr[1];
 }
 /*!
-  \brief K8090::lowByt()
-Save second 8 bits of 16 bit integer.
+  *\fn K8090::highByt(unsigned int number)
+  *\brief Save second 8 bits of 16 bit integer.
   */
 
 
