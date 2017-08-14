@@ -125,6 +125,8 @@ private:  // NOLINT(whitespace/indent)
     void sendRessetfactorydefaults();
     void sendJumperStatus();
     void sendFirmwareVersion();
+    void completedTaskControl();
+    void completedTaskControl(int Time);
 
     unsigned char lowByt(unsigned int number);
     unsigned char highByt(unsigned int number);
