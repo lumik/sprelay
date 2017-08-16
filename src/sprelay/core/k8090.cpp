@@ -608,12 +608,11 @@ void K8090::completedTaskControl()
     result = serialPort_->waitForReadyRead(300);
     if (result)
     {completedTaskControl();
-     qDebug()<<"Still in progress, I'm waiting for end of command.";
+     qDebug() << "Still in progress, I'm waiting for end of command.";
     }else{
-     qDebug()<<"Done. I'm ready for other commands";
+     qDebug() << "Done. I'm ready for other commands";
      return;
     }
-
 }
 /*!
   *\fn K8090::completedTaskControl()
@@ -624,9 +623,9 @@ void K8090::completedTaskControl(int Time)  // Version for Timers
     result = serialPort_->waitForReadyRead(300+Time*1000);
     if (result)
     {completedTaskControl();
-     qDebug()<<"Still in progress, I'm waiting for end of command.";
+     qDebug() << "Still in progress, I'm waiting for end of command..";
     }else{
-     qDebug()<<"Done. I'm ready for other commands";
+     qDebug() << "Done. I'm ready for other commands";
      return;
     }
 }
