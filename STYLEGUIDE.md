@@ -36,6 +36,10 @@ This style guide is inspired by the [Google style guide][gStyleGuide].
   generally known and not ambiguous
 * **file** names – all lowercase, can include underscores (`_`) and dashes
   (`-`), prefer underscores
+* **type** names – CamelCase with no underscores, i.e. type names should start
+  with a capital letter and have a capital letter for each new word. It applies
+	to names of all custom types as classes, structs, type aliases, enums, and
+	type template	parameters.
 * **variable** names – all lowercase with underscore between words, a class
   private data members (not methods) should have trailing underscore, struct
   data members are withou trailing underscore
