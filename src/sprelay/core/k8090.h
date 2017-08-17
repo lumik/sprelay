@@ -25,6 +25,8 @@
 
 #include <QObject>
 
+#include "../../../lib/enum_flags-1.0.0/enum_flags.h"
+
 // forward declarations
 class QSerialPort;
 
@@ -64,13 +66,10 @@ enum struct RelayID : unsigned char
     Eight = 1 << 7
 };
 
-inline constexpr RelayID operator|(RelayID a, RelayID b) {
-    return static_cast<RelayID>(static_cast<unsigned char>(a) | static_cast<unsigned char>(b)); }
-inline constexpr RelayID operator&(RelayID a, RelayID b) {
-    return static_cast<RelayID>(static_cast<unsigned char>(a) & static_cast<unsigned char>(b)); }
-inline RelayID operator~(RelayID a) { return static_cast<RelayID>(~static_cast<unsigned char>(a)); }
-inline RelayID& operator|=(RelayID& a, RelayID b) { return a = (a | b); }
-inline RelayID& operator&=(RelayID& a, RelayID b) { return a = (a & b); }
+
+// this redefinition enables bitwise operator usage
+constexpr bool enableBitmaskOperators(RelayID) { return true; }
+
 
 struct ComPortParams
 {
@@ -81,6 +80,7 @@ struct ComPortParams
     quint16 vendorIdentifier;
 };
 }  // namespace K8090Traits
+
 
 class K8090 : public QObject
 {
