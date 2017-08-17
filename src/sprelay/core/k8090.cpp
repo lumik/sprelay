@@ -37,7 +37,7 @@
     \namespace K8090Traits
     \brief Contains K8090 traits
 */
-using namespace K8090Traits;
+using namespace K8090Traits;  // NOLINT(build/namespaces)
 
 // static constants
 const quint16 K8090::productID = 32912;
@@ -134,7 +134,7 @@ K8090::K8090(QObject *parent) :
 QList<ComPortParams> K8090::availablePorts()
 {
     QList<ComPortParams> comPortParamsList;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
         ComPortParams comPortParams;
         comPortParams.portName = info.portName();
         comPortParams.description = info.description();
@@ -149,7 +149,7 @@ QList<ComPortParams> K8090::availablePorts()
 void K8090::connectK8090()
 {
     bool cardFound = false;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
         if (info.productIdentifier() == productID &&
                 info.vendorIdentifier() == vendorID) {
             cardFound = true;
@@ -212,7 +212,7 @@ void K8090::sendCommand()
  */
 void K8090::sendSwitchRelayOnCommand()
 {
-    int n = 7; // Number of command bytes.
+    int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
@@ -230,7 +230,7 @@ void K8090::sendSwitchRelayOnCommand()
  */
 void K8090::sendSwitchRelayOffCommand()
 {
-    int n = 7; // Number of command bytes.
+    int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
@@ -323,7 +323,7 @@ unsigned char K8090::checkSum(const unsigned char *bMsg, int n)
     iSum = (unsigned int) (~byteSum) + 1u;
     byteSum = (unsigned char) iSum % 256;
 
-   return byteSum;
+    return byteSum;
 }
 
 /*!

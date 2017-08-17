@@ -1,11 +1,6 @@
-QT += testlib
-QT -= gui
+TEMPLATE = subdirs
 
-TARGET = sprelayunittests
-TEMPLATE = app
+CONFIG += ordered
 
-COFIG += console
-COFIG -= app_bundle
-
-include(../sprelay.pri)
-include(core/core.pri)
+SUBDIRS = \
+    sprelay
