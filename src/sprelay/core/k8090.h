@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_K8090_H_
-#define SPRELAY_CORE_K8090_H_
+#ifndef SRC_SPRELAY_CORE_K8090_H_
+#define SRC_SPRELAY_CORE_K8090_H_
 
 #include <QObject>
 
@@ -90,12 +90,14 @@ public:  // NOLINT(whitespace/indent)
     virtual ~K8090();
 
     static QList<K8090Traits::ComPortParams> availablePorts();
+    void resetStack();
 
 
 signals:  // NOLINT(whitespace/indent)
 
 public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
+    void add(K8090Traits::RelayID addition);
 
 protected slots:  // NOLINT(whitespace/indent)
     void onSendToSerial(const unsigned char *buffer, int n);
@@ -153,6 +155,7 @@ private:  // NOLINT(whitespace/indent)
     static unsigned char bEtxByte;
     static QString strCommands[static_cast<int>(K8090Traits::Command::None)];
 
+    unsigned char Stack = static_cast<unsigned char>(K8090Traits::RelayID::None);
     static const QString stxByte;
     static const QString etxByte;
     static const QString switchRelayOnCmd;
@@ -171,4 +174,4 @@ private:  // NOLINT(whitespace/indent)
     static const QString firmwareVersionCmd;
 };
 
-#endif  // SPRELAY_CORE_K8090_H_
+#endif  // SRC_SPRELAY_CORE_K8090_H_
