@@ -139,6 +139,12 @@ QList<ComPortParams> K8090::availablePorts()
     }
     return comPortParamsList;
 }
+
+void K8090::resetStack()
+{
+    Stack = static_cast<unsigned char>(K8090Traits::RelayID::None);
+}
+
 /*!
  * \fn K8090::connectK8090()
  * \brief Function controll if is connected some device and also if is used right device. Then are set port characteristics (port name,
@@ -202,6 +208,11 @@ sendCommand(controlarr, 11);
 completedTaskControl();
 sendCommand(controlarr1, 12);
 sendCommand(70);
+}
+
+void K8090::add(K8090Traits::RelayID addition)
+{
+    Stack |= static_cast<unsigned char>(addition);
 }
 
 /*!
