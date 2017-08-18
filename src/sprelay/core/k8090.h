@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SRC_SPRELAY_CORE_K8090_H_
-#define SRC_SPRELAY_CORE_K8090_H_
+#ifndef SPRELAY_CORE_K8090_H_  // NO LINTAGE
+#define SPRELAY_CORE_K8090_H_  // NO LINTAGE
 
 #include <QObject>
 
@@ -90,14 +90,14 @@ public:  // NOLINT(whitespace/indent)
     virtual ~K8090();
 
     static QList<K8090Traits::ComPortParams> availablePorts();
-    void resetStack();
+    void resetusedrelays(int param);
 
 
 signals:  // NOLINT(whitespace/indent)
 
 public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
-    void add(K8090Traits::RelayID addition);
+    void add(K8090Traits::RelayID addition, int param);
 
 protected slots:  // NOLINT(whitespace/indent)
     void onSendToSerial(const unsigned char *buffer, int n);
@@ -106,12 +106,11 @@ private slots:  // NOLINT(whitespace/indent)
     void onReadyData();
 
 private:  // NOLINT(whitespace/indent)
-    unsigned char choose(bool Relays[8]);
     void sendCommand(int param);
-    void sendCommand(bool Relays[8], int param);
-    void sendCommand(bool Relays[8], int param, unsigned int Time);
-    void sendCommand(bool Relays[8], int param,  bool option, bool notused);
-    void sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int param, bool notused);
+    void sendCommand(unsigned char used_relays_, int param);
+    void sendCommand(unsigned char used_relays_, int param, unsigned int Time);
+    void sendCommand(unsigned char used_relays_, int param,  bool option, bool notused);
+    void sendCommand(unsigned char used_relays_1_, unsigned char used_relays_2_, unsigned char used_relays_3_, int param, bool notused);  //NO LINTAGE
 
     void sendSwitchRelayOnCommand(unsigned char chosen);
     void sendSwitchRelayOffCommand(unsigned char chosen);
@@ -155,7 +154,9 @@ private:  // NOLINT(whitespace/indent)
     static unsigned char bEtxByte;
     static QString strCommands[static_cast<int>(K8090Traits::Command::None)];
 
-    unsigned char Stack = static_cast<unsigned char>(K8090Traits::RelayID::None);
+    unsigned char used_Relays_ = static_cast<unsigned char>(K8090Traits::RelayID::None);
+    unsigned char used_Relays_2_ = static_cast<unsigned char>(K8090Traits::RelayID::None);
+    unsigned char used_Relays_3_ = static_cast<unsigned char>(K8090Traits::RelayID::None);
     static const QString stxByte;
     static const QString etxByte;
     static const QString switchRelayOnCmd;
@@ -174,4 +175,4 @@ private:  // NOLINT(whitespace/indent)
     static const QString firmwareVersionCmd;
 };
 
-#endif  // SRC_SPRELAY_CORE_K8090_H_
+#endif  // NO LINTAGE SPRELAY_CORE_K8090_H_
