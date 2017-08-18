@@ -140,9 +140,15 @@ QList<ComPortParams> K8090::availablePorts()
     return comPortParamsList;
 }
 
-void K8090::resetStack()
+void K8090::resetusedrelays(int param)
 {
-    Stack = static_cast<unsigned char>(K8090Traits::RelayID::None);
+    switch (param)
+     {
+     case 1: used_Relays_ = static_cast<unsigned char>(K8090Traits::RelayID::None); break;
+     case 2: used_Relays_2_ = static_cast<unsigned char>(K8090Traits::RelayID::None); break;
+     case 3: used_Relays_3_ = static_cast<unsigned char>(K8090Traits::RelayID::None); break;
+     default: qDebug() << "Wrong choice";
+     }
 }
 
 /*!
@@ -176,43 +182,17 @@ void K8090::connectK8090()
     serialPort_->setParity(QSerialPort::NoParity);
     serialPort_->setStopBits(QSerialPort::OneStop);
     serialPort_->setFlowControl(QSerialPort::NoFlowControl);
-bool controlarr[8];
-bool controlarr1[8];
-bool controlarr2[8];
-controlarr[0] = true;
-controlarr[1] = false;
-controlarr[2] = true;
-controlarr[3] = false;
-controlarr[4] = false;
-controlarr[5] = false;
-controlarr[6] = false;
-controlarr[7] = false;
-controlarr1[0] = false;
-controlarr1[1] = false;
-controlarr1[2] = true;
-controlarr1[3] = false;
-controlarr1[4] = false;
-controlarr1[5] = false;
-controlarr1[6] = false;
-controlarr1[7] = false;
-controlarr2[0] = false;
-controlarr2[1] = false;
-controlarr2[2] = false;
-controlarr2[3] = false;
-controlarr2[4] = false;
-controlarr2[5] = false;
-controlarr2[6] = false;
-controlarr2[7] = true;
-
-sendCommand(controlarr, 11);
-completedTaskControl();
-sendCommand(controlarr1, 12);
-sendCommand(70);
 }
 
-void K8090::add(K8090Traits::RelayID addition)
+void K8090::add(K8090Traits::RelayID addition, int param)
 {
-    Stack |= static_cast<unsigned char>(addition);
+    switch (param)
+     {
+     case 1: used_Relays_ |= static_cast<unsigned char>(addition); break;
+     case 2: used_Relays_2_ |= static_cast<unsigned char>(addition); break;
+     case 3: used_Relays_3_ |= static_cast<unsigned char>(addition); break;
+     default: qDebug() << "Wrong choice";
+     }
 }
 
 /*!
@@ -245,26 +225,7 @@ void K8090::onReadyData()
 
     lastCommand = Command::None;
 }
-/*!
- * \fn K8090::choose
- * \param Relays[8]
- * \brief Function will make from boolean array corresponding byte.
- * \return
- */
-unsigned char K8090::choose(bool Relays[8])
-{
-    int i;
-    unsigned char diff;
-    unsigned char bitarr;
-    bitarr = 0;
-    for (i = 0; i < 8; i++)
-     {if (Relays[i] == true)
-      {diff = 1 << i;
-      bitarr = (bitarr|diff);
-      }
-     }
-    return bitarr;
-}
+
 
 /*!
   *\fn K8090::sendCommand(int param)
@@ -290,15 +251,13 @@ void K8090::sendCommand(int param)
   *\brief Function will send according to parameter corresponding command. Function is overloaded.
   * Function is using method choose, which makes from boolen array byte.
 */
-void K8090::sendCommand(bool Relays[8], int param)
+void K8090::sendCommand(unsigned char used_relays_, int param)
 {
-    unsigned char chosen;
-    chosen = choose(Relays);
     switch (param)
      {
-      case 11: sendSwitchRelayOnCommand(chosen); break;
-      case 12: sendSwitchRelayOffCommand(chosen); break;
-      case 14: sendtoggleRelayCommand(chosen); break;
+      case 11: sendSwitchRelayOnCommand(used_relays_); break;
+      case 12: sendSwitchRelayOffCommand(used_relays_); break;
+      case 14: sendtoggleRelayCommand(used_relays_); break;
       default: qDebug() << "Wrong choice";
       }
 }
@@ -310,22 +269,20 @@ void K8090::sendCommand(bool Relays[8], int param)
   *\brief Function will send according to parameter corresponding command. Function is overloaded.
   * Function is using method choose, which makes from boolen array byte. Parameter Time is 2 byte integer, which is decompposed into two separated bytes.
   */
-void K8090::sendCommand(bool Relays[8], int param, unsigned int Time)
+void K8090::sendCommand(unsigned char used_relays_, int param, unsigned int Time)
 {
-    unsigned char chosen;
-    chosen = choose(Relays);
     switch (param)
      {
-     case 41: sendStartRelayTimer(chosen, Time); break;
-     case 42: sendSetRelayTimer(chosen, Time); break;
+     case 41: sendStartRelayTimer(used_relays_, Time); break;
+     case 42: sendSetRelayTimer(used_relays_, Time); break;
      default: qDebug() << "Wrong choice";
      }
 }
-void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused)  // Query timer delay. 1 will be used for
+void K8090::sendCommand(unsigned char used_relays_, int param, bool option, bool notused)  // NO LINTAGE
+// Query timer delay. 1 will be used for
 {
-    if (param == 44)                                                            // Total delay Time and 2 for remaining
-     {unsigned char chosen;                                                     // delay time
-     chosen = choose(Relays);
+    if (param == 44)  // Total delay Time and 2 for remaining
+     {                // delay time
      unsigned char choise;
      if (option)
      {
@@ -333,7 +290,7 @@ void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused)  /
      }else{
           choise =  1 << 1;
      }
-    sendQueryTimerDelay(chosen, choise);
+    sendQueryTimerDelay(used_relays_, choise);
     }
 }
 /*!
@@ -343,19 +300,14 @@ void K8090::sendCommand(bool Relays[8], int param, bool option, bool notused)  /
   *\param bool option
   *\param bool notused
   *\brief Function will send according to parameter corresponding command. Function is overloaded.
-  * Function is using method choose, which makes from boolen array byte. Parameter option represent option between total delay time (TRUE) and remaining delay time (FALSE)
+  * Function is using method choose, which makes from boolen array byte. Parameter option represent
+  * option between total delay time (TRUE) and remaining delay time (FALSE)
   */
-void K8090::sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int param, bool notused)
+void K8090::sendCommand(unsigned char used_relays_1_, unsigned char used_relays_2_, unsigned char used_relays_3_, int param, bool notused)  // NO LINTAGE
 {
     if (param == 21)                                                           // Total delay Time and 2 for remaining
      {
-      unsigned char chosen1;                                                    // delay time
-      unsigned char chosen2;
-      unsigned char chosen3;
-      chosen1 = choose(Relays1);
-      chosen2 = choose(Relays2);
-      chosen3 = choose(Relays3);
-      sendsetButtonMode(chosen1, chosen2, chosen3);
+      sendsetButtonMode(used_relays_1_, used_relays_2_, used_relays_3_);
      }else{
         qDebug() << "Wrong choise.";
      }
