@@ -21,13 +21,11 @@
 ****************************************************************************/
 
 #include "k8090.h"
-
 #include <QSerialPort>
 #include <QSerialPortInfo>
-
 #include <QStringBuilder>
-
 #include <QDebug>
+#include <algorithm>
 
 /*!
     \file k8090.h
@@ -197,11 +195,10 @@ controlarr2[4] = false;
 controlarr2[5] = false;
 controlarr2[6] = false;
 controlarr2[7] = true;
-
+sendCommand(controlarr, 41, 15);
+sendCommand(controlarr, 12);
 sendCommand(controlarr, 11);
-completedTaskControl();
-sendCommand(controlarr1, 12);
-sendCommand(70);
+startWork();
 }
 
 /*!
@@ -359,6 +356,22 @@ void K8090::sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int p
   *\brief Function will send according to parameter corresponding command. Function is overloaded.
   * Function is using method choose, which makes from boolen array byte. Relays1 correspond to relays, which will be set on momentary mode, Relays2 correspond to relays, which will be set on toggle mode, Relays3 correspond to relays, which will be set on timed mode,
   */
+void K8090::startWork()
+{
+  while (list_of_commands.isEmpty() == false)
+  {
+      std::sort(list_of_commands.begin(), list_of_commands.end());
+      unsigned char * cmd = list_of_commands[0].cmd_;
+      onSendToSerial(cmd, 7);
+      if (list_of_commands[0].info_ == "Start Timer command")
+      {
+      completedTaskControl(list_of_commands[0].time_);
+      }else{
+      completedTaskControl();
+      }
+      list_of_commands.removeFirst();
+  }
+}
 
 /*!
  * \fn K8090::sendSwitchRelayOnCommand
@@ -368,6 +381,7 @@ void K8090::sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int p
 void K8090::sendSwitchRelayOnCommand(unsigned char chosen)
 {
     int n = 7;  // Number of command bytes.
+    members_of_list Relay_on_command;
     unsigned char * cmd = new unsigned char[n];
     int ii;
     for (ii = 0; ii < 2; ++ii)
@@ -376,9 +390,11 @@ void K8090::sendSwitchRelayOnCommand(unsigned char chosen)
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SwitchRelayOn;
+    Relay_on_command.cmd_ = cmd;
+    Relay_on_command.info_ = "RelayOn command";
+    Relay_on_command.priority_ = 1;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
-    completedTaskControl();
+    list_of_commands.append(Relay_on_command);
 }
 
 /*!
@@ -388,6 +404,7 @@ void K8090::sendSwitchRelayOnCommand(unsigned char chosen)
  */
 void K8090::sendSwitchRelayOffCommand(unsigned char chosen)
 {
+    members_of_list Relay_off_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -397,9 +414,11 @@ void K8090::sendSwitchRelayOffCommand(unsigned char chosen)
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SwitchRelayOff;
+    Relay_off_command.cmd_ = cmd;
+    Relay_off_command.info_ = "Relay off command";
+    Relay_off_command.priority_ = 2;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
-    completedTaskControl();
+    list_of_commands.append(Relay_off_command);
 }
 /*!
  * \fn K8090::sendtoggleRelayCommand
@@ -408,6 +427,7 @@ void K8090::sendSwitchRelayOffCommand(unsigned char chosen)
  */
 void K8090::sendtoggleRelayCommand(unsigned char chosen)
 {
+    members_of_list Toggle_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -417,9 +437,11 @@ void K8090::sendtoggleRelayCommand(unsigned char chosen)
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::ToggleRelay;
-    qDebug() << byteToHex(cmd, n) << " Relay toggled";
-    onSendToSerial(cmd, n);
-    completedTaskControl();
+    Toggle_command.cmd_ = cmd;
+    Toggle_command.info_ = "Toggle command";
+    Toggle_command.priority_ = 1;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Toggle_command);
 }
 /*!
  * \fn sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsigned char choose3)
@@ -430,6 +452,7 @@ void K8090::sendtoggleRelayCommand(unsigned char chosen)
  */
 void K8090::sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsigned char choose3)
 {
+    members_of_list Set_Button_Mode_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -441,13 +464,17 @@ void K8090::sendsetButtonMode(unsigned char choose1, unsigned char choose2, unsi
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SetButtonMode;
-    qDebug() << byteToHex(cmd, n) << " Set button mode";
-    onSendToSerial(cmd, n);
+    Set_Button_Mode_command.cmd_ = cmd;
+    Set_Button_Mode_command.info_ = "RelayOn command";
+    Set_Button_Mode_command.priority_ = 5;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Set_Button_Mode_command);
     completedTaskControl();
 }
 
 void K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)  // Didn't tested for more than few seconds.
 {
+    members_of_list Start_Timer_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -459,9 +486,12 @@ void K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)  // Did
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::StartRelayTimer;
-    qDebug() << byteToHex(cmd, n) << " Timer started " << Time;
-    onSendToSerial(cmd, n);
-    completedTaskControl(Time);
+    Start_Timer_command.cmd_ = cmd;
+    Start_Timer_command.info_ = "Start Timer command";
+    Start_Timer_command.priority_ = 3;
+    Start_Timer_command.time_ = Time;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Start_Timer_command);
 }
 /*!
   *\fn K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)
@@ -470,6 +500,7 @@ void K8090::sendStartRelayTimer(unsigned char chosen, unsigned int Time)  // Did
   */
 void K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)  // don't know, if it works.
 {
+    members_of_list Set_Timer_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -481,8 +512,11 @@ void K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)  // don't
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::SetRelayTimerDelay;
-    qDebug() << byteToHex(cmd, n) << " Timer set on " << Time;
-    onSendToSerial(cmd, n);
+    Set_Timer_command.cmd_ = cmd;
+    Set_Timer_command.info_ = "Set Timer command";
+    Set_Timer_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Set_Timer_command);
     completedTaskControl();
 }
 /*!
@@ -492,6 +526,7 @@ void K8090::sendSetRelayTimer(unsigned char chosen, unsigned int Time)  // don't
   */
 void K8090::sendQueryRelayStatus()  // don't know, if it works.
 {
+    members_of_list Query_Relay_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -500,8 +535,11 @@ void K8090::sendQueryRelayStatus()  // don't know, if it works.
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryRelayStatus;
-    qDebug() << byteToHex(cmd, n) << " request for relay status";
-    onSendToSerial(cmd, n);
+    Query_Relay_command.cmd_ = cmd;
+    Query_Relay_command.info_ = "Query Relay command";
+    Query_Relay_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Query_Relay_command);
     completedTaskControl();
 }
 /*!
@@ -510,6 +548,7 @@ void K8090::sendQueryRelayStatus()  // don't know, if it works.
   */
 void K8090::sendQueryTimerDelay(unsigned char choose, unsigned char option)
 {
+    members_of_list Query_Timer_Delay_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -520,8 +559,11 @@ void K8090::sendQueryTimerDelay(unsigned char choose, unsigned char option)
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryTimerDelay;
-    qDebug() << byteToHex(cmd, n) << " request for first relay timer status";
-    onSendToSerial(cmd, n);
+    Query_Timer_Delay_command.cmd_ = cmd;
+    Query_Timer_Delay_command.info_ = "Query Relay command";
+    Query_Timer_Delay_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Query_Timer_Delay_command);
     completedTaskControl();
 }
 /*!
@@ -530,6 +572,7 @@ void K8090::sendQueryTimerDelay(unsigned char choose, unsigned char option)
   */
 void K8090::sendQueryButtonMode()
 {
+    members_of_list Query_Button_Mode_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -538,8 +581,11 @@ void K8090::sendQueryButtonMode()
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryButtonMode;
-    qDebug() << byteToHex(cmd, n) << "zažiadali sme o status časovača 1";
-    onSendToSerial(cmd, n);
+    Query_Button_Mode_command.cmd_ = cmd;
+    Query_Button_Mode_command.info_ = "Query Relay command";
+    Query_Button_Mode_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Query_Button_Mode_command);
     completedTaskControl();
 }
 /*!
@@ -548,6 +594,7 @@ void K8090::sendQueryButtonMode()
   */
 void K8090::sendRessetfactorydefaults()
 {
+    members_of_list Reset_Factory_Defaults_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -556,8 +603,11 @@ void K8090::sendRessetfactorydefaults()
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::ResetFactoryDefaults;
-    qDebug() << byteToHex(cmd, n) << "Zresetované";
-    onSendToSerial(cmd, n);
+    Reset_Factory_Defaults_command.cmd_ = cmd;
+    Reset_Factory_Defaults_command.info_ = "Query Relay command";
+    Reset_Factory_Defaults_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Reset_Factory_Defaults_command);
     completedTaskControl();
 }
 /*!
@@ -566,6 +616,7 @@ void K8090::sendRessetfactorydefaults()
   */
 void K8090::sendJumperStatus()
 {
+    members_of_list Jumpers_Status_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -574,8 +625,11 @@ void K8090::sendJumperStatus()
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::JumperStatus;
-    qDebug() << byteToHex(cmd, n) << "niečo robí";
-    onSendToSerial(cmd, n);
+    Jumpers_Status_command.cmd_ = cmd;
+    Jumpers_Status_command.info_ = "Query Relay command";
+    Jumpers_Status_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Jumpers_Status_command);
     completedTaskControl();
 }
 /*!
@@ -585,6 +639,7 @@ relays but button events are still sent to the computer.
   */
 void K8090::sendFirmwareVersion()
 {
+    members_of_list Firmeware_Version_command;
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -593,8 +648,11 @@ void K8090::sendFirmwareVersion()
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = bEtxByte;
     lastCommand = Command::FirmwareVersion;
-    qDebug() << byteToHex(cmd, n) << "v hexadecimálnej sústave vypíše parametre dosky";
-    onSendToSerial(cmd, n);
+    Firmeware_Version_command.cmd_ = cmd;
+    Firmeware_Version_command.info_ = "Query Relay command";
+    Firmeware_Version_command.priority_ = 4;
+    qDebug() << byteToHex(cmd, n);
+    list_of_commands.append(Firmeware_Version_command);
     completedTaskControl();
 }
 /*!
