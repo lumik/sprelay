@@ -110,6 +110,7 @@ private:  // NOLINT(whitespace/indent)
     void sendCommand(bool Relays[8], int param, unsigned int Time);
     void sendCommand(bool Relays[8], int param,  bool option, bool notused);
     void sendCommand(bool Relays1[8], bool Relays2[8], bool Relays3[8], int param, bool notused);
+    void startWork();
 
     void sendSwitchRelayOnCommand(unsigned char chosen);
     void sendSwitchRelayOffCommand(unsigned char chosen);
@@ -144,6 +145,18 @@ private:  // NOLINT(whitespace/indent)
     static bool validateResponse(const unsigned char *bMsg, int n, K8090Traits::Command cmd);
 
     static void fillCommandsArrays();
+    struct members_of_list  // variables of this type
+    {                       // will be used in list. According to priority, list will be sorted.
+        QString info_;
+        unsigned char  * cmd_;
+        int priority_;
+        int time_ = 0;
+        bool operator<(const members_of_list& a) const
+        {
+            return priority_< a.priority_;
+        }
+    };
+    QList <members_of_list> list_of_commands;
 
     bool commandBuffer[static_cast<int>(K8090Traits::Command::None)];
 
@@ -170,5 +183,4 @@ private:  // NOLINT(whitespace/indent)
     static const QString jumperStatusCmd;
     static const QString firmwareVersionCmd;
 };
-
 #endif  // SPRELAY_CORE_K8090_H_
