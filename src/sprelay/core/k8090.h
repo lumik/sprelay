@@ -24,6 +24,7 @@
 #define SPRELAY_CORE_K8090_H_
 
 #include <QObject>
+#include <bits/stdc++.h>  // For priority queue.
 
 // forward declarations
 class QSerialPort;
@@ -156,7 +157,7 @@ private:  // NOLINT(whitespace/indent)
             return priority_< a.priority_;
         }
     };
-    QList <members_of_list> list_of_commands;
+    std::priority_queue< members_of_list, std::vector<members_of_list>> storedcommands_;
 
     bool commandBuffer[static_cast<int>(K8090Traits::Command::None)];
 
