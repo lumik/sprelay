@@ -656,9 +656,10 @@ void K8090::completedTaskControl()
 {
     bool result;
     result = serialPort_->waitForReadyRead(300);
+    connect(serialPort_, &QSerialPort::readyRead, this, &K8090::onReadyData);
     if (result)
-    {completedTaskControl();
-     qDebug() << "Still in progress, I'm waiting for end of command.";
+    {qDebug() << "Still in progress, I'm waiting for end of command.";
+     completedTaskControl();
     }else{
      qDebug() << "Done. I'm ready for other commands";
      return;
