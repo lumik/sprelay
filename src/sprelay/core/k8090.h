@@ -25,7 +25,7 @@
 
 #include <QObject>
 
-#include "../../../lib/enum_flags-1.0.0/enum_flags.h"
+#include "enum_flags-1.0.0/enum_flags.h"
 
 // forward declarations
 class QSerialPort;
