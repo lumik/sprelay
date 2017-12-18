@@ -45,7 +45,10 @@ MainWindow::MainWindow()
     qDebug() << "Ahoj";
 
     k8090 = new K8090(this);
-
+    connect(k8090, SIGNAL(relayStatus(unsigned char ,unsigned char ,unsigned char)), k8090, SLOT(refreshRelayStates(unsigned char,unsigned char,unsigned char )));
+    connect(k8090, SIGNAL(buttonMode(unsigned char,unsigned char,unsigned char)), k8090, SLOT(refreshButtonMode(unsigned char,unsigned char,unsigned char)));
+    connect(k8090, SIGNAL(buttonStatus(unsigned char,unsigned char,unsigned char)), k8090, SLOT(onButtonStatus(unsigned char,unsigned char,unsigned char)));
+    connect(k8090, SIGNAL(timerDelay(unsigned char,unsigned char,unsigned char)), k8090, SLOT(onTimerDelay(unsigned char,unsigned char,unsigned char)));
     refreshPortsButton = new QPushButton(tr("Refresh Ports"));
     portsLabel = new QLabel(tr("Select port:"));
     portsComboBox = new QComboBox();
