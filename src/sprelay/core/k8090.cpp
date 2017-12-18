@@ -25,7 +25,7 @@
 #include <QSerialPortInfo>
 #include <QStringBuilder>
 #include <QDebug>
-#include <algorithm>
+
 
 /*!
     \file k8090.h
@@ -181,8 +181,7 @@ void K8090::connectK8090()
     serialPort_->setParity(QSerialPort::NoParity);
     serialPort_->setStopBits(QSerialPort::OneStop);
     serialPort_->setFlowControl(QSerialPort::NoFlowControl);
-    queryRelayStatus();
-    queryButtonModes();
+    queryTotalTimerDelay(Relays::Eight);
 }
 
 void K8090::connection()
@@ -276,7 +275,7 @@ void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay)
     timer_->start(500);
 }
 
-void K8090::setRelayTimerDelay(K8090Traits::Relays relays, quint16 delay)
+void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
@@ -321,6 +320,7 @@ void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
+    wanted_total_timer_delay_ = false;
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::QueryTimerDelay)][ii];
@@ -330,7 +330,16 @@ void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryTimerDelay;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure query_Remaining_timer_delay_cmd;
+        query_Remaining_timer_delay_cmd.cmd = cmd;
+        query_Remaining_timer_delay_cmd.priority = 1;
+        stored_command_priority_queue.push(query_Remaining_timer_delay_cmd);
+    }
     timer_->start(500);
 }
 
@@ -338,6 +347,7 @@ void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
+    wanted_total_timer_delay_ = true;
     int ii;
     for (ii = 0; ii < 2; ++ii)
         cmd[ii] = bCommands[static_cast<int>(Command::QueryTimerDelay)][ii];
@@ -347,7 +357,16 @@ void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
     cmd[6] = bEtxByte;
     lastCommand = Command::QueryTimerDelay;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure query_Remaining_timer_delay_cmd;
+        query_Remaining_timer_delay_cmd.cmd = cmd;
+        query_Remaining_timer_delay_cmd.priority = 1;
+        stored_command_priority_queue.push(query_Remaining_timer_delay_cmd);
+    }
     timer_->start(500);
 }
 
@@ -424,11 +443,59 @@ void K8090::refreshRelayStates(unsigned char previous, unsigned char current, un
   relay_states_ = (relay_states_|((previous^current)&current))^((previous^current)&previous);
 }
 
-void K8090::refreshButtonMode(unsigned char momentary, unsigned char toggle, unsigned char timed)
+void K8090::refreshButtonMode(const unsigned char momentary, const unsigned char toggle, const unsigned char timed)
 {
     momentary_button_mode_ = (momentary_button_mode_ | momentary) & momentary;
     toggle_button_mode_ = (toggle_button_mode_ | toggle) & toggle;
     timed_button_mode_ = (timed_button_mode_ | timed) & timed;
+}
+
+void K8090::onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed, unsigned char hasBeenReleased)
+{
+    unsigned char testing_number = 0;
+    int i = 0;
+    for (i = 0; i < 8; i++)
+    {
+        testing_number = 1 << i;
+        if (!((isPressed & testing_number) == 0))
+        {
+            qDebug() << "Button " << i+1 << " is pressed.";
+        }
+        if (!((hasBeenPressed & testing_number) == 0))
+        {
+            qDebug() << "Button " << i+1 << " has been pressed.";
+        }
+        if (!((hasBeenReleased & testing_number) == 0))
+        {
+            qDebug() << "Button " << i+1 << " has been released.";
+        }
+    }
+}
+
+void K8090::onTimerDelay(unsigned char Relays, unsigned char highbyt, unsigned char lowbyt)
+{
+    unsigned char testing_number = 0;
+    int i = 0;
+    qDebug() << "Relays ";
+    for (i = 0; i < 8; i++)
+    {
+        testing_number = 1 << i;
+        if (!((Relays & testing_number) == 0))
+        {
+            qDebug() << i+1 << ", ";
+        }
+    }
+        qDebug() << "has ";
+        if (wanted_total_timer_delay_)
+        {
+            qDebug() << "total timer delay is ";
+        }else{
+            qDebug() << "remaining timer delay is ";
+        }
+        unsigned int time = 0;
+        unsigned int highbytint = highbyt << 7;
+        time = highbytint|(time|lowbyt);
+        qDebug() << time;
 }
 
 /*!
@@ -439,7 +506,7 @@ void K8090::refreshButtonMode(unsigned char momentary, unsigned char toggle, uns
  */
 void K8090::onSendToSerial(const unsigned char *buffer, int n)
 {
-    qDebug() << byteToHex(buffer, n);
+    qDebug() <<"Sended to serial port " << byteToHex(buffer, n);
     if (!serialPort_->isOpen())
         serialPort_->open(QIODevice::ReadWrite);
     serialPort_->write(reinterpret_cast<char*>(const_cast<unsigned char*>(buffer)), n);
@@ -467,8 +534,9 @@ void K8090::onReadyData()
             qDebug() << static_cast<int>(relay_states_);
             if (!stored_command_priority_queue.empty())
             {stored_command_structure cmd1 = stored_command_priority_queue.top();
-             onSendToSerial(cmd1.cmd, 7);
              stored_command_priority_queue.pop();
+             qDebug() << "removed item." << stored_command_priority_queue.size();
+             onSendToSerial(cmd1.cmd, 7);
             }else{
              command_finished_ = true;
             }
@@ -480,9 +548,21 @@ void K8090::onReadyData()
             qDebug() << static_cast<int>(momentary_button_mode_);
             qDebug() << static_cast<int>(toggle_button_mode_);
             qDebug() << static_cast<int>(timed_button_mode_);
-            if (stored_command_priority_queue.empty())
+            if (!stored_command_priority_queue.empty())
             {stored_command_structure cmd2 = stored_command_priority_queue.top();
-                onSendToSerial(cmd2.cmd, 7); stored_command_priority_queue.pop();
+                stored_command_priority_queue.pop();
+                onSendToSerial(cmd2.cmd, 7);
+            }else{
+                command_finished_ = true;
+            }
+            break;
+        case 0x50: emit buttonStatus(buffer[2], buffer[3], buffer[4]);
+            break;
+        case 0x44: emit timerDelay(buffer[2], buffer[3], buffer[4]);
+            if (!stored_command_priority_queue.empty())
+            {stored_command_structure cmd2 = stored_command_priority_queue.top();
+                stored_command_priority_queue.pop();
+                onSendToSerial(cmd2.cmd, 7);
             }else{
                 command_finished_ = true;
             }
