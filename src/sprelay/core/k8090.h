@@ -98,7 +98,7 @@ public:  // NOLINT(whitespace/indent)
 signals:  // NOLINT(whitespace/indent)
         void relayStatus(unsigned char previous, unsigned char current, unsigned char timed);
         void buttonStatus(unsigned char state, unsigned char pressed, unsigned char released);
-        void timerDelay(unsigned char relay, int delay);
+        void timerDelay(unsigned char Relays,  unsigned char highbyt,  unsigned char lowbyt);
         void buttonMode(unsigned char momentary, unsigned char toggle, unsigned char timed);
         void jumperStatus(bool on);
         void firmwareVersion(int year, int week);
@@ -113,7 +113,7 @@ public slots:  // NOLINT(whitespace/indent)
     void toggleRelay(K8090Traits::Relays relays);
     void setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed);
     void startRelayTimer(K8090Traits::Relays relays, unsigned int delay);
-    void setRelayTimerDelay(K8090Traits::Relays relays, quint16 delay);
+    void setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay);
     void queryRelayStatus();
     void queryRemainingTimerDelay(K8090Traits::Relays relays);
     void queryTotalTimerDelay(K8090Traits::Relays relays);
@@ -121,8 +121,10 @@ public slots:  // NOLINT(whitespace/indent)
     void resetFactoryDefauts();
     void queryJumperStatus();
     void queryFirmwareVersion();
-    void refreshRelayStates(unsigned char previous, unsigned char current, unsigned char timed);
-    void refreshButtonMode(unsigned char momentary, unsigned char toggle, unsigned char timed);
+    void refreshRelayStates(const unsigned char previous, const unsigned char current, const unsigned char timed);
+    void refreshButtonMode(const unsigned char momentary, const unsigned char toggle, const unsigned char timed);
+    void onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed, unsigned char hasBeenReleased);
+    void onTimerDelay(unsigned char Relays,  unsigned char highbyt,  unsigned char lowbyt);
 
 
 protected slots:  // NOLINT(whitespace/indent)
@@ -159,6 +161,7 @@ private:  // NOLINT(whitespace/indent)
     unsigned char toggle_button_mode_ = 0;
     unsigned char timed_button_mode_ = 0;
     bool command_finished_ = true;
+    bool wanted_total_timer_delay_ = true;
 
     QTimer *timer_ = new QTimer;
     int number_of_failed_attemps_for_connection_ = 0;
