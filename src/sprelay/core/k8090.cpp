@@ -139,6 +139,9 @@ QList<ComPortParams> K8090::availablePorts()
     }
     return comPortParamsList;
 }
+/*!
+ * \brief K8090::onFailedAttemptForConnection
+ */
 void K8090::onFailedAttemptForConnection()
 {
     number_of_failed_attemps_for_connection_++;
@@ -151,12 +154,11 @@ void K8090::onFailedAttemptForConnection()
     }
 }
 /*!
- * \fn K8090::connectK8090()
- * \brief Function controll if is connected some device and also if is used right device. Then are set port characteristics (port name,
- * baud rate, data bits and others).
- *
- *   In this state are also declared 3 boolen arrays and some commands. If button "Connect" is clicked,
- * function will try to find device and than execute commands. If function don't find device, compiler will message "Card not found!!!"
+ * \brief K8090::connectK8090
+ * \brief
+ *  Function controll if is connected some device and also if is used right device. After that are set port characteristics (port name,
+ * baud rate, data bits and others). Then are send Relay State, Button State and Query Timer Delay commands to test connection and also
+ * to initialize private variable related to card status.
  */
 void K8090::connectK8090()
 {
@@ -181,17 +183,42 @@ void K8090::connectK8090()
     serialPort_->setParity(QSerialPort::NoParity);
     serialPort_->setStopBits(QSerialPort::OneStop);
     serialPort_->setFlowControl(QSerialPort::NoFlowControl);
-    queryTotalTimerDelay(Relays::Eight);
+    connection();
 }
-
+/*!
+ * \brief K8090::connection
+ * \brief Function will send queryRelayStatus, queryButtonModes, and queryTotalTimerDelay commands for each relay.
+ */
 void K8090::connection()
 {
+    queryRelayStatus();
+    queryButtonModes();
+    queryTotalTimerDelay(Relays::One);
+    queryTotalTimerDelay(Relays::Two);
+    queryTotalTimerDelay(Relays::Three);
+    queryTotalTimerDelay(Relays::Four);
+    queryTotalTimerDelay(Relays::Five);
+    queryTotalTimerDelay(Relays::Six);
+    queryTotalTimerDelay(Relays::Seven);
+    queryTotalTimerDelay(Relays::Eight);
 }
+/*!
+ * \brief K8090::disconnect
+ */
 void K8090::disconnect()
 {
     qDebug() << "I will disconnect card";
 }
-
+/*!
+ * \brief K8090::switchRelayOn
+ * \param relays
+ * \brief
+ * Function will switch optional relays on. If there is some command pending, function will save byte array to
+ * the priority queue \b (stored_commands_priority_queue).
+ * \note On command card response with event command 50h
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.4
+ * \see stored_commands_priority_queue
+ */
 void K8090::switchRelayOn(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
@@ -204,10 +231,28 @@ void K8090::switchRelayOn(K8090Traits::Relays relays)
     cmd[6] = bEtxByte;
     lastCommand = Command::SwitchRelayOn;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
-    timer_->start(500);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure switch_relay_on_cmd;
+        switch_relay_on_cmd.cmd = cmd;
+        switch_relay_on_cmd.priority = 1;
+        stored_command_priority_queue.push(switch_relay_on_cmd);
+        qDebug() << "new item in list";
+    }
 }
-
+/*!
+ * \brief K8090::switchRelayOff
+ * \param relays
+ * \brief
+ * Function will switch optional relays off. If there is some command pending, function will save byte array to
+ * the priority queue \b (stored_commands_priority_queue).
+ * \note On command card response with event command 50h
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.4
+ * \see stored_commands_priority_queue
+ */
 void K8090::switchRelayOff(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
@@ -220,10 +265,29 @@ void K8090::switchRelayOff(K8090Traits::Relays relays)
     cmd[6] = bEtxByte;
     lastCommand = Command::SwitchRelayOff;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure switch_relay_off_cmd;
+        switch_relay_off_cmd.cmd = cmd;
+        switch_relay_off_cmd.priority = 1;
+        stored_command_priority_queue.push(switch_relay_off_cmd);
+        qDebug() << "New item in list";
+    }
     timer_->start(500);
 }
-
+/*!
+ * \brief K8090::toggleRelay
+ * \param relays
+ * \brief
+ * Function will toggle optional relays. If there is some command pending, function will save byte array to
+ * the priority queue \b (stored_commands_priority_queue).
+ * \note On command card response with event command 50h
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.5
+ * \see stored_commands_priority_queue
+ */
 void K8090::toggleRelay(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
@@ -236,10 +300,36 @@ void K8090::toggleRelay(K8090Traits::Relays relays)
     cmd[6] = bEtxByte;
     lastCommand = Command::ToggleRelay;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure toggle_relay_cmd;
+        toggle_relay_cmd.cmd = cmd;
+        toggle_relay_cmd.priority = 1;
+        stored_command_priority_queue.push(toggle_relay_cmd);
+        qDebug() << "new item in list";
+    }
     timer_->start(500);
 }
-
+/*!
+ * \brief K8090::setButtonMode
+ * \param momentary
+ * \param toggle
+ * \param timed
+ * \brief
+ * Function will set button mode for optional relays. On Relays can be set Momentary, Toggle and Timed mode.
+ *     In \b Momentary mode are relays turned on while is button pressed.
+ *
+ *     In \b Toggle mode are afred using correct button relays Toggled.
+ *
+ *     In \b Timed mode is after using specific button, on specfic relay timer started.
+ * If there is some command pending, byte array is stored in priority queue \b (stored_commands_priority_queue).
+ * \note Card don't response with any packet.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.6
+ * \see stored_commands_priority_queue
+ */
 void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed)
 {
     int n = 7;  // Number of command bytes.
@@ -254,9 +344,31 @@ void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays tog
     cmd[6] = bEtxByte;
     lastCommand = Command::SetButtonMode;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure set_Button_Mode_cmd;
+        set_Button_Mode_cmd.cmd = cmd;
+        set_Button_Mode_cmd.priority = 1;
+        stored_command_priority_queue.push(set_Button_Mode_cmd);
+        qDebug() << "New item in the list.";
+    }
 }
-
+/*!
+ * \brief K8090::startRelayTimer
+ * \param relays
+ * \param delay
+ * \brief
+ * Function will start on specific relay/s timer for optional time. If there is some command pending, byte array
+ * will be stored in priority queue \b (stored_commands_priority_queue). For decomposition of  usingned integer to
+ * two bytes is used \b lowByt and \b highByt.
+ * \note Card response with event command 50h
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.7
+ * \see stored_commands_priority_queue
+ * \see lowByt
+ * \see highByt
+ */
 void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay)
 {
     int n = 7;  // Number of command bytes.
@@ -271,10 +383,32 @@ void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay)
     cmd[6] = bEtxByte;
     lastCommand = Command::StartRelayTimer;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure start_relay_timer_cmd;
+        start_relay_timer_cmd.cmd = cmd;
+        start_relay_timer_cmd.priority = 1;
+        stored_command_priority_queue.push(start_relay_timer_cmd);
+        qDebug() << "new item in list";
+    }
     timer_->start(500);
 }
-
+/*!
+ * \brief K8090::setRelayTimerDelay
+ * \param relays
+ * \param delay
+ * \brief
+ * Function will set on optional relay timer specific time.
+ * For conversion unsigned int to 2 bytes are used methods \b highByt and \b lowByt
+ * \note Card don't response with any packet.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.7
+ * \see stored_commands_priority_queue
+ * \see lowByt
+ * \see highByt
+ */
 void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay)
 {
     int n = 7;  // Number of command bytes.
@@ -289,9 +423,27 @@ void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay)
     cmd[6] = bEtxByte;
     lastCommand = Command::SetRelayTimerDelay;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        onSendToSerial(cmd, n);
+        sendNextCommand();
+    }else{
+        stored_command_structure set_Relay_Timer_Delay_cmd;
+        set_Relay_Timer_Delay_cmd.cmd = cmd;
+        set_Relay_Timer_Delay_cmd.priority = 1;
+        stored_command_priority_queue.push(set_Relay_Timer_Delay_cmd);
+        qDebug() << "New item in the list.";
+    }
 }
-
+/*!
+ * \brief K8090::queryRelayStatus
+ * \brief
+ * Function will send request to card for information about status of relays. If there is somecommand pending,
+ * it will be stored in priority queue. Card should send packet with information about turn on/off relays.
+ * \note Card response with packet 50h.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.8
+ * \see stored_commands_priority_queue
+ */
 void K8090::queryRelayStatus()
 {
     int n = 7;  // Number of command bytes.
@@ -312,10 +464,18 @@ void K8090::queryRelayStatus()
         query_Relay_Status_cmd.cmd = cmd;
         query_Relay_Status_cmd.priority = 1;
         stored_command_priority_queue.push(query_Relay_Status_cmd);
+        qDebug() << "new item in list";
     }
     timer_->start(500);
 }
-
+/*!
+ * \brief K8090::queryRemainingTimerDelay
+ * \param relays
+ * \brief
+ * Function will send request to card about remaining timer delay on specific relay
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.9
+ * \see stored_commands_priority_queue
+ */
 void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
@@ -339,10 +499,20 @@ void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
         query_Remaining_timer_delay_cmd.cmd = cmd;
         query_Remaining_timer_delay_cmd.priority = 1;
         stored_command_priority_queue.push(query_Remaining_timer_delay_cmd);
+        qDebug() << "new item in list";
     }
     timer_->start(500);
 }
 
+/*!
+ * \brief K8090::queryRemainingTimerDelay
+ * \param relays
+ * \brief
+ * Function will send request to card about total timer delay on specific relay
+ * \note card response with packet 44h
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.9
+ * \see stored_commands_priority_queue
+ */
 void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
 {
     int n = 7;  // Number of command bytes.
@@ -362,14 +532,22 @@ void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
         command_finished_ = false;
         onSendToSerial(cmd, n);
     }else{
-        stored_command_structure query_Remaining_timer_delay_cmd;
-        query_Remaining_timer_delay_cmd.cmd = cmd;
-        query_Remaining_timer_delay_cmd.priority = 1;
-        stored_command_priority_queue.push(query_Remaining_timer_delay_cmd);
+        stored_command_structure query_Total_timer_delay_cmd;
+        query_Total_timer_delay_cmd.cmd = cmd;
+        query_Total_timer_delay_cmd.priority = 1;
+        stored_command_priority_queue.push(query_Total_timer_delay_cmd);
+         qDebug() << "new item in list";
     }
     timer_->start(500);
 }
-
+/*!
+ * \brief K8090::queryButtonModes
+ * \brief
+ * Function will send request to card about button mode, which is set on specific relay.
+ * \note card response with packet 44h
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.10
+ * \see stored_commands_priority_queue
+ */
 void K8090::queryButtonModes()
 {
     int n = 7;  // Number of command bytes.
@@ -390,10 +568,17 @@ void K8090::queryButtonModes()
         query_Button_States_cmd.cmd = cmd;
         query_Button_States_cmd.priority = 1;
         stored_command_priority_queue.push(query_Button_States_cmd);
+        qDebug() << "new item in list";
     }
-    timer_->start(5000);
+    timer_->start(500);
 }
-
+/*!
+ * \brief K8090::resetFactoryDefauts
+ * \brief
+ * Reset the board to factory defaults.All buttons are set to toggle mode and all timer delays are set to 5 seconds.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.12
+ * \see stored_commands_priority_queue
+ */
 void K8090::resetFactoryDefauts()
 {
     int n = 7;  // Number of command bytes.
@@ -405,9 +590,27 @@ void K8090::resetFactoryDefauts()
     cmd[6] = bEtxByte;
     lastCommand = Command::ResetFactoryDefaults;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure reset_Factory_Defaults_cmd;
+        reset_Factory_Defaults_cmd.cmd = cmd;
+        reset_Factory_Defaults_cmd.priority = 1;
+        stored_command_priority_queue.push(reset_Factory_Defaults_cmd);
+        qDebug() << "New item in the list.";
+    }
 }
-
+/*!
+ * \brief K8090::queryJumperStatus
+ * \brief
+ * Function will send request about Jumper.If the jumper is set, the buttons no longer interact with the
+relays but button events are still sent to the computer.
+ * \note in future develop can be used to solve problem with occasional problems with connection (For example
+ * when comunication fail, we can set jumper status, press some button and communication should works)
+ * \see K8090/VM8090 Protocol Manual. Technical Guide. p.13
+ * \see stored_commands_priority_queue
+ */
 void K8090::queryJumperStatus()
 {
     int n = 7;  // Number of command bytes.
@@ -419,10 +622,27 @@ void K8090::queryJumperStatus()
     cmd[6] = bEtxByte;
     lastCommand = Command::JumperStatus;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure jumper_Status_cmd;
+        jumper_Status_cmd.cmd = cmd;
+        jumper_Status_cmd.priority = 1;
+        stored_command_priority_queue.push(jumper_Status_cmd);
+        qDebug() << "new item in list";
+    }
     timer_->start(500);
 }
-
+/*!
+ * \brief K8090::queryFirmwareVersion
+ * \brief
+ * Functio will send request related to Firmware version of the card. The version number consists of the year and week
+combination of the date the firmware was compiled.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide.
+ * \see stored_commands_priority_queue
+ */
 void K8090::queryFirmwareVersion()
 {
     int n = 7;  // Number of command bytes.
@@ -434,14 +654,46 @@ void K8090::queryFirmwareVersion()
     cmd[6] = bEtxByte;
     lastCommand = Command::FirmwareVersion;
     qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    if (command_finished_)
+    {
+        command_finished_ = false;
+        onSendToSerial(cmd, n);
+    }else{
+        stored_command_structure firmware_Version_cmd;
+        firmware_Version_cmd.cmd = cmd;
+        firmware_Version_cmd.priority = 1;
+        stored_command_priority_queue.push(firmware_Version_cmd);
+        qDebug() << "new item in list";
+    }
     timer_->start(500);
 }
+/*!
+ * \brief K8090::refreshRelayStates
+ * \param previous
+ * \param current
+ * \param timed
+ * \brief
+ *  According to packet from the card, function will determine, which relays are turned on.
+ * \note In fuction is used formula \b (switched on = (previous^current)^current))
+ * \see K8090/VM8090 Protocol Manual. Technical Guide.
+ * \see onSendToSerial
+ */
 
 void K8090::refreshRelayStates(unsigned char previous, unsigned char current, unsigned char timed)
 {
   relay_states_ = (relay_states_|((previous^current)&current))^((previous^current)&previous);
 }
+
+/*!
+ * \brief K8090::refreshButtonMode
+ * \param momentary
+ * \param toggle
+ * \param timed
+ * \brief
+ * According to packet from the card, function will in QDebug show, on which button are momentary, timed or toggle mode set.
+ * These numbers in binary represent , same as with relays, specific buttons.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide.
+ */
 
 void K8090::refreshButtonMode(const unsigned char momentary, const unsigned char toggle, const unsigned char timed)
 {
@@ -450,6 +702,16 @@ void K8090::refreshButtonMode(const unsigned char momentary, const unsigned char
     timed_button_mode_ = (timed_button_mode_ | timed) & timed;
 }
 
+/*!
+ * \brief K8090::onButtonStatus
+ * \param isPressed
+ * \param hasBeenPressed
+ * \param hasBeenReleased
+ * \brief
+ * According to packet from the card, will function show in QDebug which button has been pressed,
+ * is pressed or have been released.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide.
+ */
 void K8090::onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed, unsigned char hasBeenReleased)
 {
     unsigned char testing_number = 0;
@@ -471,7 +733,15 @@ void K8090::onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed
         }
     }
 }
-
+/*!
+ * \brief K8090::onTimerDelay
+ * \param Relays
+ * \param highbyt
+ * \param lowbyt
+ * \brief
+ * Function will in QDebug show total or remaining delay time for specific relay.
+ * \see K8090/VM8090 Protocol Manual. Technical Guide.
+ */
 void K8090::onTimerDelay(unsigned char Relays, unsigned char highbyt, unsigned char lowbyt)
 {
     unsigned char testing_number = 0;
@@ -493,16 +763,20 @@ void K8090::onTimerDelay(unsigned char Relays, unsigned char highbyt, unsigned c
             qDebug() << "remaining timer delay is ";
         }
         unsigned int time = 0;
-        unsigned int highbytint = highbyt << 7;
-        time = highbytint|(time|lowbyt);
+        unsigned int highbytint = 0;
+        unsigned int lowbytint = 0;
+        highbytint =  (static_cast<unsigned int>(highbyt)) << 7;
+        lowbytint =  (static_cast<unsigned int>(lowbyt));
+        time = highbytint|(time|lowbytint);
         qDebug() << time;
 }
 
 /*!
- * \fn K8090::onSendToSerial()
+ * \brief K8090::onSendToSerial()
  * \param const unsigned char *buffer
  * \param int n
- * \brief Function will send byte array to serial port
+ * \brief
+ *  Function will send array of byte to serial port
  */
 void K8090::onSendToSerial(const unsigned char *buffer, int n)
 {
@@ -513,9 +787,10 @@ void K8090::onSendToSerial(const unsigned char *buffer, int n)
     delete[] buffer;
 }
 /*!
- * \fn K8090::onReadyData()
- * \brief Function will catch data from relay card.
- */
+ * \brief K8090::onReadyData
+ * \brief Function will data from relay card and according to them,
+ * \b (if they will pass bz checksum control) will emit specific signals.
+*/
 void K8090::onReadyData()
 {
     qDebug() << "R8090::onReadyData";  // converting the data to unsigned char
@@ -533,12 +808,37 @@ void K8090::onReadyData()
             emit relayStatus(buffer[2], buffer[3], buffer[4]);
             qDebug() << static_cast<int>(relay_states_);
             if (!stored_command_priority_queue.empty())
-            {stored_command_structure cmd1 = stored_command_priority_queue.top();
-             stored_command_priority_queue.pop();
-             qDebug() << "removed item." << stored_command_priority_queue.size();
-             onSendToSerial(cmd1.cmd, 7);
+            {
+                stored_command_structure cmd2 = stored_command_priority_queue.top();
+                if (cmd2.cmd[1] == 0x42)
+                {
+                    qDebug() << "yes";
+                  onSendToSerial(cmd2.cmd, 7);
+                  stored_command_priority_queue.pop();
+                  sendNextCommand();
+                }else{
+                    if (cmd2.cmd[1] == 0x21)
+                    {
+                        qDebug() << "yes";
+                      onSendToSerial(cmd2.cmd, 7);
+                      stored_command_priority_queue.pop();
+                      sendNextCommand();
+                    }else{
+                        if (cmd2.cmd[1] == 0x66)
+                        {
+                            qDebug() << "yes";
+                          onSendToSerial(cmd2.cmd, 7);
+                          stored_command_priority_queue.pop();
+                          sendNextCommand();
+                        }else{
+                    onSendToSerial(cmd2.cmd, 7);
+                    stored_command_priority_queue.pop();
+                        }
+                    }
+                }
+                 qDebug() << "removed item." << stored_command_priority_queue.size();
             }else{
-             command_finished_ = true;
+                command_finished_ = true;
             }
             break;  // hexadecimálneho zápisu 51
         case 0x22: qDebug() << static_cast<int>(momentary_button_mode_);
@@ -550,8 +850,33 @@ void K8090::onReadyData()
             qDebug() << static_cast<int>(timed_button_mode_);
             if (!stored_command_priority_queue.empty())
             {stored_command_structure cmd2 = stored_command_priority_queue.top();
-                stored_command_priority_queue.pop();
-                onSendToSerial(cmd2.cmd, 7);
+                if (cmd2.cmd[1] == 0x42)
+                {
+                    qDebug() << "yes";
+                  onSendToSerial(cmd2.cmd, 7);
+                  stored_command_priority_queue.pop();
+                  sendNextCommand();
+                }else{
+                    if (cmd2.cmd[1] == 0x21)
+                    {
+                        qDebug() << "yes";
+                      onSendToSerial(cmd2.cmd, 7);
+                      stored_command_priority_queue.pop();
+                      sendNextCommand();
+                    }else{
+                        if (cmd2.cmd[1] == 0x66)
+                        {
+                            qDebug() << "yes";
+                          onSendToSerial(cmd2.cmd, 7);
+                          stored_command_priority_queue.pop();
+                          sendNextCommand();
+                        }else{
+                    onSendToSerial(cmd2.cmd, 7);
+                    stored_command_priority_queue.pop();
+                        }
+                    }
+                }
+                 qDebug() << "removed item." << stored_command_priority_queue.size();
             }else{
                 command_finished_ = true;
             }
@@ -561,8 +886,33 @@ void K8090::onReadyData()
         case 0x44: emit timerDelay(buffer[2], buffer[3], buffer[4]);
             if (!stored_command_priority_queue.empty())
             {stored_command_structure cmd2 = stored_command_priority_queue.top();
-                stored_command_priority_queue.pop();
-                onSendToSerial(cmd2.cmd, 7);
+                if (cmd2.cmd[1] == 0x42)
+                {
+                    qDebug() << "yes";
+                  onSendToSerial(cmd2.cmd, 7);
+                  stored_command_priority_queue.pop();
+                  sendNextCommand();
+                }else{
+                    if (cmd2.cmd[1] == 0x21)
+                    {
+                        qDebug() << "yes";
+                      onSendToSerial(cmd2.cmd, 7);
+                      stored_command_priority_queue.pop();
+                      sendNextCommand();
+                    }else{
+                        if (cmd2.cmd[1] == 0x66)
+                        {
+                            qDebug() << "yes";
+                          onSendToSerial(cmd2.cmd, 7);
+                          stored_command_priority_queue.pop();
+                          sendNextCommand();
+                        }else{
+                    onSendToSerial(cmd2.cmd, 7);
+                    stored_command_priority_queue.pop();
+                        }
+                    }
+                }
+                 qDebug() << "removed item." << stored_command_priority_queue.size();
             }else{
                 command_finished_ = true;
             }
@@ -581,8 +931,8 @@ unsigned char K8090::lowByt(unsigned int number)
     return bytarr[0];
 }
 /*!
-  *\fn K8090::lowByt(number)
-  *\brief Save first 8 bits of 16 bit integer.
+  *\brief K8090::lowByt(number)
+  *\brief Save first 8 bits of 16 bit unsigned integer.
   */
 unsigned char K8090::highByt(unsigned int number)
 {
@@ -592,10 +942,50 @@ unsigned char K8090::highByt(unsigned int number)
     return bytarr[1];
 }
 /*!
-  *\fn K8090::highByt(unsigned int number)
-  *\brief Save second 8 bits of 16 bit integer.
+  *\brief K8090::highByt(unsigned int number)
+  *\brief Save second 8 bits of 16 bit unsigned integer.
   */
 
+/*!
+ * \brief K8090::sendNextCommand
+ * \brief
+ * Despite the fact, that some commands don't have response, program should emit signal disconnect.
+ * However this function ensure, that if connection is alright, and there are som other commands pending,
+ * next command will be sent.
+ */
+void K8090::sendNextCommand()
+{
+    if (!stored_command_priority_queue.empty())
+    {
+        qDebug() << "Send next cmd";
+        stored_command_structure next_command = stored_command_priority_queue.top();
+        stored_command_priority_queue.pop();
+        onSendToSerial(next_command.cmd, 7);
+        next_command = stored_command_priority_queue.top();
+        if (next_command.cmd[1] == 0x42)
+        {
+        sendNextCommand();
+        }else{
+            if (next_command.cmd[1] == 0x21)
+            {
+            sendNextCommand();
+            }else{
+                if (next_command.cmd[1] == 0x66)
+                {
+                sendNextCommand();
+                }else{
+                 if (!stored_command_priority_queue.empty())
+                 {
+                 onSendToSerial(next_command.cmd, 7);
+                 stored_command_priority_queue.pop();
+                 }
+                }
+            }
+       }
+    }else{
+      qDebug() <<  "I'm empty!!!";
+    }
+}
 
 /*!
    \brief K8090::hexToByte
@@ -626,10 +1016,12 @@ void K8090::hexToByte(unsigned char **pbuffer, int *n, const QString &msg)
 }
 
 /*!
-   \brief K8090::byteToHex
-   \param buffer
-   \param n
-   \return
+ * \brief K8090::byteToHex
+ * \param buffer
+ * \param n
+ * \brief
+ * This function will translate byte array (array of unsigned char) to haxedecimal numeric system.
+ * \return QString
  */
 QString K8090::byteToHex(const unsigned char *buffer, int n)
 {
