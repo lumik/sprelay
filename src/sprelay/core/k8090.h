@@ -50,10 +50,22 @@ enum class Command {
     FirmwareVersion,
     None
 };
-
+/*!
+ * \brief operator ++
+ * \param cmd
+ * \return
+ */
 inline Command& operator++(Command &cmd) { cmd = static_cast<Command>(static_cast<int>(cmd) + 1); return cmd; }
+/*!
+ * \brief operator ++
+ * \param cmd
+ * \return
+ */
 inline Command operator++(Command &cmd, int) { Command tmp(cmd); cmd++; return tmp; }
-
+/*!
+ * \brief The Relays enum
+ * \note enumerator is 0,1,2,4,8,16,32,64,128 (first relay has 1 on first position, 2 on second...)
+*/
 enum struct Relays : unsigned char
 {
     None  = 0,
@@ -66,15 +78,45 @@ enum struct Relays : unsigned char
     Seven = 1 << 6,
     Eight = 1 << 7
 };
-
+/*!
+ * \brief operator |
+ * \param a
+ * \param b
+ * \return
+ */
 inline constexpr Relays operator|(Relays a, Relays b) {
     return static_cast<Relays>(static_cast<unsigned char>(a) | static_cast<unsigned char>(b)); }
+/*!
+ * \brief operator &
+ * \param a
+ * \param b
+ * \return
+ */
 inline constexpr Relays operator&(Relays a, Relays b) {
     return static_cast<Relays>(static_cast<unsigned char>(a) & static_cast<unsigned char>(b)); }
+/*!
+ * \brief operator ~
+ * \param a
+ * \return
+ */
 inline Relays operator~(Relays a) { return static_cast<Relays>(~static_cast<unsigned char>(a)); }
+/*!
+ * \brief operator |=
+ * \param a
+ * \param b
+ * \return
+ */
 inline Relays& operator|=(Relays& a, Relays b) { return a = (a | b); }
+/*!
+ * \brief operator &=
+ * \param a
+ * \param b
+ * \return
+ */
 inline Relays& operator&=(Relays& a, Relays b) { return a = (a & b); }
-
+/*!
+ * \brief The ComPortParams struct
+ */
 struct ComPortParams
 {
     QString portName;
@@ -84,7 +126,6 @@ struct ComPortParams
     quint16 vendorIdentifier;
 };
 }  // namespace K8090Traits
-
 class K8090 : public QObject
 {
     Q_OBJECT
@@ -136,6 +177,7 @@ private slots:  // NOLINT(whitespace/indent)
 private:  // NOLINT(whitespace/indent)    
     unsigned char lowByt(unsigned int number);
     unsigned char highByt(unsigned int number);
+    void sendNextCommand();
     static const quint16 productID;
     static const quint16 vendorID;
 
