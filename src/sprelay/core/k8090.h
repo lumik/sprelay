@@ -141,31 +141,33 @@ signals:  // NOLINT(whitespace/indent)
         void buttonStatus(unsigned char state, unsigned char pressed, unsigned char released);
         void timerDelay(unsigned char Relays,  unsigned char highbyt,  unsigned char lowbyt);
         void buttonMode(unsigned char momentary, unsigned char toggle, unsigned char timed);
-        void jumperStatus(bool on);
-        void firmwareVersion(int year, int week);
+        void jumperStatus(unsigned char message);
+        void firmwareVersion(unsigned char year, unsigned char week);
         void connected();
 public slots:  // NOLINT(whitespace/indent)
     void onFailedAttemptForConnection();
     void connectK8090();
     void connection();
     void disconnect();
-    void switchRelayOn(K8090Traits::Relays relays);
-    void switchRelayOff(K8090Traits::Relays relays);
-    void toggleRelay(K8090Traits::Relays relays);
-    void setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed);
-    void startRelayTimer(K8090Traits::Relays relays, unsigned int delay);
-    void setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay);
-    void queryRelayStatus();
-    void queryRemainingTimerDelay(K8090Traits::Relays relays);
-    void queryTotalTimerDelay(K8090Traits::Relays relays);
-    void queryButtonModes();
-    void resetFactoryDefauts();
-    void queryJumperStatus();
-    void queryFirmwareVersion();
+    void switchRelayOn(K8090Traits::Relays relays, unsigned char priority);
+    void switchRelayOff(K8090Traits::Relays relays, unsigned char priority);
+    void toggleRelay(K8090Traits::Relays relays, unsigned char priority);
+    void setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed, unsigned char priority);  // NOLINT(whitespace/line_length)
+    void startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsigned char priority);
+    void setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, unsigned char priority);
+    void queryRelayStatus(unsigned char priority);
+    void queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char priority);
+    void queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char priority);
+    void queryButtonModes(unsigned char priority);
+    void resetFactoryDefauts(unsigned char priority);
+    void queryJumperStatus(unsigned char priority);
+    void queryFirmwareVersion(unsigned char priority);
     void refreshRelayStates(const unsigned char previous, const unsigned char current, const unsigned char timed);
     void refreshButtonMode(const unsigned char momentary, const unsigned char toggle, const unsigned char timed);
     void onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed, unsigned char hasBeenReleased);
     void onTimerDelay(unsigned char Relays,  unsigned char highbyt,  unsigned char lowbyt);
+    void onJumperStatus(unsigned char message);
+    void onFirmwareVersion(unsigned char year, unsigned char week);
 
 
 protected slots:  // NOLINT(whitespace/indent)
@@ -204,6 +206,7 @@ private:  // NOLINT(whitespace/indent)
     unsigned char timed_button_mode_ = 0;
     bool command_finished_ = true;
     bool wanted_total_timer_delay_ = true;
+    bool communication_is_ready_ = false;
 
     QTimer *timer_ = new QTimer;
     int number_of_failed_attemps_for_connection_ = 0;
