@@ -145,9 +145,10 @@ QList<ComPortParams> K8090::availablePorts()
 void K8090::onFailedAttemptForConnection()
 {
     number_of_failed_attemps_for_connection_++;
-    if (number_of_failed_attemps_for_connection_ > 3)
+    if (number_of_failed_attemps_for_connection_ > 2)
     {
         disconnect();
+        timer_->stop();
     }else{
         timer_->stop();
         timer_->start(300);
@@ -183,6 +184,7 @@ void K8090::connectK8090()
     serialPort_->setParity(QSerialPort::NoParity);
     serialPort_->setStopBits(QSerialPort::OneStop);
     serialPort_->setFlowControl(QSerialPort::NoFlowControl);
+    communication_is_ready_ = true;
     connection();
 }
 /*!
@@ -191,23 +193,25 @@ void K8090::connectK8090()
  */
 void K8090::connection()
 {
-    queryRelayStatus();
-    queryButtonModes();
-    queryTotalTimerDelay(Relays::One);
-    queryTotalTimerDelay(Relays::Two);
-    queryTotalTimerDelay(Relays::Three);
-    queryTotalTimerDelay(Relays::Four);
-    queryTotalTimerDelay(Relays::Five);
-    queryTotalTimerDelay(Relays::Six);
-    queryTotalTimerDelay(Relays::Seven);
-    queryTotalTimerDelay(Relays::Eight);
+    queryRelayStatus(1);
+    queryButtonModes(1);
+    queryRemainingTimerDelay(Relays::One, 1);
+    queryRemainingTimerDelay(Relays::Two, 1);
+    queryRemainingTimerDelay(Relays::Three, 1);
+    queryRemainingTimerDelay(Relays::Four, 1);
+    queryRemainingTimerDelay(Relays::Five, 1);
+    queryRemainingTimerDelay(Relays::Six, 1);
+    queryRemainingTimerDelay(Relays::Seven, 1);
+    queryRemainingTimerDelay(Relays::Eight, 1);
+    communication_is_ready_ = true;
 }
 /*!
  * \brief K8090::disconnect
  */
 void K8090::disconnect()
 {
-    qDebug() << "I will disconnect card";
+    qDebug() << "Communication failed. Please check out connection.";
+    communication_is_ready_ = false;
 }
 /*!
  * \brief K8090::switchRelayOn
@@ -219,8 +223,12 @@ void K8090::disconnect()
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.4
  * \see stored_commands_priority_queue
  */
-void K8090::switchRelayOn(K8090Traits::Relays relays)
+void K8090::switchRelayOn(K8090Traits::Relays relays, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -238,9 +246,10 @@ void K8090::switchRelayOn(K8090Traits::Relays relays)
     }else{
         stored_command_structure switch_relay_on_cmd;
         switch_relay_on_cmd.cmd = cmd;
-        switch_relay_on_cmd.priority = 1;
+        switch_relay_on_cmd.priority = priority;
         stored_command_priority_queue.push(switch_relay_on_cmd);
         qDebug() << "new item in list";
+    }
     }
 }
 /*!
@@ -253,8 +262,12 @@ void K8090::switchRelayOn(K8090Traits::Relays relays)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.4
  * \see stored_commands_priority_queue
  */
-void K8090::switchRelayOff(K8090Traits::Relays relays)
+void K8090::switchRelayOff(K8090Traits::Relays relays, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -272,11 +285,12 @@ void K8090::switchRelayOff(K8090Traits::Relays relays)
     }else{
         stored_command_structure switch_relay_off_cmd;
         switch_relay_off_cmd.cmd = cmd;
-        switch_relay_off_cmd.priority = 1;
+        switch_relay_off_cmd.priority = priority;
         stored_command_priority_queue.push(switch_relay_off_cmd);
         qDebug() << "New item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::toggleRelay
@@ -288,8 +302,12 @@ void K8090::switchRelayOff(K8090Traits::Relays relays)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.5
  * \see stored_commands_priority_queue
  */
-void K8090::toggleRelay(K8090Traits::Relays relays)
+void K8090::toggleRelay(K8090Traits::Relays relays, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -307,11 +325,12 @@ void K8090::toggleRelay(K8090Traits::Relays relays)
     }else{
         stored_command_structure toggle_relay_cmd;
         toggle_relay_cmd.cmd = cmd;
-        toggle_relay_cmd.priority = 1;
+        toggle_relay_cmd.priority = priority;
         stored_command_priority_queue.push(toggle_relay_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::setButtonMode
@@ -330,8 +349,12 @@ void K8090::toggleRelay(K8090Traits::Relays relays)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.6
  * \see stored_commands_priority_queue
  */
-void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed)
+void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed, unsigned char priority)  // NOLINT(whitespace/line_length)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -350,9 +373,10 @@ void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays tog
     }else{
         stored_command_structure set_Button_Mode_cmd;
         set_Button_Mode_cmd.cmd = cmd;
-        set_Button_Mode_cmd.priority = 1;
+        set_Button_Mode_cmd.priority = priority;
         stored_command_priority_queue.push(set_Button_Mode_cmd);
         qDebug() << "New item in the list.";
+    }
     }
 }
 /*!
@@ -369,8 +393,12 @@ void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays tog
  * \see lowByt
  * \see highByt
  */
-void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay)
+void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -390,11 +418,12 @@ void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay)
     }else{
         stored_command_structure start_relay_timer_cmd;
         start_relay_timer_cmd.cmd = cmd;
-        start_relay_timer_cmd.priority = 1;
+        start_relay_timer_cmd.priority = priority;
         stored_command_priority_queue.push(start_relay_timer_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::setRelayTimerDelay
@@ -409,8 +438,12 @@ void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay)
  * \see lowByt
  * \see highByt
  */
-void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay)
+void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -430,9 +463,10 @@ void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay)
     }else{
         stored_command_structure set_Relay_Timer_Delay_cmd;
         set_Relay_Timer_Delay_cmd.cmd = cmd;
-        set_Relay_Timer_Delay_cmd.priority = 1;
+        set_Relay_Timer_Delay_cmd.priority = priority;
         stored_command_priority_queue.push(set_Relay_Timer_Delay_cmd);
         qDebug() << "New item in the list.";
+    }
     }
 }
 /*!
@@ -444,8 +478,12 @@ void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.8
  * \see stored_commands_priority_queue
  */
-void K8090::queryRelayStatus()
+void K8090::queryRelayStatus(unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -462,11 +500,12 @@ void K8090::queryRelayStatus()
     }else{
         stored_command_structure query_Relay_Status_cmd;
         query_Relay_Status_cmd.cmd = cmd;
-        query_Relay_Status_cmd.priority = 1;
+        query_Relay_Status_cmd.priority = priority;
         stored_command_priority_queue.push(query_Relay_Status_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::queryRemainingTimerDelay
@@ -476,8 +515,12 @@ void K8090::queryRelayStatus()
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.9
  * \see stored_commands_priority_queue
  */
-void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
+void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     wanted_total_timer_delay_ = false;
@@ -497,11 +540,12 @@ void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
     }else{
         stored_command_structure query_Remaining_timer_delay_cmd;
         query_Remaining_timer_delay_cmd.cmd = cmd;
-        query_Remaining_timer_delay_cmd.priority = 1;
+        query_Remaining_timer_delay_cmd.priority = priority;
         stored_command_priority_queue.push(query_Remaining_timer_delay_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 
 /*!
@@ -513,8 +557,12 @@ void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.9
  * \see stored_commands_priority_queue
  */
-void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
+void K8090::queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     wanted_total_timer_delay_ = true;
@@ -534,11 +582,12 @@ void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
     }else{
         stored_command_structure query_Total_timer_delay_cmd;
         query_Total_timer_delay_cmd.cmd = cmd;
-        query_Total_timer_delay_cmd.priority = 1;
+        query_Total_timer_delay_cmd.priority = priority;
         stored_command_priority_queue.push(query_Total_timer_delay_cmd);
          qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::queryButtonModes
@@ -548,8 +597,12 @@ void K8090::queryTotalTimerDelay(K8090Traits::Relays relays)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.10
  * \see stored_commands_priority_queue
  */
-void K8090::queryButtonModes()
+void K8090::queryButtonModes(unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -566,11 +619,12 @@ void K8090::queryButtonModes()
     }else{
         stored_command_structure query_Button_States_cmd;
         query_Button_States_cmd.cmd = cmd;
-        query_Button_States_cmd.priority = 1;
+        query_Button_States_cmd.priority = priority;
         stored_command_priority_queue.push(query_Button_States_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::resetFactoryDefauts
@@ -579,8 +633,12 @@ void K8090::queryButtonModes()
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.12
  * \see stored_commands_priority_queue
  */
-void K8090::resetFactoryDefauts()
+void K8090::resetFactoryDefauts(unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -596,9 +654,10 @@ void K8090::resetFactoryDefauts()
     }else{
         stored_command_structure reset_Factory_Defaults_cmd;
         reset_Factory_Defaults_cmd.cmd = cmd;
-        reset_Factory_Defaults_cmd.priority = 1;
+        reset_Factory_Defaults_cmd.priority = priority;
         stored_command_priority_queue.push(reset_Factory_Defaults_cmd);
         qDebug() << "New item in the list.";
+    }
     }
 }
 /*!
@@ -611,8 +670,12 @@ relays but button events are still sent to the computer.
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.13
  * \see stored_commands_priority_queue
  */
-void K8090::queryJumperStatus()
+void K8090::queryJumperStatus(unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -629,11 +692,12 @@ void K8090::queryJumperStatus()
     }else{
         stored_command_structure jumper_Status_cmd;
         jumper_Status_cmd.cmd = cmd;
-        jumper_Status_cmd.priority = 1;
+        jumper_Status_cmd.priority = priority;
         stored_command_priority_queue.push(jumper_Status_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::queryFirmwareVersion
@@ -643,8 +707,12 @@ combination of the date the firmware was compiled.
  * \see K8090/VM8090 Protocol Manual. Technical Guide.
  * \see stored_commands_priority_queue
  */
-void K8090::queryFirmwareVersion()
+void K8090::queryFirmwareVersion(unsigned char priority)
 {
+    if (!communication_is_ready_)  // Now is not able to send commands if card found == false
+    {
+        qDebug() << "Card not found!!!";
+    }else{
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     int ii;
@@ -661,11 +729,12 @@ void K8090::queryFirmwareVersion()
     }else{
         stored_command_structure firmware_Version_cmd;
         firmware_Version_cmd.cmd = cmd;
-        firmware_Version_cmd.priority = 1;
+        firmware_Version_cmd.priority = priority;
         stored_command_priority_queue.push(firmware_Version_cmd);
         qDebug() << "new item in list";
     }
     timer_->start(500);
+    }
 }
 /*!
  * \brief K8090::refreshRelayStates
@@ -769,6 +838,21 @@ void K8090::onTimerDelay(unsigned char Relays, unsigned char highbyt, unsigned c
         lowbytint =  (static_cast<unsigned int>(lowbyt));
         time = highbytint|(time|lowbytint);
         qDebug() << time;
+}
+void K8090::onJumperStatus(unsigned char message)
+{
+    if (message == true)
+    {
+     qDebug() << "Jumper is set";
+    }else{
+     qDebug() << "Jumper is not set";
+    }
+}
+
+void K8090::onFirmwareVersion(unsigned char year, unsigned char week)
+{
+    qDebug() << (unsigned int)year;
+    qDebug() << (unsigned int)week;
 }
 
 /*!
@@ -884,6 +968,74 @@ void K8090::onReadyData()
         case 0x50: emit buttonStatus(buffer[2], buffer[3], buffer[4]);
             break;
         case 0x44: emit timerDelay(buffer[2], buffer[3], buffer[4]);
+            if (!stored_command_priority_queue.empty())
+            {stored_command_structure cmd2 = stored_command_priority_queue.top();
+                if (cmd2.cmd[1] == 0x42)
+                {
+                    qDebug() << "yes";
+                  onSendToSerial(cmd2.cmd, 7);
+                  stored_command_priority_queue.pop();
+                  sendNextCommand();
+                }else{
+                    if (cmd2.cmd[1] == 0x21)
+                    {
+                        qDebug() << "yes";
+                      onSendToSerial(cmd2.cmd, 7);
+                      stored_command_priority_queue.pop();
+                      sendNextCommand();
+                    }else{
+                        if (cmd2.cmd[1] == 0x66)
+                        {
+                            qDebug() << "yes";
+                          onSendToSerial(cmd2.cmd, 7);
+                          stored_command_priority_queue.pop();
+                          sendNextCommand();
+                        }else{
+                    onSendToSerial(cmd2.cmd, 7);
+                    stored_command_priority_queue.pop();
+                        }
+                    }
+                }
+                 qDebug() << "removed item." << stored_command_priority_queue.size();
+            }else{
+                command_finished_ = true;
+            }
+            break;
+        case 0x70: emit jumperStatus(buffer[3]);
+                    if (!stored_command_priority_queue.empty())
+                    {stored_command_structure cmd2 = stored_command_priority_queue.top();
+                        if (cmd2.cmd[1] == 0x42)
+                        {
+                            qDebug() << "yes";
+                          onSendToSerial(cmd2.cmd, 7);
+                          stored_command_priority_queue.pop();
+                          sendNextCommand();
+                        }else{
+                            if (cmd2.cmd[1] == 0x21)
+                            {
+                                qDebug() << "yes";
+                              onSendToSerial(cmd2.cmd, 7);
+                              stored_command_priority_queue.pop();
+                              sendNextCommand();
+                            }else{
+                                if (cmd2.cmd[1] == 0x66)
+                                {
+                                    qDebug() << "yes";
+                                  onSendToSerial(cmd2.cmd, 7);
+                                  stored_command_priority_queue.pop();
+                                  sendNextCommand();
+                                }else{
+                            onSendToSerial(cmd2.cmd, 7);
+                            stored_command_priority_queue.pop();
+                                }
+                            }
+                        }
+                         qDebug() << "removed item." << stored_command_priority_queue.size();
+                    }else{
+                        command_finished_ = true;
+                    }
+                    break;
+        case 0x71: emit firmwareVersion(buffer[3], buffer[4]);
             if (!stored_command_priority_queue.empty())
             {stored_command_structure cmd2 = stored_command_priority_queue.top();
                 if (cmd2.cmd[1] == 0x42)
