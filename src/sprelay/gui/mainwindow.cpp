@@ -45,12 +45,12 @@ MainWindow::MainWindow()
     qDebug() << "Ahoj";
 
     k8090 = new K8090(this);
-    connect(k8090, SIGNAL(relayStatus(unsigned char ,unsigned char ,unsigned char)), k8090, SLOT(refreshRelayStates(unsigned char,unsigned char,unsigned char )));
-    connect(k8090, SIGNAL(buttonMode(unsigned char,unsigned char,unsigned char)), k8090, SLOT(refreshButtonMode(unsigned char,unsigned char,unsigned char)));
-    connect(k8090, SIGNAL(buttonStatus(unsigned char,unsigned char,unsigned char)), k8090, SLOT(onButtonStatus(unsigned char,unsigned char,unsigned char)));
-    connect(k8090, SIGNAL(timerDelay(unsigned char,unsigned char,unsigned char)), k8090, SLOT(onTimerDelay(unsigned char,unsigned char,unsigned char)));
-    connect(k8090, SIGNAL(jumperStatus(unsigned char)), k8090, SLOT(onJumperStatus(unsigned char)));
-    connect(k8090, SIGNAL(firmwareVersion(unsigned char,unsigned char)), k8090, SLOT(onFirmwareVersion(unsigned char,unsigned char)));
+    connect(k8090, SIGNAL(relayStatus(unsigned char, unsigned char, unsigned char)), k8090, SLOT(refreshRelayStates(unsigned char, unsigned char, unsigned char)));   // NOLINT(whitespace/line_length)
+    connect(k8090, SIGNAL(buttonMode(unsigned char, unsigned char, unsigned char)), k8090, SLOT(refreshButtonMode(unsigned char, unsigned char, unsigned char)));   // NOLINT(whitespace/line_length)
+    connect(k8090, SIGNAL(buttonStatus(unsigned char, unsigned char, unsigned char)), k8090, SLOT(onButtonStatus(unsigned char, unsigned char, unsigned char)));   // NOLINT(whitespace/line_length)
+    connect(k8090, SIGNAL(timerDelay(unsigned char, unsigned char, unsigned char)), k8090, SLOT(onTimerDelay(unsigned char, unsigned char, unsigned char)));   // NOLINT(whitespace/line_length)
+    connect(k8090, SIGNAL(jumperStatus(bool)), k8090, SLOT(onJumperStatus(bool)));
+    connect(k8090, SIGNAL(firmwareVersion(unsigned char, unsigned char)), k8090, SLOT(onFirmwareVersion(unsigned char, unsigned char)));   // NOLINT(whitespace/line_length)
     refreshPortsButton = new QPushButton(tr("Refresh Ports"));
     portsLabel = new QLabel(tr("Select port:"));
     portsComboBox = new QComboBox();
