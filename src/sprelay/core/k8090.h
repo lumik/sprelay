@@ -141,7 +141,7 @@ signals:  // NOLINT(whitespace/indent)
         void buttonStatus(unsigned char state, unsigned char pressed, unsigned char released);
         void timerDelay(unsigned char Relays,  unsigned char highbyt,  unsigned char lowbyt);
         void buttonMode(unsigned char momentary, unsigned char toggle, unsigned char timed);
-        void jumperStatus(unsigned char message);
+        void jumperStatus(bool message);
         void firmwareVersion(unsigned char year, unsigned char week);
         void connected();
 public slots:  // NOLINT(whitespace/indent)
@@ -166,7 +166,7 @@ public slots:  // NOLINT(whitespace/indent)
     void refreshButtonMode(const unsigned char momentary, const unsigned char toggle, const unsigned char timed);
     void onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed, unsigned char hasBeenReleased);
     void onTimerDelay(unsigned char Relays,  unsigned char highbyt,  unsigned char lowbyt);
-    void onJumperStatus(unsigned char message);
+    void onJumperStatus(bool message);
     void onFirmwareVersion(unsigned char year, unsigned char week);
 
 
