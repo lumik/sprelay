@@ -223,7 +223,7 @@ void K8090::disconnect()
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.4
  * \see stored_commands_priority_queue
  */
-void K8090::switchRelayOn(K8090Traits::Relays relays, unsigned char priority)
+void K8090::switchRelayOn(K8090Traits::Relays relays, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -262,7 +262,7 @@ void K8090::switchRelayOn(K8090Traits::Relays relays, unsigned char priority)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.4
  * \see stored_commands_priority_queue
  */
-void K8090::switchRelayOff(K8090Traits::Relays relays, unsigned char priority)
+void K8090::switchRelayOff(K8090Traits::Relays relays, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -302,7 +302,7 @@ void K8090::switchRelayOff(K8090Traits::Relays relays, unsigned char priority)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.5
  * \see stored_commands_priority_queue
  */
-void K8090::toggleRelay(K8090Traits::Relays relays, unsigned char priority)
+void K8090::toggleRelay(K8090Traits::Relays relays, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -349,7 +349,7 @@ void K8090::toggleRelay(K8090Traits::Relays relays, unsigned char priority)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.6
  * \see stored_commands_priority_queue
  */
-void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed, unsigned char priority)  // NOLINT(whitespace/line_length)
+void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed, unsigned char priority = 1)  // NOLINT(whitespace/line_length)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -393,7 +393,7 @@ void K8090::setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays tog
  * \see lowByt
  * \see highByt
  */
-void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsigned char priority)
+void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -438,7 +438,7 @@ void K8090::startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsi
  * \see lowByt
  * \see highByt
  */
-void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, unsigned char priority)
+void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -478,7 +478,7 @@ void K8090::setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, u
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.8
  * \see stored_commands_priority_queue
  */
-void K8090::queryRelayStatus(unsigned char priority)
+void K8090::queryRelayStatus(unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -515,7 +515,7 @@ void K8090::queryRelayStatus(unsigned char priority)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.9
  * \see stored_commands_priority_queue
  */
-void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char priority)
+void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -557,7 +557,7 @@ void K8090::queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char p
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.9
  * \see stored_commands_priority_queue
  */
-void K8090::queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char priority)
+void K8090::queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -597,7 +597,7 @@ void K8090::queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char prior
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.10
  * \see stored_commands_priority_queue
  */
-void K8090::queryButtonModes(unsigned char priority)
+void K8090::queryButtonModes(unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -633,7 +633,7 @@ void K8090::queryButtonModes(unsigned char priority)
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.12
  * \see stored_commands_priority_queue
  */
-void K8090::resetFactoryDefauts(unsigned char priority)
+void K8090::resetFactoryDefauts(unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -670,7 +670,7 @@ relays but button events are still sent to the computer.
  * \see K8090/VM8090 Protocol Manual. Technical Guide. p.13
  * \see stored_commands_priority_queue
  */
-void K8090::queryJumperStatus(unsigned char priority)
+void K8090::queryJumperStatus(unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -707,7 +707,7 @@ combination of the date the firmware was compiled.
  * \see K8090/VM8090 Protocol Manual. Technical Guide.
  * \see stored_commands_priority_queue
  */
-void K8090::queryFirmwareVersion(unsigned char priority)
+void K8090::queryFirmwareVersion(unsigned char priority = 1)
 {
     if (!communication_is_ready_)  // Now is not able to send commands if card found == false
     {
@@ -839,7 +839,7 @@ void K8090::onTimerDelay(unsigned char Relays, unsigned char highbyt, unsigned c
         time = highbytint|(time|lowbytint);
         qDebug() << time;
 }
-void K8090::onJumperStatus(unsigned char message)
+void K8090::onJumperStatus(bool message)
 {
     if (message == true)
     {
