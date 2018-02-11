@@ -149,19 +149,19 @@ public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
     void connection();
     void disconnect();
-    void switchRelayOn(K8090Traits::Relays relays, unsigned char priority);
-    void switchRelayOff(K8090Traits::Relays relays, unsigned char priority);
-    void toggleRelay(K8090Traits::Relays relays, unsigned char priority);
-    void setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed, unsigned char priority);  // NOLINT(whitespace/line_length)
-    void startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsigned char priority);
-    void setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, unsigned char priority);
-    void queryRelayStatus(unsigned char priority);
-    void queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char priority);
-    void queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char priority);
-    void queryButtonModes(unsigned char priority);
-    void resetFactoryDefauts(unsigned char priority);
-    void queryJumperStatus(unsigned char priority);
-    void queryFirmwareVersion(unsigned char priority);
+    void switchRelayOn(K8090Traits::Relays relays, unsigned char priority = 1);
+    void switchRelayOff(K8090Traits::Relays relays, unsigned char priority = 1);
+    void toggleRelay(K8090Traits::Relays relays, unsigned char priority = 1);
+    void setButtonMode(K8090Traits::Relays momentary, K8090Traits::Relays toggle, K8090Traits::Relays timed, unsigned char priority = 1);  // NOLINT(whitespace/line_length)
+    void startRelayTimer(K8090Traits::Relays relays, unsigned int delay, unsigned char priority = 1);
+    void setRelayTimerDelay(K8090Traits::Relays relays, unsigned int delay, unsigned char priority = 1);
+    void queryRelayStatus(unsigned char priority = 1);
+    void queryRemainingTimerDelay(K8090Traits::Relays relays, unsigned char priority = 1);
+    void queryTotalTimerDelay(K8090Traits::Relays relays, unsigned char priority = 1);
+    void queryButtonModes(unsigned char priority = 1);
+    void resetFactoryDefauts(unsigned char priority = 1);
+    void queryJumperStatus(unsigned char priority = 1);
+    void queryFirmwareVersion(unsigned char priority = 1);
     void refreshRelayStates(const unsigned char previous, const unsigned char current, const unsigned char timed);
     void refreshButtonMode(const unsigned char momentary, const unsigned char toggle, const unsigned char timed);
     void onButtonStatus(unsigned char isPressed, unsigned char hasBeenPressed, unsigned char hasBeenReleased);
