@@ -1,3 +1,3 @@
 CONFIG += c++11
 
-INCLUDEPATH += $$PWD/third_party/enum_flags/src
+INCLUDEPATH += $$PWD/src/external/enum_flags/src
