@@ -25,13 +25,14 @@
 
 #include <QMainWindow>
 
-class QVBoxLayout;
-class QHBoxLayout;
-class QPushButton;
-class QLabel;
-class QComboBox;
-
+// forward declarations
 class K8090;
+class QComboBox;
+class QHBoxLayout;
+class QLabel;
+class QPushButton;
+class QVBoxLayout;
+
 
 class MainWindow : public QMainWindow
 {
@@ -41,29 +42,31 @@ public:  // NOLINT(whitespace/indent)
     MainWindow();
     ~MainWindow();
 
+
 private slots:  // NOLINT(whitespace/indent)
     void onConnectButtonClicked();
     void onPortsComboBoxCurrentIndexChanged(const QString &portName);
     void onRefreshPortsButtonClicked();
 
+
 private:  // NOLINT(whitespace/indent)
-    K8090 *k8090;
-    QString comPortName_;
+    K8090 *k8090_;
+    QString com_port_name_;
     bool connected_;
 
-    QWidget *cWidget;
+    QWidget *central_widget_;
 
-    QHBoxLayout *mainHLayout;
+    QHBoxLayout *main_layout_;
 
-    QVBoxLayout *vLayout1;
-    QPushButton *connectButton;
+    QVBoxLayout *v_layout_1;
+    QPushButton *connect_button_;
 
-    QVBoxLayout *vLayout2;
-    QHBoxLayout *refreshPortsHLayout;
-    QPushButton *refreshPortsButton;
-    QHBoxLayout *portsHLayout;
-    QLabel *portsLabel;
-    QComboBox *portsComboBox;
+    QVBoxLayout *v_layout_2;
+    QHBoxLayout *refresh_ports_h_layout_;
+    QPushButton *refresh_ports_button_;
+    QHBoxLayout *ports_h_layout_;
+    QLabel *ports_label_;
+    QComboBox *ports_combo_box_;
 };
 
 #endif  // SPRELAY_GUI_MAINWINDOW_H_

@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/biomolecules/sprelay/compare/master...develop)
 
 ### Added
-- Initial version of bgcor program.
+- Initial version of SpRelay program.
 
 ### Changed
 
