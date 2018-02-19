@@ -42,22 +42,25 @@ using namespace K8090Traits;  // NOLINT(build/namespaces)
 const quint16 K8090::kProductID = 32912;
 const quint16 K8090::kVendorID = 4303;
 
-const QString K8090::kStxByte_ = "04";
-const QString K8090::kEtxByte_ = "0F";
-const QString K8090::kSwitchRelayOnCmd_ = "11";
-const QString K8090::kSwitchRelayOffCmd_ = "12";
-const QString K8090::kToggleRelayCmd_ = "14";
-const QString K8090::kQueryRelayStatusCmd_ = "18";
-const QString K8090::kSetButtonModeCmd_ = "21";
-const QString K8090::kQueryButtonModeCmd_ = "22";
-const QString K8090::kStartRelayTimerCmd_ = "41";
-const QString K8090::kSetRelayTimerDelayCmd_ = "42";
-const QString K8090::kQueryTimerDelayCmd_ = "44";
-const QString K8090::kButtonStatusCmd_ = "50";
-const QString K8090::kRelayStatusCmd_ = "51";
-const QString K8090::kResetFactoryDefaultsCmd_ = "66";
-const QString K8090::kJumperStatusCmd_ = "70";
-const QString K8090::kFirmwareVersionCmd_ = "71";
+const unsigned char K8090::kStxByte_ = 0x04;
+/*!
+    \brief End delimiting byte.
+*/
+const unsigned char K8090::kEtxByte_ = 0x0f;
+const unsigned char K8090::kSwitchRelayOnCmd_ = 0x11;
+const unsigned char K8090::kSwitchRelayOffCmd_ = 0x12;
+const unsigned char K8090::kToggleRelayCmd_ = 0x14;
+const unsigned char K8090::kQueryRelayStatusCmd_ = 0x18;
+const unsigned char K8090::kSetButtonModeCmd_ = 0x21;
+const unsigned char K8090::kQueryButtonModeCmd_ = 0x22;
+const unsigned char K8090::kStartRelayTimerCmd_ = 0x41;
+const unsigned char K8090::kSetRelayTimerDelayCmd_ = 0x42;
+const unsigned char K8090::kQueryTimerDelayCmd_ = 0x44;
+const unsigned char K8090::kButtonStatusCmd_ = 0x50;
+const unsigned char K8090::kRelayStatusCmd_ = 0x51;
+const unsigned char K8090::kResetFactoryDefaultsCmd_ = 0x66;
+const unsigned char K8090::kJumperStatusCmd_ = 0x70;
+const unsigned char K8090::kFirmwareVersionCmd_ = 0x71;
 
 /*!
     \class K8090
@@ -69,8 +72,7 @@ const QString K8090::kFirmwareVersionCmd_ = "71";
 
 // initialization of static member variables
 /*!
-    \brief Array of 2 byte (1 leading byte and one command byte) commands used
-    to control the relay.
+    \brief Array of hexadecimal representation of commands used to control the relay.
 
     It is filled by fillCommandsArrays() static method, the first command is
     the command with the most important priority, the last is the least
@@ -84,41 +86,15 @@ const QString K8090::kFirmwareVersionCmd_ = "71";
     unsigned char cmd[n]; // array of command bytes
 
     // copying the first two bytes of command to command byte array
-    for (int ii = 0; ii < 2; ++ii)
-        cmd[ii] = b_commands_[static_cast<int>(Command::RELAY_STATUS)][ii];
+    cmd[0] = kStxByte_
+    cmd[1] = commands_[static_cast<int>(Command::RELAY_STATUS)];
     cmd[2] = static_cast<unsigned char>(RelayID::ONE);  // 3rd byte specifies affected relays
     // commands, there is no one.
     cmd[5] = K8090::checkSum(cmd, 5); // sixth byte contains check sum.
-    cmd[6] = b_etx_byte_;
+    cmd[6] = kEtxByte_;
     \endcode
 */
-unsigned char K8090::b_commands_[static_cast<int>(Command::NONE)][2];
-
-/*!
-    \brief End delimiting byte.
-*/
-unsigned char K8090::b_etx_byte_;
-
-/*!
-    \brief Array of QString representation of command bytes used to control
-    the relay card.
-
-    To assemble the full command, it is necessary to prepend the kStxByte
-    and append byte, which specifies the relays to be used, folowed by bytes
-    containing data and ended with checksum (See CheckSum(const unsigned char,
-    int)) and kEtxByte. It is filled by fillCommandsArrays() static method.
-    They should be accessed using the K8090Traits::Command enum values.
-    Example, which shows how to build the whole command _query relay status_:
-    \code
-    QString strCmd(kStxByte);
-    int n = 0; // number of data bytes
-    strCmd.append(strCommands[static_cast<int>(Command::RELAY_STATUS)])
-          .append(" 00 00 00 ")
-          .append(checkSum(strCmd))
-          .append(QString(" %1".arg(kEtxByte_)));
-    \endcode
-*/
-QString K8090::str_commands_[static_cast<int>(Command::NONE)];
+unsigned char K8090::commands_[static_cast<int>(Command::NONE)];
 
 
 /*!
@@ -223,12 +199,11 @@ void K8090::sendSwitchRelayOnCommand()
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
-    int ii;
-    for (ii = 0; ii < 2; ++ii)
-        cmd[ii] = b_commands_[static_cast<int>(Command::RELAY_ON)][ii];
+    cmd[0] = kStxByte_;
+    cmd[1] = commands_[static_cast<int>(Command::RELAY_ON)];
     cmd[2] = (unsigned char) RelayID::ONE;
     cmd[5] = checkSum(cmd, 5);
-    cmd[6] = b_etx_byte_;
+    cmd[6] = kEtxByte_;
     last_command_ = Command::RELAY_ON;
     qDebug() << byteToHex(cmd, n);
     onSendToSerial(cmd, n);
@@ -242,12 +217,11 @@ void K8090::sendSwitchRelayOffCommand()
 {
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
-    int ii;
-    for (ii = 0; ii < 2; ++ii)
-        cmd[ii] = b_commands_[static_cast<int>(Command::RELAY_OFF)][ii];
+    cmd[0] = kStxByte_;
+    cmd[1] = commands_[static_cast<int>(Command::RELAY_OFF)];
     cmd[2] = (unsigned char) RelayID::ONE;
     cmd[5] = checkSum(cmd, 5);
-    cmd[6] = b_etx_byte_;
+    cmd[6] = kEtxByte_;
     last_command_ = Command::RELAY_OFF;
     qDebug() << byteToHex(cmd, n);
     onSendToSerial(cmd, n);
@@ -372,9 +346,10 @@ bool K8090::validateResponse(const QString &msg, Command cmd)
 bool K8090::validateResponse(const unsigned char *bMsg, int n, Command cmd)
 {
     if (n >= 6) {
-        for (int ii = 0; ii < 2; ++ii)
-            if (bMsg[ii] != b_commands_[static_cast<int>(cmd)][ii])
-                return false;
+        if (bMsg[0] != kStxByte_)
+            return false;
+        if (bMsg[1] != commands_[static_cast<int>(cmd)])
+            return false;
         unsigned char bTest[5];
         for (int ii = 0; ii < 5; ++ii)
             bTest[ii] = bMsg[ii];
@@ -391,28 +366,20 @@ bool K8090::validateResponse(const unsigned char *bMsg, int n, Command cmd)
  */
 void K8090::fillCommandsArrays()
 {
-    str_commands_[static_cast<int>(Command::RELAY_ON)] = kSwitchRelayOnCmd_;
-    str_commands_[static_cast<int>(Command::RELAY_OFF)] = kSwitchRelayOffCmd_;
-    str_commands_[static_cast<int>(Command::TOGGLE_RELAY)] = kToggleRelayCmd_;
-    str_commands_[static_cast<int>(Command::RELAY_STATUS)] = kQueryRelayStatusCmd_;
-    str_commands_[static_cast<int>(Command::SET_BUTTON_MODE)] = kSetButtonModeCmd_;
-    str_commands_[static_cast<int>(Command::BUTTON_MODE)] = kQueryButtonModeCmd_;
-    str_commands_[static_cast<int>(Command::START_TIMER)] = kStartRelayTimerCmd_;
-    str_commands_[static_cast<int>(Command::SET_TIMER)] = kSetRelayTimerDelayCmd_;
-    str_commands_[static_cast<int>(Command::TIMER)] = kQueryTimerDelayCmd_;
-    str_commands_[static_cast<int>(Command::BUTTON_STATUS)] = kButtonStatusCmd_;
-    str_commands_[static_cast<int>(Command::RELAY_STATUS)] = kRelayStatusCmd_;
-    str_commands_[static_cast<int>(Command::RESET_FACTORY_DEFAULTS)] = kResetFactoryDefaultsCmd_;
-    str_commands_[static_cast<int>(Command::JUMPER_STATUS)] = kJumperStatusCmd_;
-    str_commands_[static_cast<int>(Command::FIRMWARE_VERSION)] = kFirmwareVersionCmd_;
-
-    bool ok;
-    for (int ii = 0; ii < static_cast<int>(Command::NONE); ++ii) {
-        b_commands_[ii][0] = kStxByte_.toUInt(&ok, 16);
-        b_commands_[ii][1] = static_cast<unsigned char>(str_commands_[ii].toUInt(&ok, 16));
-    }
-
-    b_etx_byte_ = kEtxByte_.toUInt(&ok, 16);
+    commands_[static_cast<int>(Command::RELAY_ON)] = kSwitchRelayOnCmd_;
+    commands_[static_cast<int>(Command::RELAY_OFF)] = kSwitchRelayOffCmd_;
+    commands_[static_cast<int>(Command::TOGGLE_RELAY)] = kToggleRelayCmd_;
+    commands_[static_cast<int>(Command::RELAY_STATUS)] = kQueryRelayStatusCmd_;
+    commands_[static_cast<int>(Command::SET_BUTTON_MODE)] = kSetButtonModeCmd_;
+    commands_[static_cast<int>(Command::BUTTON_MODE)] = kQueryButtonModeCmd_;
+    commands_[static_cast<int>(Command::START_TIMER)] = kStartRelayTimerCmd_;
+    commands_[static_cast<int>(Command::SET_TIMER)] = kSetRelayTimerDelayCmd_;
+    commands_[static_cast<int>(Command::TIMER)] = kQueryTimerDelayCmd_;
+    commands_[static_cast<int>(Command::BUTTON_STATUS)] = kButtonStatusCmd_;
+    commands_[static_cast<int>(Command::RELAY_STATUS)] = kRelayStatusCmd_;
+    commands_[static_cast<int>(Command::RESET_FACTORY_DEFAULTS)] = kResetFactoryDefaultsCmd_;
+    commands_[static_cast<int>(Command::JUMPER_STATUS)] = kJumperStatusCmd_;
+    commands_[static_cast<int>(Command::FIRMWARE_VERSION)] = kFirmwareVersionCmd_;
 }
 
 

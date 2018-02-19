@@ -135,26 +135,24 @@ private:  // NOLINT(whitespace/indent)
 
     K8090Traits::Command last_command_;
 
-    static unsigned char b_commands_[static_cast<int>(K8090Traits::Command::NONE)][2];
-    static unsigned char b_etx_byte_;
-    static QString str_commands_[static_cast<int>(K8090Traits::Command::NONE)];
+    static unsigned char commands_[static_cast<int>(K8090Traits::Command::NONE)];
 
-    static const QString kStxByte_;
-    static const QString kEtxByte_;
-    static const QString kSwitchRelayOnCmd_;
-    static const QString kSwitchRelayOffCmd_;
-    static const QString kToggleRelayCmd_;
-    static const QString kQueryRelayStatusCmd_;
-    static const QString kSetButtonModeCmd_;
-    static const QString kQueryButtonModeCmd_;
-    static const QString kStartRelayTimerCmd_;
-    static const QString kSetRelayTimerDelayCmd_;
-    static const QString kQueryTimerDelayCmd_;
-    static const QString kButtonStatusCmd_;
-    static const QString kRelayStatusCmd_;
-    static const QString kResetFactoryDefaultsCmd_;
-    static const QString kJumperStatusCmd_;
-    static const QString kFirmwareVersionCmd_;
+    static const unsigned char kStxByte_;
+    static const unsigned char kEtxByte_;
+    static const unsigned char kSwitchRelayOnCmd_;
+    static const unsigned char kSwitchRelayOffCmd_;
+    static const unsigned char kToggleRelayCmd_;
+    static const unsigned char kQueryRelayStatusCmd_;
+    static const unsigned char kSetButtonModeCmd_;
+    static const unsigned char kQueryButtonModeCmd_;
+    static const unsigned char kStartRelayTimerCmd_;
+    static const unsigned char kSetRelayTimerDelayCmd_;
+    static const unsigned char kQueryTimerDelayCmd_;
+    static const unsigned char kButtonStatusCmd_;
+    static const unsigned char kRelayStatusCmd_;
+    static const unsigned char kResetFactoryDefaultsCmd_;
+    static const unsigned char kJumperStatusCmd_;
+    static const unsigned char kFirmwareVersionCmd_;
 };
 
 #endif  // SPRELAY_CORE_K8090_H_
