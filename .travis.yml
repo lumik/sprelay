@@ -2,7 +2,12 @@ sudo: required
 dist: trusty
 language: cpp
 
+# disable the default submodule logic
+git:
+  submodules: false
+
 before_install:
+  - git submodule update --init --recursive
   - sudo add-apt-repository --yes ppa:beineri/opt-qt542-trusty
   - sudo apt-get update -qq
 

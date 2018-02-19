@@ -39,6 +39,11 @@ git clone --depth=1 https://github.com/biomolecules/sprelay.git
 
 The `depth=1` tells git to only pull down one commit worth of historical data.
 
+Download submodules:
+```
+git submodule update --init --recursive
+```
+
 ### Compilation
 
 #### Command line compilation
