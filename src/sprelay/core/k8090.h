@@ -25,6 +25,8 @@
 
 #include <QObject>
 
+#include <type_traits>
+
 #include "enum_flags.h"
 
 // forward declarations
@@ -33,7 +35,8 @@ class QSerialPort;
 
 namespace K8090Traits
 {
-enum class Command {
+enum class Command : unsigned int
+{
     RELAY_ON,
     RELAY_OFF,
     TOGGLE_RELAY,
@@ -51,13 +54,10 @@ enum class Command {
     NONE
 };
 
-inline Command& operator++(Command &cmd) { cmd = static_cast<Command>(static_cast<int>(cmd) + 1); return cmd; }
-inline Command operator++(Command &cmd, int) { Command tmp(cmd); cmd++; return tmp; }
-
 
 enum struct RelayID : unsigned char
 {
-    NONE  = 0,
+    NONE  = 0,  /**< None relay */
     ONE   = 1 << 0,
     TWO   = 1 << 1,
     THREE = 1 << 2,
@@ -72,6 +72,14 @@ enum struct RelayID : unsigned char
 
 // this redefinition enables bitwise operator usage
 constexpr bool enableBitmaskOperators(RelayID) { return true; }
+
+
+// conversion of scoped enum to underlying_type
+template<typename E>
+constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E>>::type::type as_number(const E e)
+{
+    return static_cast<typename std::underlying_type<E>::type>(e);
+}
 
 
 struct ComPortParams
@@ -130,7 +138,7 @@ private:  // NOLINT(whitespace/indent)
     QString com_port_name_;
     QSerialPort *serial_port_;
 
-    bool commandBuffer_[static_cast<int>(K8090Traits::Command::NONE)];
+    bool commandBuffer_[K8090Traits::as_number(K8090Traits::Command::NONE)];
 
     K8090Traits::Command last_command_;
 

@@ -45,8 +45,10 @@ This style guide is inspired by the [Google style guide][gStyleGuide].
   data members are withou trailing underscore
 * **constant** names – leading k + CamelCase – this applies especially for
   static storage duration
-* **function** names – mixedCase (CamelCase with leading lowercase), capitalize
-  acronyms
+* **function** names:
+  * class methods - mixedCase (CamelCase with leading lowercase) it also
+    applies for acronyms
+  * other functions - all lower case as variables.
 * **getters** and **setters** – as variables
 * **namespace** names – all lowercase with underscores between words
 * **macro** names – capitals with underscores between names MY_MACRO

@@ -31,17 +31,151 @@
 #include <QSerialPortInfo>
 #include <QStringBuilder>
 
-
 /*!
     \namespace K8090Traits
-    \brief Contains K8090 traits
+    \brief Contains traits for K8090 class.
 */
 using namespace K8090Traits;  // NOLINT(build/namespaces)
+
+/*!
+    \enum Command
+    \brief Scoped enumeration listing all commands.
+
+    See the Velleman %K8090 card manual.
+*/
+/*!
+    \var Command::RELAY_ON
+    \brief Switch realy on command.
+*/
+/*!
+    \var Command::RELAY_OFF
+    \brief Switch realy off command.
+*/
+/*!
+    \var Command::TOGGLE_RELAY
+    \brief Toggle realy command.
+*/
+/*!
+    \var Command::QUERY_RELAY
+    \brief Query relay status command.
+*/
+/*!
+    \var Command::SET_BUTTON_MODE
+    \brief Set button mode command.
+*/
+/*!
+    \var Command::BUTTON_MODE
+    \brief Query button mode command.
+*/
+/*!
+    \var Command::START_TIMER
+    \brief Start relay timer command.
+*/
+/*!
+    \var Command::SET_TIMER
+    \brief Set relay timer delay command.
+*/
+/*!
+    \var Command::TIMER
+    \brief Query timer delay command.
+*/
+/*!
+    \var Command::BUTTON_STATUS
+    \brief Button status command.
+*/
+/*!
+    \var Command::RELAY_STATUS
+    \brief Relay status command.
+*/
+/*!
+    \var Command::RESET_FACTORY_DEFAULTS
+    \brief Reset factory defaults command.
+*/
+/*!
+    \var Command::JUMPER_STATUS
+    \brief Jumper status command.
+*/
+/*!
+    \var Command::FIRMWARE_VERSION
+    \brief Firmware version command.
+*/
+/*!
+    \var Command::NONE
+    \brief The number of all commands represents also none command.
+*/
+
+/*!
+    \enum RelayID
+    \brief Scoped enumeration listing all 8 relays.
+
+    Bitwise operators are enabled for this enum by overloading K8090Traits::enableBitmaskOperators(RelayID) function
+    (see enum_flags.h for more details) and so the value of K8090Traits::RelayID type can be also a combination of
+    particular relays.
+*/
+/*!
+    \var RelayID::NONE
+    \brief None relay.
+*/
+/*!
+    \var RelayID::ONE
+    \brief First relay.
+*/
+/*!
+    \var RelayID::TWO
+    \brief Second relay.
+*/
+/*!
+    \var RelayID::THREE
+    \brief Third relay.
+*/
+/*!
+    \var RelayID::FOUR
+    \brief Fourth relay.
+*/
+/*!
+    \var RelayID::FIVE
+    \brief Fifth relay.
+*/
+/*!
+    \var RelayID::SIX
+    \brief Sixth relay.
+*/
+/*!
+    \var RelayID::SEVEN
+    \brief Seventh relay.
+*/
+/*!
+    \var RelayID::EIGHT
+    \brief Eigth relay.
+*/
+/*!
+    \var RelayID::ALL
+    \brief All relays.
+*/
+
+/*!
+    \fn constexpr bool enableBitmaskOperators(RelayID)
+    \brief Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more
+    details.
+
+    \return True to enable bitmask operators.
+*/
+
+/*!
+    \fn constexpr std::underlying_type<E> as_number(const E e)
+    \brief Converts enumeration to its underlying type.
+
+    \param e Enumerator to be converted.
+    \return The enum value as underlying type.
+*/
 
 // static constants
 const quint16 K8090::kProductID = 32912;
 const quint16 K8090::kVendorID = 4303;
 
+/*!
+    \brief Start delimiting byte.
+*/
 const unsigned char kStxByte_ = 0x04;
 /*!
     \brief End delimiting byte.
@@ -58,72 +192,72 @@ constexpr unsigned char getXDataValue();
 
 // specializations
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RELAY_ON)>()
+constexpr unsigned char getXDataValue<as_number(Command::RELAY_ON)>()
 {
     return 0x11;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RELAY_OFF)>()
+constexpr unsigned char getXDataValue<as_number(Command::RELAY_OFF)>()
 {
     return 0x12;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::TOGGLE_RELAY)>()
+constexpr unsigned char getXDataValue<as_number(Command::TOGGLE_RELAY)>()
 {
     return 0x14;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::QUERY_RELAY)>()
+constexpr unsigned char getXDataValue<as_number(Command::QUERY_RELAY)>()
 {
     return 0x18;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::SET_BUTTON_MODE)>()
+constexpr unsigned char getXDataValue<as_number(Command::SET_BUTTON_MODE)>()
 {
     return 0x21;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::BUTTON_MODE)>()
+constexpr unsigned char getXDataValue<as_number(Command::BUTTON_MODE)>()
 {
     return 0x22;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::START_TIMER)>()
+constexpr unsigned char getXDataValue<as_number(Command::START_TIMER)>()
 {
     return 0x41;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::SET_TIMER)>()
+constexpr unsigned char getXDataValue<as_number(Command::SET_TIMER)>()
 {
     return 0x42;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::TIMER)>()
+constexpr unsigned char getXDataValue<as_number(Command::TIMER)>()
 {
     return 0x44;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::BUTTON_STATUS)>()
+constexpr unsigned char getXDataValue<as_number(Command::BUTTON_STATUS)>()
 {
     return 0x50;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RELAY_STATUS)>()
+constexpr unsigned char getXDataValue<as_number(Command::RELAY_STATUS)>()
 {
     return 0x51;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RESET_FACTORY_DEFAULTS)>()
+constexpr unsigned char getXDataValue<as_number(Command::RESET_FACTORY_DEFAULTS)>()
 {
     return 0x66;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::JUMPER_STATUS)>()
+constexpr unsigned char getXDataValue<as_number(Command::JUMPER_STATUS)>()
 {
     return 0x70;
 }
 template<>
-constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::FIRMWARE_VERSION)>()
+constexpr unsigned char getXDataValue<as_number(Command::FIRMWARE_VERSION)>()
 {
     return 0x71;
 }
@@ -164,6 +298,7 @@ const unsigned char XArrayData<Args...>::kValues[sizeof...(Args)] = {Args...};
 
 }  // unnamed namespace
 
+
 /*!
     \class K8090
     \brief The class that provides the interface for Velleman %K8090 relay card
@@ -186,14 +321,14 @@ const unsigned char XArrayData<Args...>::kValues[sizeof...(Args)] = {Args...};
 
     // copying the first two bytes of command to command byte array
     cmd[0] = kStxByte_
-    cmd[1] = commands_[static_cast<int>(Command::RELAY_STATUS)];
-    cmd[2] = static_cast<unsigned char>(RelayID::ONE);  // 3rd byte specifies affected relays
+    cmd[1] = commands_[as_number(Command::RELAY_STATUS)];
+    cmd[2] = as_number(RelayID::ONE);  // 3rd byte specifies affected relays
     // commands, there is no one.
     cmd[5] = K8090::checkSum(cmd, 5); // sixth byte contains check sum.
     cmd[6] = kEtxByte_;
     \endcode
 */
-const unsigned char *K8090::commands_ = XArray<static_cast<unsigned int>(K8090Traits::Command::NONE)>::XData::kValues;
+const unsigned char *K8090::commands_ = XArray<as_number(Command::NONE)>::XData::kValues;
 
 
 /*!
@@ -227,8 +362,6 @@ QList<ComPortParams> K8090::availablePorts()
 
 void K8090::connectK8090()
 {
-    const unsigned char *commands = XArray<static_cast<unsigned int>(K8090Traits::Command::NONE)>::XData::kValues;
-    qDebug() << byteToHex(commands, static_cast<unsigned int>(K8090Traits::Command::NONE));
     bool cardFound = false;
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
         if (info.productIdentifier() == kProductID &&
@@ -300,7 +433,7 @@ void K8090::sendSwitchRelayOnCommand()
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     cmd[0] = kStxByte_;
-    cmd[1] = commands_[static_cast<int>(Command::RELAY_ON)];
+    cmd[1] = commands_[as_number(Command::RELAY_ON)];
     cmd[2] = (unsigned char) RelayID::ONE;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = kEtxByte_;
@@ -318,7 +451,7 @@ void K8090::sendSwitchRelayOffCommand()
     int n = 7;  // Number of command bytes.
     unsigned char * cmd = new unsigned char[n];
     cmd[0] = kStxByte_;
-    cmd[1] = commands_[static_cast<int>(Command::RELAY_OFF)];
+    cmd[1] = commands_[as_number(Command::RELAY_OFF)];
     cmd[2] = (unsigned char) RelayID::ONE;
     cmd[5] = checkSum(cmd, 5);
     cmd[6] = kEtxByte_;
@@ -448,7 +581,7 @@ bool K8090::validateResponse(const unsigned char *bMsg, int n, Command cmd)
     if (n >= 6) {
         if (bMsg[0] != kStxByte_)
             return false;
-        if (bMsg[1] != commands_[static_cast<int>(cmd)])
+        if (bMsg[1] != commands_[as_number(cmd)])
             return false;
         unsigned char bTest[5];
         for (int ii = 0; ii < 5; ++ii)
