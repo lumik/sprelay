@@ -42,25 +42,127 @@ using namespace K8090Traits;  // NOLINT(build/namespaces)
 const quint16 K8090::kProductID = 32912;
 const quint16 K8090::kVendorID = 4303;
 
-const unsigned char K8090::kStxByte_ = 0x04;
+const unsigned char kStxByte_ = 0x04;
 /*!
     \brief End delimiting byte.
 */
-const unsigned char K8090::kEtxByte_ = 0x0f;
-const unsigned char K8090::kSwitchRelayOnCmd_ = 0x11;
-const unsigned char K8090::kSwitchRelayOffCmd_ = 0x12;
-const unsigned char K8090::kToggleRelayCmd_ = 0x14;
-const unsigned char K8090::kQueryRelayStatusCmd_ = 0x18;
-const unsigned char K8090::kSetButtonModeCmd_ = 0x21;
-const unsigned char K8090::kQueryButtonModeCmd_ = 0x22;
-const unsigned char K8090::kStartRelayTimerCmd_ = 0x41;
-const unsigned char K8090::kSetRelayTimerDelayCmd_ = 0x42;
-const unsigned char K8090::kQueryTimerDelayCmd_ = 0x44;
-const unsigned char K8090::kButtonStatusCmd_ = 0x50;
-const unsigned char K8090::kRelayStatusCmd_ = 0x51;
-const unsigned char K8090::kResetFactoryDefaultsCmd_ = 0x66;
-const unsigned char K8090::kJumperStatusCmd_ = 0x70;
-const unsigned char K8090::kFirmwareVersionCmd_ = 0x71;
+const unsigned char kEtxByte_ = 0x0f;
+
+// generate static array containing commands at compile time
+
+namespace {  // unnamed namespace
+
+// template function to fill the array with appropriate commands
+template<unsigned int N>
+constexpr unsigned char getXDataValue();
+
+// specializations
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RELAY_ON)>()
+{
+    return 0x11;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RELAY_OFF)>()
+{
+    return 0x12;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::TOGGLE_RELAY)>()
+{
+    return 0x14;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::QUERY_RELAY)>()
+{
+    return 0x18;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::SET_BUTTON_MODE)>()
+{
+    return 0x21;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::BUTTON_MODE)>()
+{
+    return 0x22;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::START_TIMER)>()
+{
+    return 0x41;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::SET_TIMER)>()
+{
+    return 0x42;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::TIMER)>()
+{
+    return 0x44;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::BUTTON_STATUS)>()
+{
+    return 0x50;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RELAY_STATUS)>()
+{
+    return 0x51;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::RESET_FACTORY_DEFAULTS)>()
+{
+    return 0x66;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::JUMPER_STATUS)>()
+{
+    return 0x70;
+}
+template<>
+constexpr unsigned char getXDataValue<static_cast<unsigned int>(K8090Traits::Command::FIRMWARE_VERSION)>()
+{
+    return 0x71;
+}
+
+
+// Template containing static array
+template<unsigned char ...Args>
+struct XArrayData
+{
+    static const unsigned char kValues[sizeof...(Args)];
+};
+
+// recursively generates XData typedef
+template<unsigned int N, unsigned char ...Args>
+struct XArrayGenerator_
+{
+    typedef typename XArrayGenerator_<N - 1, getXDataValue<N - 1>(), Args...>::XData XData;
+};
+
+// end case template partial specialization
+template<unsigned char ...Args>
+struct XArrayGenerator_<1u, Args...>
+{
+    typedef XArrayData<getXDataValue<0u>(), Args...> XData;
+};
+
+// XArray generates recursively XData type, which contains static constant array kValues.
+// Usage: unsigned char arr = XArray<K8090Traits::Comand::None>::XData::kValues
+template<unsigned char N>
+struct XArray
+{
+    typedef typename XArrayGenerator_<N>::XData XData;
+};
+
+// static const array initialization
+template<unsigned char ...Args>
+const unsigned char XArrayData<Args...>::kValues[sizeof...(Args)] = {Args...};
+
+}  // unnamed namespace
 
 /*!
     \class K8090
@@ -74,10 +176,7 @@ const unsigned char K8090::kFirmwareVersionCmd_ = 0x71;
 /*!
     \brief Array of hexadecimal representation of commands used to control the relay.
 
-    It is filled by fillCommandsArrays() static method, the first command is
-    the command with the most important priority, the last is the least
-    important. They should be accessed using the K8090Traits::Command enum
-    values.
+    They should be accessed using the K8090Traits::Command enum values.
 
     Example, which shows how to build the whole command read status:
 
@@ -94,7 +193,7 @@ const unsigned char K8090::kFirmwareVersionCmd_ = 0x71;
     cmd[6] = kEtxByte_;
     \endcode
 */
-unsigned char K8090::commands_[static_cast<int>(Command::NONE)];
+const unsigned char *K8090::commands_ = XArray<static_cast<unsigned int>(K8090Traits::Command::NONE)>::XData::kValues;
 
 
 /*!
@@ -104,7 +203,6 @@ K8090::K8090(QObject *parent) :
     QObject(parent)
 {
     last_command_ = Command::NONE;
-    fillCommandsArrays();
 
     serial_port_ = new QSerialPort(this);
     connect(serial_port_, &QSerialPort::readyRead, this, &K8090::onReadyData);
@@ -129,6 +227,8 @@ QList<ComPortParams> K8090::availablePorts()
 
 void K8090::connectK8090()
 {
+    const unsigned char *commands = XArray<static_cast<unsigned int>(K8090Traits::Command::NONE)>::XData::kValues;
+    qDebug() << byteToHex(commands, static_cast<unsigned int>(K8090Traits::Command::NONE));
     bool cardFound = false;
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
         if (info.productIdentifier() == kProductID &&
@@ -358,28 +458,6 @@ bool K8090::validateResponse(const unsigned char *bMsg, int n, Command cmd)
             return true;
     }
     return false;
-}
-
-
-/*!
-   \brief Fills arrays containing commands according to their importance.
- */
-void K8090::fillCommandsArrays()
-{
-    commands_[static_cast<int>(Command::RELAY_ON)] = kSwitchRelayOnCmd_;
-    commands_[static_cast<int>(Command::RELAY_OFF)] = kSwitchRelayOffCmd_;
-    commands_[static_cast<int>(Command::TOGGLE_RELAY)] = kToggleRelayCmd_;
-    commands_[static_cast<int>(Command::RELAY_STATUS)] = kQueryRelayStatusCmd_;
-    commands_[static_cast<int>(Command::SET_BUTTON_MODE)] = kSetButtonModeCmd_;
-    commands_[static_cast<int>(Command::BUTTON_MODE)] = kQueryButtonModeCmd_;
-    commands_[static_cast<int>(Command::START_TIMER)] = kStartRelayTimerCmd_;
-    commands_[static_cast<int>(Command::SET_TIMER)] = kSetRelayTimerDelayCmd_;
-    commands_[static_cast<int>(Command::TIMER)] = kQueryTimerDelayCmd_;
-    commands_[static_cast<int>(Command::BUTTON_STATUS)] = kButtonStatusCmd_;
-    commands_[static_cast<int>(Command::RELAY_STATUS)] = kRelayStatusCmd_;
-    commands_[static_cast<int>(Command::RESET_FACTORY_DEFAULTS)] = kResetFactoryDefaultsCmd_;
-    commands_[static_cast<int>(Command::JUMPER_STATUS)] = kJumperStatusCmd_;
-    commands_[static_cast<int>(Command::FIRMWARE_VERSION)] = kFirmwareVersionCmd_;
 }
 
 

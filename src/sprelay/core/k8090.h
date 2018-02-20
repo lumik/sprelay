@@ -121,7 +121,6 @@ private:  // NOLINT(whitespace/indent)
     static unsigned char checkSum(const unsigned char *bMsg, int n);
     static bool validateResponse(const QString &msg, K8090Traits::Command cmd);
     static bool validateResponse(const unsigned char *bMsg, int n, K8090Traits::Command cmd);
-    static void fillCommandsArrays();
 
     void sendCommand();
 
@@ -135,24 +134,7 @@ private:  // NOLINT(whitespace/indent)
 
     K8090Traits::Command last_command_;
 
-    static unsigned char commands_[static_cast<int>(K8090Traits::Command::NONE)];
-
-    static const unsigned char kStxByte_;
-    static const unsigned char kEtxByte_;
-    static const unsigned char kSwitchRelayOnCmd_;
-    static const unsigned char kSwitchRelayOffCmd_;
-    static const unsigned char kToggleRelayCmd_;
-    static const unsigned char kQueryRelayStatusCmd_;
-    static const unsigned char kSetButtonModeCmd_;
-    static const unsigned char kQueryButtonModeCmd_;
-    static const unsigned char kStartRelayTimerCmd_;
-    static const unsigned char kSetRelayTimerDelayCmd_;
-    static const unsigned char kQueryTimerDelayCmd_;
-    static const unsigned char kButtonStatusCmd_;
-    static const unsigned char kRelayStatusCmd_;
-    static const unsigned char kResetFactoryDefaultsCmd_;
-    static const unsigned char kJumperStatusCmd_;
-    static const unsigned char kFirmwareVersionCmd_;
+    static const unsigned char* commands_;
 };
 
 #endif  // SPRELAY_CORE_K8090_H_
