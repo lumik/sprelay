@@ -108,7 +108,7 @@ using namespace K8090Traits;  // NOLINT(build/namespaces)
     \enum RelayID
     \brief Scoped enumeration listing all 8 relays.
 
-    Bitwise operators are enabled for this enum by overloading K8090Traits::enableBitmaskOperators(RelayID) function
+    Bitwise operators are enabled for this enum by overloading K8090Traits::enable_bitmask_operators(RelayID) function
     (see enum_flags.h for more details) and so the value of K8090Traits::RelayID type can be also a combination of
     particular relays.
 */
@@ -154,7 +154,7 @@ using namespace K8090Traits;  // NOLINT(build/namespaces)
 */
 
 /*!
-    \fn constexpr bool enableBitmaskOperators(RelayID)
+    \fn constexpr bool enable_bitmask_operators(RelayID)
     \brief Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more
     details.
 

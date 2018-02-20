@@ -71,7 +71,7 @@ enum struct RelayID : unsigned char
 
 
 // this redefinition enables bitwise operator usage
-constexpr bool enableBitmaskOperators(RelayID) { return true; }
+constexpr bool enable_bitmask_operators(RelayID) { return true; }
 
 
 // conversion of scoped enum to underlying_type
