@@ -31,6 +31,10 @@
 #include <QSerialPortInfo>
 #include <QStringBuilder>
 
+
+namespace sprelay {
+namespace core {
+
 /*!
     \namespace K8090Traits
     \brief Contains traits for K8090 class.
@@ -602,3 +606,6 @@ K8090::~K8090()
     serial_port_->close();
     delete serial_port_;
 }
+
+}  // namespace core
+}  // namespace sprelay

@@ -26,13 +26,19 @@
 #include <QMainWindow>
 
 // forward declarations
-class K8090;
 class QComboBox;
 class QHBoxLayout;
 class QLabel;
 class QPushButton;
 class QVBoxLayout;
 
+
+namespace sprelay {
+namespace core {
+// forward declarations of core classes
+class K8090;
+}
+namespace gui {
 
 class MainWindow : public QMainWindow
 {
@@ -50,7 +56,7 @@ private slots:  // NOLINT(whitespace/indent)
 
 
 private:  // NOLINT(whitespace/indent)
-    K8090 *k8090_;
+    core::K8090 *k8090_;
     QString com_port_name_;
     bool connected_;
 
@@ -68,5 +74,8 @@ private:  // NOLINT(whitespace/indent)
     QLabel *ports_label_;
     QComboBox *ports_combo_box_;
 };
+
+}  // namespace gui
+}  // namespace sprelay
 
 #endif  // SPRELAY_GUI_MAINWINDOW_H_

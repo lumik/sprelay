@@ -33,6 +33,9 @@
 #include "k8090.h"
 
 
+namespace sprelay {
+namespace gui {
+
 MainWindow::MainWindow()
 {
     connected_ = false;
@@ -42,7 +45,7 @@ MainWindow::MainWindow()
     connect_button_ = new QPushButton(tr("Connect"), this);
     setCentralWidget(central_widget_);
 
-    k8090_ = new K8090(this);
+    k8090_ = new core::K8090(this);
 
     refresh_ports_button_ = new QPushButton(tr("Refresh Ports"), this);
     ports_label_ = new QLabel(tr("Select port:"), this);
@@ -50,17 +53,18 @@ MainWindow::MainWindow()
     ports_label_->setBuddy(ports_combo_box_);  // buddy accepts focus instead of label (for editing)
     int index = 0;
 //    refreshingPortsComboBoxContent = true;
-    foreach (const K8090Traits::ComPortParams &comPortParams, K8090::availablePorts()) {  // NOLINT(whitespace/parens)
+    foreach (const core::K8090Traits::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
+             core::K8090::availablePorts()) {
         ports_combo_box_->insertItem(index++, comPortParams.portName);
     }
     if (connected_) {
-//        comPortName_ = k8090->comPortName();
+//        comPortName_ = core::k8090->comPortName();
     }
     if ((index = ports_combo_box_->findText(com_port_name_)) != -1)
         ports_combo_box_->setCurrentIndex(index);
 //    refreshingPortsComboBoxContent = false;
     if (!connected_ || index == -1) {
-//        k8090->setComPortName(portsComboBox->currentText());
+//        core::k8090->setComPortName(portsComboBox->currentText());
     }
     com_port_name_ = ports_combo_box_->currentText();
 
@@ -112,7 +116,8 @@ void MainWindow::onRefreshPortsButtonClicked()
         QString msg;
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
-        foreach (const K8090Traits::ComPortParams &comPortParams, K8090::availablePorts()) {  // NOLINT
+        foreach (const core::K8090Traits::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
+                 core::K8090::availablePorts()) {
             msg.append("Port name: " % comPortParams.portName % "\n" %
                        "Description: " % comPortParams.description % "\n" %
                        "Manufacturer: " % comPortParams.manufacturer % "\n" %
@@ -155,3 +160,6 @@ void MainWindow::onRefreshPortsButtonClicked()
 MainWindow::~MainWindow()
 {
 }
+
+}  // namespace gui
+}  // namespace sprelay

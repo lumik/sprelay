@@ -1,2 +1,4 @@
-SOURCES += $$PWD/mainwindow.cpp
-HEADERS += $$PWD/mainwindow.h
+SOURCES += $$PWD/mainwindow.cpp \
+    $$PWD/indicatorbutton.cpp
+HEADERS += $$PWD/mainwindow.h \
+    $$PWD/indicatorbutton.h

@@ -32,9 +32,10 @@
 // forward declarations
 class QSerialPort;
 
+namespace sprelay {
+namespace core {
 
-namespace K8090Traits
-{
+namespace K8090Traits {
 enum class Command : unsigned int
 {
     RELAY_ON,
@@ -144,5 +145,8 @@ private:  // NOLINT(whitespace/indent)
 
     static const unsigned char* commands_;
 };
+
+}  // namespace core
+}  // namespace sprelay
 
 #endif  // SPRELAY_CORE_K8090_H_

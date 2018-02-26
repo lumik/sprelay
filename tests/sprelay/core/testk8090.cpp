@@ -28,6 +28,9 @@
 #define private public
 #include "k8090.h"
 
+namespace sprelay {
+namespace core {
+
 class TestK8090: public QObject
 {
     Q_OBJECT
@@ -58,5 +61,8 @@ void TestK8090::hexToByte()
     QCOMPARE(ok, true);
 }
 
-QTEST_MAIN(TestK8090)
+}  // namespace core
+}  // namespace sprelay
+
+QTEST_MAIN(sprelay::core::TestK8090)
 #include "testk8090.moc"
