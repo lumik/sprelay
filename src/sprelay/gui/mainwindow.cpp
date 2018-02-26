@@ -42,7 +42,7 @@ MainWindow::MainWindow()
 
     central_widget_ = new QWidget(this);
 
-    connect_button_ = new QPushButton(tr("Connect"), this);
+    connect_button_ = new IndicatorButton(tr("Connect"), this);
     setCentralWidget(central_widget_);
 
     k8090_ = new core::K8090(this);
@@ -102,6 +102,7 @@ MainWindow::MainWindow()
 void MainWindow::onConnectButtonClicked()
 {
     k8090_->connectK8090();
+    connect_button_->setState(!connect_button_->state());
 }
 
 

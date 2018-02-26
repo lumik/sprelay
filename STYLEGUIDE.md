@@ -209,7 +209,6 @@ This style guide is inspired by the [Google style guide][gStyleGuide].
   ```cpp
   class MyClass
   {
-      MyClass() : var1_(10), var2_(20);  // declaration
       MyClass(int var1) : var1_(var1), var2_(20) {}  // empty definition at the
                                                      // same line
       MyClass(int var1, int var2)
