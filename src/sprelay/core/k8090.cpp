@@ -364,6 +364,16 @@ QList<ComPortParams> K8090::availablePorts()
 }
 
 
+void K8090::setComPortName(const QString &name)
+{
+    if (com_port_name_ != name) {
+        com_port_name_ = name;
+        // connected_ = false;
+        serial_port_->close();
+    }
+}
+
+
 void K8090::connectK8090()
 {
     bool cardFound = false;

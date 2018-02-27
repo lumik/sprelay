@@ -103,9 +103,10 @@ public:  // NOLINT(whitespace/indent)
     static const quint16 kVendorID;
 
     explicit K8090(QObject *parent = 0);
-    virtual ~K8090();
+    ~K8090() override;
 
     static QList<K8090Traits::ComPortParams> availablePorts();
+    void setComPortName(const QString &name);
 
 
 signals:  // NOLINT(whitespace/indent)
