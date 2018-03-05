@@ -26,13 +26,14 @@
 #include <QString>
 #include <QWidget>
 
+#include <memory>
+
 
 // forward declarations
 class QComboBox;
-class QHBoxLayout;
 class QLabel;
 class QPushButton;
-class QVBoxLayout;
+class QSpinBox;
 
 
 namespace sprelay {
@@ -46,6 +47,7 @@ class K8090;
 }
 namespace gui {
 class IndicatorButton;
+class IndicatorLight;
 
 class CentralWidget : public QWidget
 {
@@ -67,6 +69,7 @@ private slots:  // NOLINT(whitespace/indent)
     void onRefreshPortsButtonClicked();
 
 private:  // NOLINT(whitespace/indent)
+    static const int N_relays = 8;
     void constructGui();
     void createUiElements();
     void initializePortsCombobox();
@@ -77,10 +80,32 @@ private:  // NOLINT(whitespace/indent)
     QString com_port_name_;
     bool connected_;
 
+    // GUI elements
+    // port settings
     IndicatorButton *connect_button_;
     QPushButton *refresh_ports_button_;
-    QLabel *ports_label_;
     QComboBox *ports_combo_box_;
+
+    // relays
+    // relays globals
+    QPushButton *refresh_relays_button_;
+    QPushButton *reset_factory_defaults_button_;
+    QLabel *firmware_version_label_;
+    IndicatorLight *jumper_status_light;
+    // power settings
+    std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[N_relays];
+    std::unique_ptr<QPushButton> relay_off_buttons_arr_[N_relays];
+    std::unique_ptr<QPushButton> toggle_relay_buttons_arr_[N_relays];
+    // mode settings
+    std::unique_ptr<IndicatorButton> momentary_buttons_arr_[N_relays];
+    std::unique_ptr<IndicatorButton> timed_buttons_arr_[N_relays];
+    std::unique_ptr<QPushButton> toggle_mode_buttons_arr_[N_relays];
+    // timer settings
+    std::unique_ptr<QLabel> default_timer_labels_arr_[N_relays];
+    std::unique_ptr<QLabel> remaining_time_labels_arr_[N_relays];
+    std::unique_ptr<QPushButton> set_default_timer_buttons_arr_[N_relays];
+    std::unique_ptr<QSpinBox> timer_spin_box_arr_[N_relays];
+    std::unique_ptr<IndicatorButton> start_timer_buttons_arr_[N_relays];
 };
 
 }  // namespace gui
