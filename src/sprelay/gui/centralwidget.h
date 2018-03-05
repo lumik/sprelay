@@ -33,6 +33,7 @@
 class QComboBox;
 class QLabel;
 class QPushButton;
+class QSignalMapper;
 class QSpinBox;
 
 
@@ -67,6 +68,17 @@ private slots:  // NOLINT(whitespace/indent)
     void onConnectButtonClicked();
     void onPortsComboBoxCurrentIndexChanged(const QString &portName);
     void onRefreshPortsButtonClicked();
+    void onRefreshRelaysButtonClicked();
+    void resetFactoryDefaultsButtonClicked();
+    void onRelayOnButtonClicked(int relay);
+    void onRelayOffButtonClicked(int relay);
+    void onToggleRelayButtonClicked(int relay);
+    void onMomentaryButtonClicked(int relay);
+    void onTimedButtonClicked(int relay);
+    void onToggleModeButtonClicked(int relay);
+    void onSetDefaultTimerButtonClicked(int relay);
+    void onStartTimerButtonClicked(int relay);
+    void onTimerSpinBoxValueChanged(int relay);
 
 private:  // NOLINT(whitespace/indent)
     static const int N_relays = 8;
@@ -99,13 +111,24 @@ private:  // NOLINT(whitespace/indent)
     // mode settings
     std::unique_ptr<IndicatorButton> momentary_buttons_arr_[N_relays];
     std::unique_ptr<IndicatorButton> timed_buttons_arr_[N_relays];
-    std::unique_ptr<QPushButton> toggle_mode_buttons_arr_[N_relays];
+    std::unique_ptr<IndicatorButton> toggle_mode_buttons_arr_[N_relays];
     // timer settings
     std::unique_ptr<QLabel> default_timer_labels_arr_[N_relays];
     std::unique_ptr<QLabel> remaining_time_labels_arr_[N_relays];
     std::unique_ptr<QPushButton> set_default_timer_buttons_arr_[N_relays];
-    std::unique_ptr<QSpinBox> timer_spin_box_arr_[N_relays];
     std::unique_ptr<IndicatorButton> start_timer_buttons_arr_[N_relays];
+    std::unique_ptr<QSpinBox> timer_spin_box_arr_[N_relays];
+
+    // signal mappers
+    std::unique_ptr<QSignalMapper> relay_on_mapper_;
+    std::unique_ptr<QSignalMapper> relay_off_mapper_;
+    std::unique_ptr<QSignalMapper> toggle_relay_mapper_;
+    std::unique_ptr<QSignalMapper> momentary_mapper_;
+    std::unique_ptr<QSignalMapper> timed_mapper_;
+    std::unique_ptr<QSignalMapper> toggle_mode_mapper_;
+    std::unique_ptr<QSignalMapper> set_default_timer_mapper_;
+    std::unique_ptr<QSignalMapper> start_timer_mapper_;
+    std::unique_ptr<QSignalMapper> timer_spin_box_mapper_;
 };
 
 }  // namespace gui
