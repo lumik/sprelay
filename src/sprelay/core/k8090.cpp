@@ -196,72 +196,72 @@ constexpr unsigned char getXDataValue();
 
 // specializations
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::RELAY_ON)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::RELAY_ON)>()
 {
     return 0x11;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::RELAY_OFF)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::RELAY_OFF)>()
 {
     return 0x12;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::TOGGLE_RELAY)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::TOGGLE_RELAY)>()
 {
     return 0x14;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::QUERY_RELAY)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::QUERY_RELAY)>()
 {
     return 0x18;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::SET_BUTTON_MODE)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::SET_BUTTON_MODE)>()
 {
     return 0x21;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::BUTTON_MODE)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::BUTTON_MODE)>()
 {
     return 0x22;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::START_TIMER)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::START_TIMER)>()
 {
     return 0x41;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::SET_TIMER)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::SET_TIMER)>()
 {
     return 0x42;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::TIMER)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::TIMER)>()
 {
     return 0x44;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::BUTTON_STATUS)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::BUTTON_STATUS)>()
 {
     return 0x50;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::RELAY_STATUS)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::RELAY_STATUS)>()
 {
     return 0x51;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::RESET_FACTORY_DEFAULTS)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::RESET_FACTORY_DEFAULTS)>()
 {
     return 0x66;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::JUMPER_STATUS)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::JUMPER_STATUS)>()
 {
     return 0x70;
 }
 template<>
-constexpr unsigned char getXDataValue<as_number(Command::FIRMWARE_VERSION)>()
+constexpr unsigned char getXDataValue<as_number(CommandID::FIRMWARE_VERSION)>()
 {
     return 0x71;
 }
@@ -332,7 +332,7 @@ const unsigned char XArrayData<Args...>::kValues[sizeof...(Args)] = {Args...};
     cmd[6] = kEtxByte_;
     \endcode
 */
-const unsigned char *K8090::commands_ = XArray<as_number(Command::NONE)>::XData::kValues;
+const unsigned char *K8090::commands_ = XArray<as_number(CommandID::NONE)>::XData::kValues;
 
 
 /*!
@@ -341,7 +341,7 @@ const unsigned char *K8090::commands_ = XArray<as_number(Command::NONE)>::XData:
 K8090::K8090(QObject *parent) :
     QObject(parent)
 {
-    last_command_ = Command::NONE;
+    connected_ = false;
 
     serial_port_ = new QSerialPort(this);
     connect(serial_port_, &QSerialPort::readyRead, this, &K8090::onReadyData);
@@ -368,26 +368,31 @@ void K8090::setComPortName(const QString &name)
 {
     if (com_port_name_ != name) {
         com_port_name_ = name;
-        // connected_ = false;
+        connected_ = false;
         serial_port_->close();
     }
+}
+
+bool K8090::isConnected()
+{
+    return connected_;
 }
 
 
 void K8090::connectK8090()
 {
+    connected_ = false;
     bool cardFound = false;
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
-        if (info.productIdentifier() == kProductID &&
-                info.vendorIdentifier() == kVendorID) {
+        if (info.portName() == com_port_name_
+                && info.productIdentifier() == kProductID
+                && info.vendorIdentifier() == kVendorID) {
             cardFound = true;
-            com_port_name_ = info.portName();
-            qDebug() << "Port name: " % com_port_name_;
         }
     }
 
     if (!cardFound) {
-        qDebug() << "Card not found!!!";
+        emit connectionFailed();
         return;
     }
 
@@ -398,22 +403,108 @@ void K8090::connectK8090()
     serial_port_->setStopBits(QSerialPort::OneStop);
     serial_port_->setFlowControl(QSerialPort::NoFlowControl);
 
-    sendSwitchRelayOffCommand();
+    if (!serial_port_->isOpen()) {
+        if (!serial_port_->open(QIODevice::ReadWrite)) {
+            emit connectionFailed();
+            return;
+        }
+    }
+
+    connected_ = true;
+    sendCommandHelper(CommandID::QUERY_RELAY);
+    sendCommandHelper(CommandID::BUTTON_MODE);
+    sendCommandHelper(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
+    sendCommandHelper(CommandID::JUMPER_STATUS);
+    sendCommandHelper(CommandID::FIRMWARE_VERSION);
 }
 
-
-/*!
-   \brief K8090::onSendToSerial
-   \param buffer
-   \param n
- */
-void K8090::onSendToSerial(const unsigned char *buffer, int n)
+void K8090::disconnect()
 {
-    qDebug() << byteToHex(buffer, n);
-    if (!serial_port_->isOpen())
-        serial_port_->open(QIODevice::ReadWrite);
-    serial_port_->write(reinterpret_cast<char*>(const_cast<unsigned char*>(buffer)), n);
-    delete[] buffer;
+    connected_ = false;
+    serial_port_->close();
+}
+
+void K8090::refreshRelaysInfo()
+{
+    sendCommandHelper(CommandID::QUERY_RELAY);
+    sendCommandHelper(CommandID::BUTTON_MODE);
+    sendCommandHelper(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
+    sendCommandHelper(CommandID::JUMPER_STATUS);
+    sendCommandHelper(CommandID::FIRMWARE_VERSION);
+}
+
+void K8090::switchRelayOn(RelayID relays)
+{
+    sendCommand(CommandID::RELAY_ON, relays);
+}
+
+void K8090::switchRelayOff(RelayID relays)
+{
+    sendCommand(CommandID::RELAY_OFF, relays);
+}
+
+void K8090::toggleRelay(RelayID relays)
+{
+    sendCommand(CommandID::TOGGLE_RELAY, relays);
+}
+
+void K8090::setButtonMode(RelayID momentary, RelayID toggle, RelayID timed)
+{
+    sendCommand(CommandID::SET_BUTTON_MODE, momentary, as_number(toggle), as_number(timed));
+}
+
+void K8090::startRelayTimer(RelayID relays, quint16 delay)
+{
+    sendCommand(CommandID::START_TIMER, relays, highByte(delay), lowByte(delay));
+}
+
+void K8090::setRelayTimerDelay(RelayID relays, quint16 delay)
+{
+    sendCommand(CommandID::SET_TIMER, relays, highByte(delay), lowByte(delay));
+}
+
+void K8090::queryRelayStatus()
+{
+    sendCommand(CommandID::RELAY_STATUS);
+}
+
+void K8090::queryRemainingTimerDelay(RelayID relays)
+{
+    sendCommand(CommandID::TIMER, relays, as_number(TimerDelayType::CURRENT));
+}
+
+void K8090::queryTotalTimerDelay(RelayID relays)
+{
+    sendCommand(CommandID::TIMER, relays, as_number(TimerDelayType::TOTAL));
+}
+
+void K8090::queryButtonModes()
+{
+    sendCommand(CommandID::BUTTON_MODE);
+}
+
+void K8090::resetFactoryDefaults()
+{
+    sendCommand(CommandID::RESET_FACTORY_DEFAULTS);
+}
+
+void K8090::queryJumperStatus()
+{
+    sendCommand(CommandID::JUMPER_STATUS);
+}
+
+void K8090::queryFirmwareVersion()
+{
+    sendCommand(CommandID::FIRMWARE_VERSION);
+}
+
+void K8090::sendCommand(CommandID command, RelayID mask, unsigned char param1, unsigned char param2)
+{
+    if (!connected_) {
+        emit notConnected();
+        return;
+    }
+    sendCommandHelper(command, mask, param1, param2);
 }
 
 
@@ -426,52 +517,42 @@ void K8090::onReadyData()
     int n = data.size();
     unsigned char *buffer = reinterpret_cast<unsigned char*>(data.data());
     qDebug() << byteToHex(buffer, n);
-
-    last_command_ = Command::NONE;
 }
 
 
-/*!
-    \brief K8090::sendCommand
-*/
-void K8090::sendCommand()
+void K8090::sendCommandHelper(CommandID command, RelayID mask, unsigned char param1, unsigned char param2)
 {
-}
-
-
-/*!
-   \brief K8090::sendSwitchRelayOnCommand
- */
-void K8090::sendSwitchRelayOnCommand()
-{
-    int n = 7;  // Number of command bytes.
-    unsigned char * cmd = new unsigned char[n];
+    qDebug() << "K8090::sendCommandHelper()";
+    static const int n = 7;  // Number of command bytes.
+    std::unique_ptr<unsigned char []> cmd = std::unique_ptr<unsigned char []>{new unsigned char[n]};
     cmd[0] = kStxByte_;
-    cmd[1] = commands_[as_number(Command::RELAY_ON)];
-    cmd[2] = (unsigned char) RelayID::ONE;
-    cmd[5] = checkSum(cmd, 5);
+    cmd[1] = commands_[as_number(command)];
+    cmd[2] = as_number(mask);
+    cmd[3] = param1;
+    cmd[4] = param2;
+    cmd[5] = checkSum(cmd.get(), 5);
     cmd[6] = kEtxByte_;
-    last_command_ = Command::RELAY_ON;
-    qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    sendToSerial(std::move(cmd), n);
 }
 
 
 /*!
-   \brief K8090::sendSwitchRelayOnCommand
+   \brief K8090::sendToSerial
+   \param buffer
+   \param n
  */
-void K8090::sendSwitchRelayOffCommand()
+void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 {
-    int n = 7;  // Number of command bytes.
-    unsigned char * cmd = new unsigned char[n];
-    cmd[0] = kStxByte_;
-    cmd[1] = commands_[as_number(Command::RELAY_OFF)];
-    cmd[2] = (unsigned char) RelayID::ONE;
-    cmd[5] = checkSum(cmd, 5);
-    cmd[6] = kEtxByte_;
-    last_command_ = Command::RELAY_OFF;
-    qDebug() << byteToHex(cmd, n);
-    onSendToSerial(cmd, n);
+    qDebug() << byteToHex(buffer.get(), n);
+    if (!serial_port_->isOpen()) {
+        if (!serial_port_->open(QIODevice::ReadWrite)) {
+            connected_ = false;
+            emit connectionFailed();
+            return;
+        }
+    }
+
+    serial_port_->write(reinterpret_cast<char*>(buffer.release()), n);
 }
 
 
@@ -568,7 +649,7 @@ unsigned char K8090::checkSum(const unsigned char *bMsg, int n)
    \param cmd
    \return
  */
-bool K8090::validateResponse(const QString &msg, Command cmd)
+bool K8090::validateResponse(const QString &msg, CommandID cmd)
 {
     unsigned char *bMsg;
     int n;
@@ -590,7 +671,7 @@ bool K8090::validateResponse(const QString &msg, Command cmd)
     \param cmd  The last command enum value.
     \return     true if response is valid, false if not.
 */
-bool K8090::validateResponse(const unsigned char *bMsg, int n, Command cmd)
+bool K8090::validateResponse(const unsigned char *bMsg, int n, CommandID cmd)
 {
     if (n >= 6) {
         if (bMsg[0] != kStxByte_)

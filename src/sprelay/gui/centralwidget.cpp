@@ -118,52 +118,65 @@ void CentralWidget::onRefreshPortsButtonClicked()
 void CentralWidget::onRefreshRelaysButtonClicked()
 {
     qDebug() << "CentralWidget::onRefreshRelaysButtonClicked()";
+    k8090_->refreshRelaysInfo();
 }
 
 void CentralWidget::resetFactoryDefaultsButtonClicked()
 {
     qDebug() << "CentralWidget::onResetFactoryDefaultsButtonClicked()";
+    k8090_->resetFactoryDefaults();
 }
 
 void CentralWidget::onRelayOnButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onRelayOnButtonClicked(" << relay << ")";
+    k8090_->switchRelayOn(core::K8090Traits::from_number(relay));
 }
 
 void CentralWidget::onRelayOffButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onRelayOffButtonClicked(" << relay << ")";
+    k8090_->switchRelayOff(core::K8090Traits::from_number(relay));
 }
 
 void CentralWidget::onToggleRelayButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onToggleRelayButtonClicked(" << relay << ")";
+    k8090_->toggleRelay(core::K8090Traits::from_number(relay));
 }
 
 void CentralWidget::onMomentaryButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onMomentaryButtonClicked(" << relay << ")";
+    k8090_->setButtonMode(core::K8090Traits::from_number(relay), core::K8090Traits::RelayID::NONE,
+        core::K8090Traits::RelayID::NONE);
 }
 
 void CentralWidget::onTimedButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onTimedButtonClicked(" << relay << ")";
+    k8090_->setButtonMode(core::K8090Traits::RelayID::NONE, core::K8090Traits::RelayID::NONE,
+        core::K8090Traits::from_number(relay));
 }
 
 void CentralWidget::onToggleModeButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onToggleModeButtonClicked(" << relay << ")";
+    k8090_->setButtonMode(core::K8090Traits::RelayID::NONE, core::K8090Traits::from_number(relay),
+        core::K8090Traits::RelayID::NONE);
 }
 
 void CentralWidget::onSetDefaultTimerButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onSetDefaultTimerButtonClicked(" << relay << "): "
              << timer_spin_box_arr_[relay]->value();
+    k8090_->setRelayTimerDelay(core::K8090Traits::from_number(relay), timer_spin_box_arr_[relay]->value());
 }
 
 void CentralWidget::onStartTimerButtonClicked(int relay)
 {
     qDebug() << "CentralWidget::onStartTimerButtonClicked(" << relay << "): " << timer_spin_box_arr_[relay]->value();
+    k8090_->startRelayTimer(core::K8090Traits::from_number(relay), timer_spin_box_arr_[relay]->value());
 }
 
 void CentralWidget::onTimerSpinBoxValueChanged(int relay)

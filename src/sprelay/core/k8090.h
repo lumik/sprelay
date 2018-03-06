@@ -25,6 +25,7 @@
 
 #include <QObject>
 
+#include <memory>
 #include <type_traits>
 
 #include "enum_flags.h"
@@ -36,7 +37,7 @@ namespace sprelay {
 namespace core {
 
 namespace K8090Traits {
-enum class Command : unsigned int
+enum class CommandID : unsigned int
 {
     RELAY_ON,
     RELAY_OFF,
@@ -75,6 +76,18 @@ enum struct RelayID : unsigned char
 constexpr bool enable_bitmask_operators(RelayID) { return true; }
 
 
+constexpr RelayID from_number(unsigned int number) { return static_cast<RelayID>(1 << (number)); }
+
+
+enum struct TimerDelayType : unsigned char
+{
+    NONE    = 0,  /**< None relay */
+    TOTAL   = 1 << 0,
+    CURRENT = 1 << 1,
+    ALL     = 0xff
+};
+
+
 // conversion of scoped enum to underlying_type
 template<typename E>
 constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E>>::type::type as_number(const E e)
@@ -91,6 +104,8 @@ struct ComPortParams
     quint16 productIdentifier;
     quint16 vendorIdentifier;
 };
+
+
 }  // namespace K8090Traits
 
 
@@ -108,43 +123,65 @@ public:  // NOLINT(whitespace/indent)
     static QList<K8090Traits::ComPortParams> availablePorts();
     void setComPortName(const QString &name);
 
+    bool isConnected();
 
 signals:  // NOLINT(whitespace/indent)
-
+    void relayStatus(K8090Traits::RelayID previous, K8090Traits::RelayID current, K8090Traits::RelayID timed);
+    void buttonStatus(K8090Traits::RelayID state, K8090Traits::RelayID pressed, K8090Traits::RelayID released);
+    void timerDelay(K8090Traits::RelayID relays, quint16 delay);
+    void buttonMode(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle, K8090Traits::RelayID timed);
+    void jumperStatus(bool on);
+    void firmwareVersion(int year, int week);
+    void connected();
+    void connectionFailed();
+    void notConnected();
 
 public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
-
-
-protected slots:  // NOLINT(whitespace/indent)
-    void onSendToSerial(const unsigned char *buffer, int n);
-
+    void disconnect();
+    void refreshRelaysInfo();
+    void switchRelayOn(K8090Traits::RelayID relays);
+    void switchRelayOff(K8090Traits::RelayID relays);
+    void toggleRelay(K8090Traits::RelayID relays);
+    void setButtonMode(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle, K8090Traits::RelayID timed);
+    void startRelayTimer(K8090Traits::RelayID relays, quint16 delay = 0);
+    void setRelayTimerDelay(K8090Traits::RelayID relays, quint16 delay);
+    void queryRelayStatus();
+    void queryRemainingTimerDelay(K8090Traits::RelayID relays);
+    void queryTotalTimerDelay(K8090Traits::RelayID relays);
+    void queryButtonModes();
+    void resetFactoryDefaults();
+    void queryJumperStatus();
+    void queryFirmwareVersion();
+    void sendCommand(K8090Traits::CommandID command, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
+            unsigned char param1 = 0, unsigned char param2 = 0);
 
 private slots:  // NOLINT(whitespace/indent)
     void onReadyData();
 
 
 private:  // NOLINT(whitespace/indent)
+    void sendCommandHelper(K8090Traits::CommandID command, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
+            unsigned char param1 = 0, unsigned char param2 = 0);
+    void sendToSerial(std::unique_ptr<unsigned char []> buffer, int n);
+
     static void hexToByte(unsigned char **pbuffer, int *n, const QString &msg);
     static QString byteToHex(const unsigned char *buffer, int n);
     static QString checkSum(const QString &msg);
     static unsigned char checkSum(const unsigned char *bMsg, int n);
-    static bool validateResponse(const QString &msg, K8090Traits::Command cmd);
-    static bool validateResponse(const unsigned char *bMsg, int n, K8090Traits::Command cmd);
-
-    void sendCommand();
-
-    void sendSwitchRelayOnCommand();
-    void sendSwitchRelayOffCommand();
+    static bool validateResponse(const QString &msg, K8090Traits::CommandID cmd);
+    static bool validateResponse(const unsigned char *bMsg, int n, K8090Traits::CommandID cmd);
+    static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
+    static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
 
     QString com_port_name_;
     QSerialPort *serial_port_;
 
-    bool commandBuffer_[K8090Traits::as_number(K8090Traits::Command::NONE)];
-
-    K8090Traits::Command last_command_;
+    bool pending_commands_[K8090Traits::as_number(K8090Traits::CommandID::NONE)];
 
     static const unsigned char* commands_;
+
+    bool connected_;
 };
 
 }  // namespace core
