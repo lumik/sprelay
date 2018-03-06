@@ -179,7 +179,8 @@ private:  // NOLINT(whitespace/indent)
 
     bool pending_commands_[K8090Traits::as_number(K8090Traits::CommandID::NONE)];
 
-    static const unsigned char* commands_;
+    static const unsigned char *commands_;
+    static const unsigned int *priorities_;
 
     bool connected_;
 };

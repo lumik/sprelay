@@ -192,113 +192,130 @@ namespace {  // unnamed namespace
 
 // template function to fill the array with appropriate commands
 template<unsigned int N>
-constexpr unsigned char getXDataValue();
+struct CommandDataValue;
 
 // specializations
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::RELAY_ON)>()
+struct CommandDataValue<as_number(CommandID::RELAY_ON)>
 {
-    return 0x11;
-}
+    static const unsigned char kCommand = 0x11;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::RELAY_OFF)>()
+struct CommandDataValue<as_number(CommandID::RELAY_OFF)>
 {
-    return 0x12;
-}
+    static const unsigned char kCommand = 0x12;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::TOGGLE_RELAY)>()
+struct CommandDataValue<as_number(CommandID::TOGGLE_RELAY)>
 {
-    return 0x14;
-}
+    static const unsigned char kCommand = 0x14;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::QUERY_RELAY)>()
+struct CommandDataValue<as_number(CommandID::QUERY_RELAY)>
 {
-    return 0x18;
-}
+    static const unsigned char kCommand = 0x18;
+    static const int kPriority = 2;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::SET_BUTTON_MODE)>()
+struct CommandDataValue<as_number(CommandID::SET_BUTTON_MODE)>
 {
-    return 0x21;
-}
+    static const unsigned char kCommand = 0x21;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::BUTTON_MODE)>()
+struct CommandDataValue<as_number(CommandID::BUTTON_MODE)>
 {
-    return 0x22;
-}
+    static const unsigned char kCommand = 0x22;
+    static const int kPriority = 2;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::START_TIMER)>()
+struct CommandDataValue<as_number(CommandID::START_TIMER)>
 {
-    return 0x41;
-}
+    static const unsigned char kCommand = 0x41;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::SET_TIMER)>()
+struct CommandDataValue<as_number(CommandID::SET_TIMER)>
 {
-    return 0x42;
-}
+    static const unsigned char kCommand = 0x42;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::TIMER)>()
+struct CommandDataValue<as_number(CommandID::TIMER)>
 {
-    return 0x44;
-}
+    static const unsigned char kCommand = 0x44;
+    static const int kPriority = 2;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::BUTTON_STATUS)>()
+struct CommandDataValue<as_number(CommandID::BUTTON_STATUS)>
 {
-    return 0x50;
-}
+    static const unsigned char kCommand = 0x50;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::RELAY_STATUS)>()
+struct CommandDataValue<as_number(CommandID::RELAY_STATUS)>
 {
-    return 0x51;
-}
+    static const unsigned char kCommand = 0x51;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::RESET_FACTORY_DEFAULTS)>()
+struct CommandDataValue<as_number(CommandID::RESET_FACTORY_DEFAULTS)>
 {
-    return 0x66;
-}
+    static const unsigned char kCommand = 0x66;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::JUMPER_STATUS)>()
+struct CommandDataValue<as_number(CommandID::JUMPER_STATUS)>
 {
-    return 0x70;
-}
+    static const unsigned char kCommand = 0x70;
+    static const int kPriority = 1;
+};
 template<>
-constexpr unsigned char getXDataValue<as_number(CommandID::FIRMWARE_VERSION)>()
+struct CommandDataValue<as_number(CommandID::FIRMWARE_VERSION)>
 {
-    return 0x71;
-}
+    static const unsigned char kCommand = 0x71;
+    static const int kPriority = 1;
+};
 
 
 // Template containing static array
-template<unsigned char ...Args>
+template<typename T, T ...Args>
 struct XArrayData
 {
-    static const unsigned char kValues[sizeof...(Args)];
+    static const T kValues[sizeof...(Args)];
 };
 
-// recursively generates XData typedef
+// recursively generates typedefs
 template<unsigned int N, unsigned char ...Args>
-struct XArrayGenerator_
+struct CommandArrayGenerator_
 {
-    typedef typename XArrayGenerator_<N - 1, getXDataValue<N - 1>(), Args...>::XData XData;
+    using Commands = typename CommandArrayGenerator_<N - 1, CommandDataValue<N - 1>::kCommand, Args...>::Commands;
+    using Priorities = typename CommandArrayGenerator_<N - 1, CommandDataValue<N - 1>::kPriority, Args...>::Priorities;
 };
 
 // end case template partial specialization
 template<unsigned char ...Args>
-struct XArrayGenerator_<1u, Args...>
+struct CommandArrayGenerator_<1u, Args...>
 {
-    typedef XArrayData<getXDataValue<0u>(), Args...> XData;
+    using Commands = XArrayData<unsigned char, CommandDataValue<0u>::kCommand, Args...>;
+    using Priorities = XArrayData<unsigned int, CommandDataValue<0u>::kPriority, Args...>;
 };
 
-// XArray generates recursively XData type, which contains static constant array kValues.
-// Usage: unsigned char arr = XArray<K8090Traits::Comand::None>::XData::kValues
+// CommandArray generates recursively kCommands nad kPriorities types, which contains static constant array kValues.
+// Usage: unsigned char arr = CommandArray<K8090Traits::Comand::None>::kCommands::kValues
 template<unsigned char N>
-struct XArray
+struct CommandArray
 {
-    typedef typename XArrayGenerator_<N>::XData XData;
+    using Commands = typename CommandArrayGenerator_<N>::Commands;
+    using Priorities = typename CommandArrayGenerator_<N>::Priorities;
 };
 
 // static const array initialization
-template<unsigned char ...Args>
-const unsigned char XArrayData<Args...>::kValues[sizeof...(Args)] = {Args...};
+template<typename T, T ...Args>
+const T XArrayData<T, Args...>::kValues[sizeof...(Args)] = {Args...};
 
 }  // unnamed namespace
 
@@ -332,7 +349,10 @@ const unsigned char XArrayData<Args...>::kValues[sizeof...(Args)] = {Args...};
     cmd[6] = kEtxByte_;
     \endcode
 */
-const unsigned char *K8090::commands_ = XArray<as_number(CommandID::NONE)>::XData::kValues;
+const unsigned char *K8090::commands_ = CommandArray<as_number(CommandID::NONE)>::Commands::kValues;
+
+
+const unsigned int *K8090::priorities_ = CommandArray<as_number(CommandID::NONE)>::Priorities::kValues;
 
 
 /*!
