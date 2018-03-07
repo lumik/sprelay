@@ -2,7 +2,7 @@
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
 **  through usb using virtual serial port in Qt.                          **
-**  Copyright (C) 2017 Jakub Klener                                       **
+**  Copyright (C) 2018 Jakub Klener                                       **
 **                                                                        **
 **  This file is part of SpRelay application.                             **
 **                                                                        **
@@ -301,7 +301,7 @@ template<unsigned char ...Args>
 struct CommandArrayGenerator_<1u, Args...>
 {
     using Commands = XArrayData<unsigned char, CommandDataValue<0u>::kCommand, Args...>;
-    using Priorities = XArrayData<unsigned int, CommandDataValue<0u>::kPriority, Args...>;
+    using Priorities = XArrayData<int, CommandDataValue<0u>::kPriority, Args...>;
 };
 
 // CommandArray generates recursively kCommands nad kPriorities types, which contains static constant array kValues.
@@ -352,7 +352,7 @@ const T XArrayData<T, Args...>::kValues[sizeof...(Args)] = {Args...};
 const unsigned char *K8090::commands_ = CommandArray<as_number(CommandID::NONE)>::Commands::kValues;
 
 
-const unsigned int *K8090::priorities_ = CommandArray<as_number(CommandID::NONE)>::Priorities::kValues;
+const int *K8090::priorities_ = CommandArray<as_number(CommandID::NONE)>::Priorities::kValues;
 
 
 /*!

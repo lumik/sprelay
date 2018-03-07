@@ -20,25 +20,32 @@
 **                                                                        **
 ****************************************************************************/
 
-#include "mainwindow.h"
+#ifndef SPRELAY_GUI_MAIN_WINDOW_H_
+#define SPRELAY_GUI_MAIN_WINDOW_H_
 
-#include <QString>
-
-#include "centralwidget.h"
+#include <QMainWindow>
 
 
 namespace sprelay {
+namespace core {
+// forward declarations of core classes
+class K8090;
+}
 namespace gui {
+class CentralWidget;
 
-MainWindow::MainWindow()
+class MainWindow : public QMainWindow
 {
-    central_widget_ = new CentralWidget(nullptr, QString(), this);
-    setCentralWidget(central_widget_);
-}
+    Q_OBJECT
 
-MainWindow::~MainWindow()
-{
-}
+public:  // NOLINT(whitespace/indent)
+    MainWindow();
+    ~MainWindow() override;
+
+    CentralWidget *central_widget_;
+};
 
 }  // namespace gui
 }  // namespace sprelay
+
+#endif  // SPRELAY_GUI_MAIN_WINDOW_H_

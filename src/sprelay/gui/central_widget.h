@@ -20,8 +20,8 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_GUI_CENTRALWIDGET_H_
-#define SPRELAY_GUI_CENTRALWIDGET_H_
+#ifndef SPRELAY_GUI_CENTRAL_WIDGET_H_
+#define SPRELAY_GUI_CENTRAL_WIDGET_H_
 
 #include <QString>
 #include <QWidget>
@@ -134,4 +134,4 @@ private:  // NOLINT(whitespace/indent)
 }  // namespace gui
 }  // namespace sprelay
 
-#endif  // SPRELAY_GUI_CENTRALWIDGET_H_
+#endif  // SPRELAY_GUI_CENTRAL_WIDGET_H_

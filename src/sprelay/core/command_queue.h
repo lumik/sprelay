@@ -2,7 +2,7 @@
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
 **  through usb using virtual serial port in Qt.                          **
-**  Copyright (C) 2017 Jakub Klener                                       **
+**  Copyright (C) 2018 Jakub Klener                                       **
 **                                                                        **
 **  This file is part of SpRelay application.                             **
 **                                                                        **
@@ -20,49 +20,58 @@
 **                                                                        **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
-#include <QDebug>
+#ifndef SPRELAY_CORE_COMMAND_QUEUE_H_
+#define SPRELAY_CORE_COMMAND_QUEUE_H_
 
-// dirty trick which enables us to test private methods. Think of something
-// else.
-#define private public
-#include "k8090.h"
+#include <queue>
+
+#include <cstddef>
 
 namespace sprelay {
 namespace core {
 
-class TestK8090: public QObject
+template<typename TCommand, int tSize>
+class CommandQueue
 {
-    Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
-    void hexToByte();
-};
+    struct CommandPriority
+    {
+        typename TCommand::NumberType id;
+        int priority;
+        unsigned int stamp;
 
-void TestK8090::hexToByte()
-{
-    unsigned char *bMsg;
-    int n;
-
-    // testing message
-    unsigned char nMsg[3] = {0x1, 0xFF, 0xF};
-    QString msg = "01 FF 0F";
-
-    K8090::hexToByte(&bMsg, &n, msg);
-
-    bool ok = 1;
-    for (int i = 0; i < n; i++) {
-        if (bMsg[i] != nMsg[i]) {
-            ok = 0;
+        bool operator<(const CommandPriority &other) const
+        {
+            if (priority != other.priority) {
+                return priority < other.priority;
+            } else {
+                return stamp > other.stamp;
+            }
         }
-    }
+    };
 
-    delete[] bMsg;  // hexToByte created new variable, don't forget to delete it
+public:  // NOLINT(whitespace/indent)
+    CommandQueue();
 
-    QCOMPARE(ok, true);
-}
+    bool empty() const { return command_queue_.empty(); }
+    std::size_t size() const { return command_queue_.size(); }
+    bool push(TCommand command, int priority);
+    TCommand pop();
+    TCommand get(typename TCommand::IdType command_id) const;
+    unsigned int stampCounter() const { return stamp_counter_; }
+
+private:  // NOLINT(whitespace/indent)
+    bool pending_command_ids_[tSize];  // NOLINT(runtime/arrays)
+    int pending_command_priorities_[tSize];  // NOLINT(runtime/arrays)
+    TCommand pending_commands_[tSize];  // NOLINT(runtime/arrays)
+
+    std::priority_queue<CommandPriority> command_queue_;
+
+    unsigned int stamp_counter_;
+};
 
 }  // namespace core
 }  // namespace sprelay
 
-QTEST_MAIN(sprelay::core::TestK8090)
-#include "testk8090.moc"
+#include "command_queue.tpp"
+
+#endif  // SPRELAY_CORE_COMMAND_QUEUE_H_

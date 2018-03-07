@@ -20,7 +20,7 @@
 **                                                                        **
 ****************************************************************************/
 
-#include "centralwidget.h"
+#include "central_widget.h"
 
 #include <QComboBox>
 #include <QDebug>
@@ -36,7 +36,7 @@
 #include <limits>
 #include <cstdint>
 
-#include "indicatorbutton.h"
+#include "indicator_button.h"
 #include "k8090.h"
 
 

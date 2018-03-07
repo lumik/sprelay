@@ -20,7 +20,7 @@
 **                                                                        **
 ****************************************************************************/
 
-#include "indicatorbutton.h"
+#include "indicator_button.h"
 
 #include <QHBoxLayout>
 #include <QLabel>

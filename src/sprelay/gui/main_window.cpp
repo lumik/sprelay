@@ -2,7 +2,7 @@
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
 **  through usb using virtual serial port in Qt.                          **
-**  Copyright (C) 2018 Jakub Klener                                       **
+**  Copyright (C) 2017 Jakub Klener                                       **
 **                                                                        **
 **  This file is part of SpRelay application.                             **
 **                                                                        **
@@ -20,59 +20,25 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_GUI_INDICATORBUTTON_H_
-#define SPRELAY_GUI_INDICATORBUTTON_H_
+#include "main_window.h"
 
-#include <QPushButton>
+#include <QString>
 
-// forward declarations
-class QLabel;
+#include "central_widget.h"
+
 
 namespace sprelay {
 namespace gui {
 
-class IndicatorLight : public QPushButton
+MainWindow::MainWindow()
 {
-    Q_OBJECT
+    central_widget_ = new CentralWidget(nullptr, QString(), this);
+    setCentralWidget(central_widget_);
+}
 
-public:  // NOLINT(whitespace/indent)
-    explicit IndicatorLight(QWidget *parent = nullptr);
-    IndicatorLight(const IndicatorLight &) = delete;
-    IndicatorLight & operator=(const IndicatorLight &) = delete;
-};
-
-
-class IndicatorButton : public QPushButton
+MainWindow::~MainWindow()
 {
-    Q_OBJECT
-    Q_PROPERTY(bool state MEMBER state_ READ state WRITE setState NOTIFY stateChanged)
-
-public:  // NOLINT(whitespace/indent)
-    explicit IndicatorButton(QWidget *parent = nullptr);
-    explicit IndicatorButton(const QString &text, QWidget *parent = nullptr);
-    IndicatorButton(const QIcon &icon, const QString &text, QWidget *parent = nullptr);
-    IndicatorButton(const IndicatorButton &) = delete;
-    IndicatorButton & operator=(const IndicatorButton &) = delete;
-
-    void setText(const QString &text);
-    QString text() const;
-    QSize sizeHint() const;
-    bool state() const { return state_; }
-
-public slots:  // NOLINT(whitespace/indent)
-    void setState(bool state);
-
-signals:  // NOLINT(whitespace/indent)
-    void stateChanged();
-
-private:  // NOLINT(whitespace/indent)
-    void initialize(const QString &text);
-    QLabel *label_;
-    IndicatorLight *indicator_;
-    bool state_;
-};
+}
 
 }  // namespace gui
 }  // namespace sprelay
-
-#endif  // SPRELAY_GUI_INDICATORBUTTON_H_

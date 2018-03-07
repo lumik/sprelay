@@ -2,7 +2,7 @@
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
 **  through usb using virtual serial port in Qt.                          **
-**  Copyright (C) 2017 Jakub Klener                                       **
+**  Copyright (C) 2018 Jakub Klener                                       **
 **                                                                        **
 **  This file is part of SpRelay application.                             **
 **                                                                        **
@@ -20,15 +20,21 @@
 **                                                                        **
 ****************************************************************************/
 
-#include <QApplication>
+#include <QtTest>
 
-#include "main_window.h"
+#include <memory>
 
-int main(int argc, char *argv[])
+#include "command_queue_test.h"
+#include "k8090_test.h"
+
+using namespace sprelay::core;  // NOLINT(build/namespaces)
+
+int main(int argc, char **argv)
 {
-    QApplication a(argc, argv);
-    sprelay::gui::MainWindow w;
-    w.show();
-
-    return a.exec();
+    int status = 0;
+    std::unique_ptr<K8090Test> k8090_test{new K8090Test};
+    status |= QTest::qExec(k8090_test.get(), argc, argv);
+    std::unique_ptr<CommandQueueTest> command_queue_test{new CommandQueueTest};
+    status |= QTest::qExec(command_queue_test.get(), argc, argv);
+    return status;
 }

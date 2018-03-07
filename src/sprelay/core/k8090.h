@@ -2,7 +2,7 @@
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
 **  through usb using virtual serial port in Qt.                          **
-**  Copyright (C) 2017 Jakub Klener                                       **
+**  Copyright (C) 2018 Jakub Klener                                       **
 **                                                                        **
 **  This file is part of SpRelay application.                             **
 **                                                                        **
@@ -26,9 +26,12 @@
 #include <QObject>
 
 #include <memory>
+#include <queue>
 #include <type_traits>
 
 #include "enum_flags.h"
+
+#include "command_queue.h"
 
 // forward declarations
 class QSerialPort;
@@ -94,6 +97,36 @@ constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E
 {
     return static_cast<typename std::underlying_type<E>::type>(e);
 }
+
+
+struct Command
+{
+    using IdType = CommandID;
+    using NumberType = typename std::underlying_type<IdType>::type;
+
+    Command() : id(CommandID::NONE) {}
+    Command(IdType id, unsigned char mask, unsigned char param1, unsigned char param2)
+        : id(id), params{mask, param1, param2} {}
+    static NumberType idAsNumber(IdType id) { return as_number(id); }
+
+    IdType id;
+    unsigned char params[3];
+
+    bool operator==(const Command &other) const
+    {
+        if (id != other.id) {
+            return false;
+        }
+        for (int i = 0; i < 3; ++i) {
+            if (params[i] != other.params[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(const Command &other) const { return !(*this == other); }
+};
 
 
 struct ComPortParams
@@ -177,10 +210,11 @@ private:  // NOLINT(whitespace/indent)
     QString com_port_name_;
     QSerialPort *serial_port_;
 
-    bool pending_commands_[K8090Traits::as_number(K8090Traits::CommandID::NONE)];
+    CommandQueue<K8090Traits::Command, K8090Traits::as_number(K8090Traits::CommandID::NONE)>
+        pending_commands_;
 
     static const unsigned char *commands_;
-    static const unsigned int *priorities_;
+    static const int *priorities_;
 
     bool connected_;
 };
