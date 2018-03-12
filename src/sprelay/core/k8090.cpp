@@ -42,70 +42,97 @@ namespace core {
 using namespace K8090Traits;  // NOLINT(build/namespaces)
 
 /*!
-    \enum Command
+    \enum CommandID
     \brief Scoped enumeration listing all commands.
 
     See the Velleman %K8090 card manual.
 */
 /*!
-    \var Command::RELAY_ON
+    \var CommandID::RELAY_ON
     \brief Switch realy on command.
 */
 /*!
-    \var Command::RELAY_OFF
+    \var CommandID::RELAY_OFF
     \brief Switch realy off command.
 */
 /*!
-    \var Command::TOGGLE_RELAY
+    \var CommandID::TOGGLE_RELAY
     \brief Toggle realy command.
 */
 /*!
-    \var Command::QUERY_RELAY
+    \var CommandID::QUERY_RELAY
     \brief Query relay status command.
 */
 /*!
-    \var Command::SET_BUTTON_MODE
+    \var CommandID::SET_BUTTON_MODE
     \brief Set button mode command.
 */
 /*!
-    \var Command::BUTTON_MODE
+    \var CommandID::BUTTON_MODE
     \brief Query button mode command.
 */
 /*!
-    \var Command::START_TIMER
+    \var CommandID::START_TIMER
     \brief Start relay timer command.
 */
 /*!
-    \var Command::SET_TIMER
+    \var CommandID::SET_TIMER
     \brief Set relay timer delay command.
 */
 /*!
-    \var Command::TIMER
+    \var CommandID::TIMER
     \brief Query timer delay command.
 */
 /*!
-    \var Command::BUTTON_STATUS
-    \brief Button status command.
-*/
-/*!
-    \var Command::RELAY_STATUS
-    \brief Relay status command.
-*/
-/*!
-    \var Command::RESET_FACTORY_DEFAULTS
+    \var CommandID::RESET_FACTORY_DEFAULTS
     \brief Reset factory defaults command.
 */
 /*!
-    \var Command::JUMPER_STATUS
+    \var CommandID::JUMPER_STATUS
     \brief Jumper status command.
 */
 /*!
-    \var Command::FIRMWARE_VERSION
+    \var CommandID::FIRMWARE_VERSION
     \brief Firmware version command.
 */
 /*!
-    \var Command::NONE
+    \var CommandID::NONE
     \brief The number of all commands represents also none command.
+*/
+
+/*!
+    \enum ResponnseID
+    \brief Scoped enumeration listing all responses.
+
+    See the Velleman %K8090 card manual.
+*/
+/*!
+    \var ResponseID::BUTTON_MODE
+    \brief Response with button mode.
+*/
+/*!
+    \var ResponseID::TIMER
+    \brief Response with timer delay.
+*/
+/*!
+    \var ResponseID::RELAY_STATUS
+    \brief Relay status event.
+*/
+/*!
+    \var ResponseID::BUTTON_STATUS
+    \brief Button status event.
+*/
+/*!
+    \var ResponseID::JUMPER_STATUS
+    \brief Response with jumper status.
+*/
+/*!
+    \var ResponseID::FIRMWARE_VERSION
+    \brief Response with firmware version.
+*/
+/*!
+    \var ResponseID::NONE
+    \brief The number of all responses represents also none response.
 */
 
 /*!
@@ -250,18 +277,6 @@ struct CommandDataValue<as_number(CommandID::TIMER)>
     static const int kPriority = 2;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::BUTTON_STATUS)>
-{
-    static const unsigned char kCommand = 0x50;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::RELAY_STATUS)>
-{
-    static const unsigned char kCommand = 0x51;
-    static const int kPriority = 1;
-};
-template<>
 struct CommandDataValue<as_number(CommandID::RESET_FACTORY_DEFAULTS)>
 {
     static const unsigned char kCommand = 0x66;
@@ -281,6 +296,42 @@ struct CommandDataValue<as_number(CommandID::FIRMWARE_VERSION)>
 };
 
 
+// template function to fill the array with appropriate responses
+template<unsigned int N>
+struct ResponseDataValue;
+
+// specializations
+template<>
+struct ResponseDataValue<as_number(ResponseID::BUTTON_MODE)>
+{
+    static const unsigned char kCommand = 0x22;
+};
+template<>
+struct ResponseDataValue<as_number(ResponseID::TIMER)>
+{
+    static const unsigned char kCommand = 0x44;
+};
+template<>
+struct ResponseDataValue<as_number(ResponseID::BUTTON_STATUS)>
+{
+    static const unsigned char kCommand = 0x50;
+};
+template<>
+struct ResponseDataValue<as_number(ResponseID::RELAY_STATUS)>
+{
+    static const unsigned char kCommand = 0x51;
+};
+template<>
+struct ResponseDataValue<as_number(ResponseID::JUMPER_STATUS)>
+{
+    static const unsigned char kCommand = 0x70;
+};
+template<>
+struct ResponseDataValue<as_number(ResponseID::FIRMWARE_VERSION)>
+{
+    static const unsigned char kCommand = 0x71;
+};
+
 // Template containing static array
 template<typename T, T ...Args>
 struct XArrayData
@@ -288,7 +339,7 @@ struct XArrayData
     static const T kValues[sizeof...(Args)];
 };
 
-// recursively generates typedefs
+// recursively generates command typedefs
 template<unsigned int N, unsigned char ...Args>
 struct CommandArrayGenerator_
 {
@@ -296,7 +347,7 @@ struct CommandArrayGenerator_
     using Priorities = typename CommandArrayGenerator_<N - 1, CommandDataValue<N - 1>::kPriority, Args...>::Priorities;
 };
 
-// end case template partial specialization
+// end case template partial specialization of command typedefs
 template<unsigned char ...Args>
 struct CommandArrayGenerator_<1u, Args...>
 {
@@ -311,6 +362,28 @@ struct CommandArray
 {
     using Commands = typename CommandArrayGenerator_<N>::Commands;
     using Priorities = typename CommandArrayGenerator_<N>::Priorities;
+};
+
+// recursively generates reponse typedefs
+template<unsigned int N, unsigned char ...Args>
+struct ResponseArrayGenerator_
+{
+    using Responses = typename ResponseArrayGenerator_<N - 1, ResponseDataValue<N - 1>::kCommand, Args...>::Commands;
+};
+
+// end case template partial specialization of response typedefs
+template<unsigned char ...Args>
+struct ResponseArrayGenerator_<1u, Args...>
+{
+    using Responses = XArrayData<unsigned char, ResponseDataValue<0u>::kCommand, Args...>;
+};
+
+// ResponseArray generates recursively kResponses type, which contains static constant array kValues.
+// Usage: unsigned char arr = ResponseArray<K8090Traits::Comand::None>::kCommands::kValues
+template<unsigned char N>
+struct ResponseArray
+{
+    using Responses = typename CommandArrayGenerator_<N>::Responses;
 };
 
 // static const array initialization
@@ -485,7 +558,7 @@ void K8090::setRelayTimerDelay(RelayID relays, quint16 delay)
 
 void K8090::queryRelayStatus()
 {
-    sendCommand(CommandID::RELAY_STATUS);
+    sendCommand(CommandID::QUERY_RELAY);
 }
 
 void K8090::queryRemainingTimerDelay(RelayID relays)

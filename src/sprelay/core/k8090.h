@@ -51,9 +51,19 @@ enum class CommandID : unsigned int
     START_TIMER,
     SET_TIMER,
     TIMER,
+    RESET_FACTORY_DEFAULTS,
+    JUMPER_STATUS,
+    FIRMWARE_VERSION,
+    NONE
+};
+
+
+enum class ResponseID : unsigned int
+{
+    BUTTON_MODE,
+    TIMER,
     BUTTON_STATUS,
     RELAY_STATUS,
-    RESET_FACTORY_DEFAULTS,
     JUMPER_STATUS,
     FIRMWARE_VERSION,
     NONE
@@ -215,6 +225,7 @@ private:  // NOLINT(whitespace/indent)
 
     static const unsigned char *commands_;
     static const int *priorities_;
+    static const unsigned char *responses_;
 
     bool connected_;
 };
