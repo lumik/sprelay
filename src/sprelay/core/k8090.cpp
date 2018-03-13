@@ -31,6 +31,7 @@
 #include <QSerialPortInfo>
 #include <QStringBuilder>
 
+#include "command_queue.h"
 
 namespace sprelay {
 namespace core {

@@ -23,23 +23,139 @@
 #ifndef SPRELAY_CORE_COMMAND_QUEUE_TPP_
 #define SPRELAY_CORE_COMMAND_QUEUE_TPP_
 
+/*!
+    \file command_queue.tpp
+    \brief CommandQueue class.
+*/
+
 #include "command_queue.h"
 
+#include <limits>
+
 namespace sprelay {
+
+/*! \addtogroup Core
+    @{
+*/
+
 namespace core {
 
 /*!
-    \file command_queue.tpp
-    \brief Implementation of CommandQueue.
+    \brief Namespace containing CommmandQueue.
 */
+namespace command_queue {
+/*! \addtogroup CommandQueue_implementation CommandQueue implementation
+    \brief Implementation helpers not intended for public use.
+    @{
+*/
+
+/*!
+    \namespace sprelay::core::command_queue::impl_
+    \brief Namespace containing implementation details. Not intended for public use.
+*/
+using namespace impl_;
+
+/*!
+    \class sprelay::core::command_queue::impl_::CommandPriority
+    \brief Helper class used for command priorities storage and comparisons.
+
+    \tparam TCommand See CommandQueue template class.
+    \remark reentrant
+*/
+
+/*!
+    \class sprelay::core::command_queue::impl_::PendingCommands
+    \brief Helper class for pending commands storage.
+
+    The class abuses constant pointer access. You can get from it QList<const TCommand *> which is directly stored
+    inside but you can also modify stored TCommand using PendingCommands::updateEntry() method.
+
+    \tparam TCommand See CommandQueue template class.
+    \tparam tSize See CommandQueue template class.
+    \remark reentrant
+*/
+
+/*!
+    @}
+*/
+
+/*!
+    \var CommandPriority::stamp
+    \brief Time stamp for command priority determination.
+
+    See CommandPriority::operator<().
+*/
+
+/*!
+    \var CommandPriority::command
+    \brief Owns command and manages its memory.
+
+    Its member TCommand::priority is used to determine ordering. See
+    CommandPriority::operator<().
+*/
+
+/*!
+    \fn CommandPriority::operator<(const CommandPriority &other) const
+    \brief Defines CommandPriority ordering.
+
+    Ordering is defined according to TCommand::priority and time stamp CommandPriority::stamp. Higher priority and
+    lower time stamp is greater.
+*/
+
+/*!
+    \fn CommandPriority::setPriority(int p)
+    \brief Sets contained command priority to p.
+
+    \param p The priority.
+*/
+
+
+/*!
+    \fn PendingCommands::PendingCommands()
+    \brief Default constructor.
+*/
+
+/*!
+    \fn const QList<const TCommand *> & PendingCommands::operator[](std::size_t id) const
+    \brief Direct constant member access.
+
+    Index id is not controlled for validity.
+
+    \param id Index
+    \return List containing all commands with desired id.
+*/
+
+/*!
+    \fn QList<const TCommand *> & PendingCommands::operator[](std::size_t id)
+    \brief Direct member access.
+
+    Index id is not controlled for validity.
+
+    \param id Index
+    \return List containing all commands with desired id.
+*/
+
+/*!
+    \fn void PendingCommands::updateEntry(int idx, const TCommand &command)
+    \brief Enables update of desired command.
+
+    Indices command.id nor idx are not controlled for validity.
+
+    \param idx Index.
+    \param command Command for update.
+*/
+
 
 /*!
     \class CommandQueue
     \brief Queue used for storing command before invokations.
 
-    The queue sorts commands according to priority and time stamp. TCommand template parameter must containt `IdType`
-    and `NumberType` typedefs, `id` member of type `IdType`, static method `static NumberType idAsNumber(IdType)` and
-    `bool operator==(const TCommand &other) const`.
+    The queue sorts commands according to priority and time stamp. The commands can be inserted in unique mode, where
+    old commands are replaced by newer ones but preserving their time stamps or non-unique mode in which more commands
+    with the same id can be inserted. See CommandQueue::push() for more details.
+
+    Commands inside CommandQueue can be also updated using method CommandQueue::updateCommand(). To query stored
+    commands with desired id, you can use CommandQueue::get() method.
 
     Example usage:
 
@@ -58,17 +174,7 @@ namespace core {
         static NumberType idAsNumber(IdType id) { return id; }
 
         IdType id;
-
-        bool operator==(const Command &other) const
-        {
-            if (id != other.id) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        bool operator!=(const Command &other) const { return !(*this == other); }
+        int priority;
     };
 
     int main()
@@ -77,19 +183,22 @@ namespace core {
         CommandQueue<Command, N> command_queue;
 
         unsigned int cmd_id1 = 0;
-        Command cmd1{cmd_id1};
         unsigned int priority1 = 1;
-        command_queue.push(cmd1, priority1);
-        command_queue.get(cmd_id1);
-        Command cmd2 = command_queue.pop();
+        Command cmd1{cmd_id1, priority1};
+        command_queue.push(cmd1);
+        const QList<const * Command> & cmd_list = command_queue.get(cmd_id1);
+        Command cmd2 = *cmd_list[0];
+        cmd2.priority = 2;
+        command_queue.updateCommand(0, cmd2);
+        Command cmd3 = command_queue.pop();
 
         return 0;
     }
     \endcode
 
-    \tparam TCommand Command representation, which must containt `IdType` and `NumberType` typedefs, `id` member of
-        type `IdType`, static method `static NumberType idAsNumber(IdType)` and
-        `bool operator==(const TCommand &other) const`.
+    \tparam TCommand Command representation, which must containt `IdType` and `NumberType` typedefs, default
+        constructor which initializes id to none value, `id` member of type `IdType`, `int priority` member, static
+        method `static NumberType idAsNumber(IdType)`.
     \tparam tSize Number of command ids. Command ids `NumberType` should be continuous sequence of numbers, the highest
         number must be less than `tSize`.
     \remark reentrant
@@ -100,7 +209,9 @@ namespace core {
     \brief Default constructor
 */
 template<typename TCommand, int tSize>
-CommandQueue<TCommand, tSize>::CommandQueue() : pending_command_ids_{}, stamp_counter_{0} {}
+CommandQueue<TCommand, tSize>::CommandQueue()
+    : unique_{true}, none_command_{}, none_list_{&none_command_}, stamp_counter_{0}
+{}
 
 
 /*!
@@ -121,37 +232,54 @@ CommandQueue<TCommand, tSize>::CommandQueue() : pending_command_ids_{}, stamp_co
     The inserted command also gets time stamp CommandQueue::stamp_counter(), which resolves priority ties. Older
     commands preceedes new ones.
 
-    \param command
-    \param priority
+    Commands can be inserted in two modes. In unique mode, all previously inserted commands with the same id is cleared
+    and the new command with the time stamp of the oldest from the removed commands is inserted instead. If the
+    non-unique mode, the command is inserted without any control for the already inserted commands with the same id.
+
+    \param command Command to be inserted.
+    \param unique If the insertion should be unique.
     \return True if the operation was successful, false otherwise.
 */
 template<typename TCommand, int tSize>
-bool CommandQueue<TCommand, tSize>::push(TCommand command, int priority)
+bool CommandQueue<TCommand, tSize>::push(const TCommand &command, bool unique)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
     // TODO(lumik): Use exceptions.
     if (id >= tSize || id < 0) {
         return false;
     }
-    pending_commands_[id] = command;
-    if (!pending_command_ids_[id]) {
-        command_queue_.push(CommandPriority{id, priority, stamp_counter_++});
-        pending_command_priorities_[id] = priority;
-        pending_command_ids_[id] = true;
-    } else if (pending_command_priorities_[id] != priority) {
-        pending_command_priorities_[id] = priority;
-        std::priority_queue<CommandPriority> temp_command_queue{std::move(command_queue_)};
-        CommandPriority temp_priority;
-        while (!temp_command_queue.empty()) {
-            temp_priority = temp_command_queue.top();
-            temp_command_queue.pop();
-            if (temp_priority.id == id) {
-                temp_priority.priority = priority;
-                command_queue_.push(temp_priority);
-            } else {
-                command_queue_.push(temp_priority);
+    if (!unique || pending_commands_[id].empty()) {  // no command with this id is inside
+        CommandPriority<TCommand> command_priority{
+            stamp_counter_++,
+            std::unique_ptr<TCommand>{new TCommand{command}}};
+        pending_commands_[id].append(command_priority.command.get());
+        unique_[id] = unique;
+        std::priority_queue<CommandPriority<TCommand>>::emplace(std::move(command_priority));
+    // unique push with different priorities
+    } else if (unique && unique_[id]) {
+        updatePriorities(id, 0, command.priority);
+        pending_commands_.updateEntry(0, command);
+    } else if (unique && !unique_[id]) {  // wasn't unique but now it is
+        // erase all previously inserted commands with the same id and copy all the remaining commands.
+        std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
+        unsigned int stamp = std::numeric_limits<unsigned int>::max();
+        for (CommandPriority<TCommand> &command_priority : this->c) {
+            if (command_priority.command->id != command.id) {
+                temp_command_queue.emplace(std::move(command_priority));
+            } else if (command_priority.stamp < stamp) {
+                stamp = command_priority.stamp;
             }
         }
+        pending_commands_[id].clear();
+        // insert new command
+        CommandPriority<TCommand> command_priority{
+            stamp,
+            std::unique_ptr<TCommand>{new TCommand{command}}};
+        pending_commands_[id].append(command_priority.command.get());
+        unique_[id] = unique;
+        temp_command_queue.emplace(std::move(command_priority));
+        // move new temporary queue to stored one
+        std::priority_queue<CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
     }
     return true;
 }
@@ -170,40 +298,42 @@ TCommand CommandQueue<TCommand, tSize>::pop()
     if (empty()) {
         return TCommand{};
     } else {
-        typename TCommand::NumberType id = command_queue_.top().id;
-        command_queue_.pop();
-        TCommand command = pending_commands_[id];
+        TCommand command = *std::priority_queue<CommandPriority<TCommand>>::top().command;
+        pending_commands_[TCommand::idAsNumber(command.id)]
+                .removeOne(std::priority_queue<CommandPriority<TCommand>>::top().command.get());
+        std::priority_queue<CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
         if (empty()) {
             stamp_counter_ = 0;
         }
-        pending_command_ids_[id] = false;
         return command;
     }
 }
 
 
 /*!
-    \brief Gets the command with specified command id.
+    \brief Gets a list of commands with specified command id.
 
-    If the id is not valid or the command is not in the queue the default constructed TCommand is returned.
+    If the id is not valid or the command is not in the queue the list to default constructed TCommand is returned. The
+    pointed to commands shouldn't be changed because it can corrupt CommandQueue consistency. You can update command
+    with specific index by calling CommandQueue::updateCommand() method. The pointers in the list are valid only until
+    the command is popped out of the CommandQueue and the indices in list is consistent with the indices, which would
+    be returned by another CommandQueue::get() method call, only until the CommandQueue is modified with the command
+    with the same id. Validity of the returned list also ends with a destruction of CommandQueue.
 
-    \param commad_id Command id.
+    \param command_id Command id.
     \return Requested command or default constructed TCommand.
 */
 template<typename TCommand, int tSize>
-TCommand CommandQueue<TCommand, tSize>::get(typename TCommand::IdType command_id) const
+const QList<const TCommand *> & CommandQueue<TCommand, tSize>::get(typename TCommand::IdType command_id) const
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command_id);
     // TODO(lumik): Use exceptions.
     if (id >= tSize || id < 0) {
-        return TCommand{};
+        return none_list_;
     }
-    if (pending_command_ids_[id]) {
-        return pending_commands_[id];
-    } else {
-        return TCommand{};
-    }
+    return pending_commands_[id];
 }
+
 
 /*!
     \fn CommandQueue::stampCounter
@@ -211,7 +341,52 @@ TCommand CommandQueue<TCommand, tSize>::get(typename TCommand::IdType command_id
     \return Current stamp counter.
 */
 
+/*!
+    \brief Enables command inside CommandQueue modification.
+
+    Command is modified according to its valid index which can be determined from the list returned by the
+    CommandQueue::get() method.
+
+    \param idx Index of the command. For more info see CommandQueue::get().
+    \param command Command which replaces the stored command.
+*/
+template<typename TCommand, int tSize>
+bool CommandQueue<TCommand, tSize>::updateCommand(int idx, const TCommand &command)
+{
+    typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
+    if (id >= tSize || id < 0 || idx < 0 || idx >= pending_commands_[id].size()) {
+        return false;
+    }
+    updatePriorities(id, idx, command.priority);
+    pending_commands_.updateEntry(idx, command);
+    return true;
+}
+
+
+template<typename TCommand, int tSize>
+void CommandQueue<TCommand, tSize>::updatePriorities(typename TCommand::NumberType command_id, int idx, int priority)
+{
+    if (pending_commands_[command_id].at(idx)->priority != priority) {
+        std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
+        CommandPriority<TCommand> temp_priority;
+        for (CommandPriority<TCommand> &command_priority : this->c) {
+            if (command_priority.command.get() == pending_commands_[command_id].at(idx)) {
+                temp_priority = std::move(command_priority);
+                temp_priority.setPriority(priority);
+                temp_command_queue.emplace(std::move(temp_priority));
+            } else {
+                temp_command_queue.emplace(std::move(command_priority));
+            }
+        }
+        std::priority_queue<CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
+    }
+}
+
+}  // namespace command_queue
 }  // namespace core
+/*!
+    @}
+*/
 }  // namespace sprelay
 
 #endif  // SPRELAY_CORE_COMMAND_QUEUE_TPP_

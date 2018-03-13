@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     int status = 0;
     std::unique_ptr<K8090Test> k8090_test{new K8090Test};
     status |= QTest::qExec(k8090_test.get(), argc, argv);
-    std::unique_ptr<CommandQueueTest> command_queue_test{new CommandQueueTest};
+    std::unique_ptr<command_queue::CommandQueueTest> command_queue_test{new command_queue::CommandQueueTest};
     status |= QTest::qExec(command_queue_test.get(), argc, argv);
     return status;
 }

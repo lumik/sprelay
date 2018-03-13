@@ -23,52 +23,85 @@
 #ifndef SPRELAY_CORE_COMMAND_QUEUE_H_
 #define SPRELAY_CORE_COMMAND_QUEUE_H_
 
-#include <queue>
+#include <QList>
 
 #include <cstddef>
+#include <memory>
+#include <queue>
 
 namespace sprelay {
 namespace core {
+namespace command_queue {
+
+namespace impl_ {
+
+template<typename TCommand>
+struct CommandPriority
+{
+    unsigned int stamp;
+    std::unique_ptr<TCommand> command;
+
+    bool operator<(const CommandPriority &other) const
+    {
+        if (command->priority != other.command->priority) {
+            return command->priority < other.command->priority;
+        } else {
+            return stamp > other.stamp;
+        }
+    }
+
+    void setPriority(int p)
+    {
+        command->priority = p;
+    }
+};
+
+// adaptor class which abuses constant access
+template<typename TCommand, int tSize>
+class PendingCommands
+{
+public:  // NOLINT(whitespace/indent)
+    PendingCommands() : pending_commands_{} {}
+    const QList<const TCommand *> & operator[](std::size_t id) const { return pending_commands_[id]; }
+    QList<const TCommand *> & operator[](std::size_t id) { return pending_commands_[id]; }
+    void updateEntry(int idx, const TCommand &command)
+    {
+        *const_cast<TCommand *>(pending_commands_[TCommand::idAsNumber(command.id)][idx]) = command;
+    }
+
+private:  // NOLINT(whitespace/indent)
+    QList<const TCommand *> pending_commands_[tSize];  // NOLINT(runtime/arrays)
+};
+
+}  // namespace impl_
+
 
 template<typename TCommand, int tSize>
-class CommandQueue
+class CommandQueue : private std::priority_queue<impl_::CommandPriority<TCommand>>
 {
-    struct CommandPriority
-    {
-        typename TCommand::NumberType id;
-        int priority;
-        unsigned int stamp;
-
-        bool operator<(const CommandPriority &other) const
-        {
-            if (priority != other.priority) {
-                return priority < other.priority;
-            } else {
-                return stamp > other.stamp;
-            }
-        }
-    };
-
 public:  // NOLINT(whitespace/indent)
     CommandQueue();
 
-    bool empty() const { return command_queue_.empty(); }
-    std::size_t size() const { return command_queue_.size(); }
-    bool push(TCommand command, int priority);
+    bool empty() const { return std::priority_queue<impl_::CommandPriority<TCommand>>::empty(); }
+    std::size_t size() const { return std::priority_queue<impl_::CommandPriority<TCommand>>::size(); }
+    bool push(const TCommand &command, bool unique = true);
     TCommand pop();
-    TCommand get(typename TCommand::IdType command_id) const;
+    const QList<const TCommand *> & get(typename TCommand::IdType command_id) const;
     unsigned int stampCounter() const { return stamp_counter_; }
+    bool updateCommand(int idx, const TCommand &command);
 
 private:  // NOLINT(whitespace/indent)
-    bool pending_command_ids_[tSize];  // NOLINT(runtime/arrays)
-    int pending_command_priorities_[tSize];  // NOLINT(runtime/arrays)
-    TCommand pending_commands_[tSize];  // NOLINT(runtime/arrays)
+    void updatePriorities(typename TCommand::NumberType command_id, int idx, int priority);
 
-    std::priority_queue<CommandPriority> command_queue_;
+    impl_::PendingCommands<TCommand, tSize> pending_commands_;  // NOLINT(runtime/arrays)
+    bool unique_[tSize];  // NOLINT(runtime/arrays)
+    const TCommand none_command_;
+    const QList<const TCommand *> none_list_;
 
     unsigned int stamp_counter_;
 };
 
+}  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
 

@@ -27,14 +27,18 @@
 
 namespace sprelay {
 namespace core {
+namespace command_queue {
 
 class CommandQueueTest: public QObject
 {
     Q_OBJECT
 private slots:  // NOLINT(whitespace/indent)
-    void testCase();
+    void uniquePush();
+    void notUniquePush();
+    void updateCommand();
 };
 
+}  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
 

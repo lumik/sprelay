@@ -31,13 +31,18 @@
 
 #include "enum_flags.h"
 
-#include "command_queue.h"
-
 // forward declarations
 class QSerialPort;
 
 namespace sprelay {
 namespace core {
+
+// forward declarations
+namespace command_queue {
+template<typename TCommand, int tSize>
+class CommandQueue;
+}  // namespace command_queue
+
 
 namespace K8090Traits {
 enum class CommandID : unsigned int
@@ -114,13 +119,25 @@ struct Command
     using IdType = CommandID;
     using NumberType = typename std::underlying_type<IdType>::type;
 
-    Command() : id(CommandID::NONE) {}
-    Command(IdType id, unsigned char mask, unsigned char param1, unsigned char param2)
-        : id(id), params{mask, param1, param2} {}
+    Command() : id(CommandID::NONE), priority{0} {}
+    Command(IdType id, int priority, unsigned char mask, unsigned char param1, unsigned char param2)
+        : id(id), priority{priority}, params{mask, param1, param2} {}
     static NumberType idAsNumber(IdType id) { return as_number(id); }
 
     IdType id;
+    int priority;
     unsigned char params[3];
+
+    Command & operator|=(const Command &other) {
+        if (id != other.id) {
+            id = CommandID::NONE;
+        }
+        priority = other.priority;
+        for (int i = 0; i < 3; ++i) {
+            params[i] |= other.params[i];
+        }
+        return *this;
+    }
 
     bool operator==(const Command &other) const
     {
@@ -220,13 +237,13 @@ private:  // NOLINT(whitespace/indent)
     QString com_port_name_;
     QSerialPort *serial_port_;
 
-    CommandQueue<K8090Traits::Command, K8090Traits::as_number(K8090Traits::CommandID::NONE)>
-        pending_commands_;
-
     static const unsigned char *commands_;
     static const int *priorities_;
     static const unsigned char *responses_;
 
+    std::unique_ptr<command_queue::CommandQueue<K8090Traits::Command,
+                        K8090Traits::as_number(K8090Traits::CommandID::NONE)>>
+        pending_commands_;
     bool connected_;
 };
 
