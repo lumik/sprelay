@@ -5591,7 +5591,13 @@ def FilesBelongToSameModule(filename_cc, filename_h):
     string: the additional prefix needed to open the header file.
   """
   fileinfo_cc = FileInfo(filename_cc)
-  if not fileinfo_cc.Extension().lstrip('.') in GetNonHeaderExtensions():
+  ##############################################################################
+  # modified : lumik 2018-03-14
+  # search include for template source tpp files
+  cc_ext = fileinfo_cc.Extension().lstrip('.')
+  if (not cc_ext in GetNonHeaderExtensions()) and cc_ext != "tpp":
+    # end modified : lumik 2018-03-14
+    ############################################################################
     return (False, '')
 
   fileinfo_h = FileInfo(filename_h)
@@ -5698,6 +5704,23 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error,
   # Let's flatten the include_state include_list and copy it into a dictionary.
   include_dict = dict([item for sublist in include_state.include_list
                        for item in sublist])
+  ##############################################################################
+  # modified : lumik 2018-03-14
+  # search include for template source tpp files
+  if os.path.splitext(filename)[1][1:] == "tpp":
+    fileinfo = FileInfo(filename)
+    basefilename = filename[0:len(filename) - len(fileinfo.Extension())]
+    for ext in GetHeaderExtensions():
+      if ext == "tpp":
+        continue
+      headerfile = basefilename + '.' + ext
+      if not os.path.exists(headerfile):
+        continue
+      headername = fileinfo.BaseName() + '.' + ext
+      include_dict[headername] = 0
+      break
+  # end modified : lumik 2018-03-14
+  ##############################################################################
 
   # Did we find the header for this file (if any) and successfully load it?
   header_found = False

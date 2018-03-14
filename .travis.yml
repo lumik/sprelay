@@ -21,7 +21,7 @@ install:
 #   - sleep 3 # give xvfb some time to start
 
 script:
-  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && /opt/qt54/bin/qmake  "CONFIG+=release test" ../sprelay.pro -r
+  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && /opt/qt54/bin/qmake "CONFIG+=release test" ../sprelay.pro -r
   - make
   - cd ../bin && ./core_test
-  - cd .. && python third_party/cpplint-1.3.0/cpplint.py --recursive src/sprelay tests
+  - cd .. && python third_party/cpplint-1.3.0/cpplint.py --extensions=cpp,h,tpp --headers=h,tpp --recursive src/sprelay tests

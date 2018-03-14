@@ -28,8 +28,6 @@
     \brief CommandQueue class.
 */
 
-#include "command_queue.h"
-
 #include <limits>
 
 namespace sprelay {
@@ -53,7 +51,7 @@ namespace command_queue {
     \namespace sprelay::core::command_queue::impl_
     \brief Namespace containing implementation details. Not intended for public use.
 */
-using namespace impl_;
+using namespace impl_;  // NOLINT(build/namespaces)
 
 /*!
     \class sprelay::core::command_queue::impl_::CommandPriority
