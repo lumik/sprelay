@@ -23,6 +23,7 @@
 #ifndef SPRELAY_CORE_K8090_H_
 #define SPRELAY_CORE_K8090_H_
 
+#include <QList>
 #include <QObject>
 
 #include <memory>
@@ -33,6 +34,7 @@
 
 // forward declarations
 class QSerialPort;
+class QTimer;
 
 namespace sprelay {
 namespace core {
@@ -65,19 +67,19 @@ enum class CommandID : unsigned int
 
 enum class ResponseID : unsigned int
 {
-    BUTTON_MODE,
-    TIMER,
+    BUTTON_MODE,       /*!< Response with button mode. */
+    TIMER,             /*!< Response with timer delay. */
     BUTTON_STATUS,
     RELAY_STATUS,
-    JUMPER_STATUS,
-    FIRMWARE_VERSION,
-    NONE
+    JUMPER_STATUS,     /*!< Response with jumper status. */
+    FIRMWARE_VERSION,  /*!< Response with firmware version. */
+    NONE               /*!< The number of all responses represents also none response. */
 };
 
 
 enum struct RelayID : unsigned char
 {
-    NONE  = 0,  /**< None relay */
+    NONE  = 0,  /*!< None relay */
     ONE   = 1 << 0,
     TWO   = 1 << 1,
     THREE = 1 << 2,
@@ -86,7 +88,7 @@ enum struct RelayID : unsigned char
     SIX   = 1 << 5,
     SEVEN = 1 << 6,
     EIGHT = 1 << 7,
-    ALL   = 0xff
+    ALL   = 0xff     /*!< All relays. */
 };
 
 
@@ -99,10 +101,10 @@ constexpr RelayID from_number(unsigned int number) { return static_cast<RelayID>
 
 enum struct TimerDelayType : unsigned char
 {
-    NONE    = 0,  /**< None relay */
-    TOTAL   = 1 << 0,
-    CURRENT = 1 << 1,
-    ALL     = 0xff
+    NONE      = 0,  /*!< None relay */
+    TOTAL     = 1 << 0,
+    REMAINING = 1 << 1,
+    ALL       = 0xff
 };
 
 
@@ -120,7 +122,8 @@ struct Command
     using NumberType = typename std::underlying_type<IdType>::type;
 
     Command() : id(CommandID::NONE), priority{0} {}
-    Command(IdType id, int priority, unsigned char mask, unsigned char param1, unsigned char param2)
+    explicit Command(IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0,
+            unsigned char param2 = 0)
         : id(id), priority{priority}, params{mask, param1, param2} {}
     static NumberType idAsNumber(IdType id) { return as_number(id); }
 
@@ -128,16 +131,7 @@ struct Command
     int priority;
     unsigned char params[3];
 
-    Command & operator|=(const Command &other) {
-        if (id != other.id) {
-            id = CommandID::NONE;
-        }
-        priority = other.priority;
-        for (int i = 0; i < 3; ++i) {
-            params[i] |= other.params[i];
-        }
-        return *this;
-    }
+    Command & operator|=(const Command &other);
 
     bool operator==(const Command &other) const
     {
@@ -153,6 +147,8 @@ struct Command
     }
 
     bool operator!=(const Command &other) const { return !(*this == other); }
+
+    bool isCompatible(const Command &other) const;
 };
 
 
@@ -182,19 +178,23 @@ public:  // NOLINT(whitespace/indent)
 
     static QList<K8090Traits::ComPortParams> availablePorts();
     void setComPortName(const QString &name);
-
+    void setCommandDelay(int msec);
+    void setFailureDelay(int msec);
+    void setMaxFailureCount(int count);
     bool isConnected();
 
 signals:  // NOLINT(whitespace/indent)
     void relayStatus(K8090Traits::RelayID previous, K8090Traits::RelayID current, K8090Traits::RelayID timed);
     void buttonStatus(K8090Traits::RelayID state, K8090Traits::RelayID pressed, K8090Traits::RelayID released);
-    void timerDelay(K8090Traits::RelayID relays, quint16 delay);
-    void buttonMode(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle, K8090Traits::RelayID timed);
+    void totalTimerDelay(K8090Traits::RelayID relay, quint16 delay);
+    void remainingTimerDelay(K8090Traits::RelayID relay, quint16 delay);
+    void buttonModes(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle, K8090Traits::RelayID timed);
     void jumperStatus(bool on);
     void firmwareVersion(int year, int week);
     void connected();
     void connectionFailed();
     void notConnected();
+    void disconnected();
 
 public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
@@ -207,22 +207,30 @@ public slots:  // NOLINT(whitespace/indent)
     void startRelayTimer(K8090Traits::RelayID relays, quint16 delay = 0);
     void setRelayTimerDelay(K8090Traits::RelayID relays, quint16 delay);
     void queryRelayStatus();
-    void queryRemainingTimerDelay(K8090Traits::RelayID relays);
     void queryTotalTimerDelay(K8090Traits::RelayID relays);
+    void queryRemainingTimerDelay(K8090Traits::RelayID relays);
     void queryButtonModes();
     void resetFactoryDefaults();
     void queryJumperStatus();
     void queryFirmwareVersion();
-    void sendCommand(K8090Traits::CommandID command, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
-            unsigned char param1 = 0, unsigned char param2 = 0);
 
 private slots:  // NOLINT(whitespace/indent)
     void onReadyData();
-
+    void dequeueCommand();
+    void onCommandFailed();
 
 private:  // NOLINT(whitespace/indent)
-    void sendCommandHelper(K8090Traits::CommandID command, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
+    void sendCommand(K8090Traits::CommandID command_id, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
             unsigned char param1 = 0, unsigned char param2 = 0);
+    void enqueueCommand(K8090Traits::CommandID command_id, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
+                        unsigned char param1 = 0, unsigned char param2 = 0);
+    bool queryTimerCompatible(K8090Traits::RelayID mask, unsigned char param1) const;
+    bool updateCommand(
+            const K8090Traits::Command &command,
+            const QList<const K8090Traits::Command *> &pending_command_list);
+    void sendCommandHelper(K8090Traits::CommandID command_id, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
+            unsigned char param1 = 0, unsigned char param2 = 0);
+    bool hasResponse(K8090Traits::CommandID command_id);
     void sendToSerial(std::unique_ptr<unsigned char []> buffer, int n);
 
     static void hexToByte(unsigned char **pbuffer, int *n, const QString &msg);
@@ -234,17 +242,32 @@ private:  // NOLINT(whitespace/indent)
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
 
+    static const unsigned char *kCommands_;
+    static const int *kPriorities_;
+    static const unsigned char *kResponses_;
+    static const unsigned char kStxByte_;
+    static const unsigned char kEtxByte_;
+    static const int kDefaultCommandDelay_;
+    static const int kDefaultFailureDelay_;
+    static const int kDefaultMaxFailureCount_;
+
+
     QString com_port_name_;
     QSerialPort *serial_port_;
-
-    static const unsigned char *commands_;
-    static const int *priorities_;
-    static const unsigned char *responses_;
 
     std::unique_ptr<command_queue::CommandQueue<K8090Traits::Command,
                         K8090Traits::as_number(K8090Traits::CommandID::NONE)>>
         pending_commands_;
+    QList<K8090Traits::Command> current_commands_[K8090Traits::as_number(K8090Traits::CommandID::NONE)];
+    K8090Traits::Command pendingRemainingDelay_;
+    K8090Traits::Command pendingTotalDelay_;
+    std::unique_ptr<QTimer> command_timer_;
+    std::unique_ptr<QTimer> failure_timer_;
+    int failure_counter_;
     bool connected_;
+    int command_delay_;
+    int failure_delay_;
+    int failure_max_count_;
 };
 
 }  // namespace core

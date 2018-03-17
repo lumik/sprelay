@@ -26,6 +26,7 @@
 #include <QList>
 
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <queue>
 

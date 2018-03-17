@@ -297,9 +297,13 @@ TCommand CommandQueue<TCommand, tSize>::pop()
         return TCommand{};
     } else {
         TCommand command = *std::priority_queue<CommandPriority<TCommand>>::top().command;
-        pending_commands_[TCommand::idAsNumber(command.id)]
+        typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
+        pending_commands_[id]
                 .removeOne(std::priority_queue<CommandPriority<TCommand>>::top().command.get());
         std::priority_queue<CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
+        if (!pending_commands_[id].size()) {
+            unique_[id] = true;
+        }
         if (empty()) {
             stamp_counter_ = 0;
         }
