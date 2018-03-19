@@ -101,9 +101,8 @@ constexpr RelayID from_number(unsigned int number) { return static_cast<RelayID>
 
 enum struct TimerDelayType : unsigned char
 {
-    NONE      = 0,  /*!< None relay */
-    TOTAL     = 1 << 0,
-    REMAINING = 1 << 1,
+    TOTAL     = 0,
+    REMAINING = 1 << 0,
     ALL       = 0xff
 };
 
@@ -233,12 +232,17 @@ private:  // NOLINT(whitespace/indent)
     bool hasResponse(K8090Traits::CommandID command_id);
     void sendToSerial(std::unique_ptr<unsigned char []> buffer, int n);
 
+    void buttonModeResponse(const unsigned char *buffer);
+    void timerResponse(const unsigned char *buffer);
+    void buttonStatusResponse(const unsigned char *buffer);
+    void relayStatusResponse(const unsigned char *buffer);
+    void jumperStatusResponse(const unsigned char *buffer);
+    void firmwareVersionResponse(const unsigned char *buffer);
+
     static void hexToByte(unsigned char **pbuffer, int *n, const QString &msg);
     static QString byteToHex(const unsigned char *buffer, int n);
-    static QString checkSum(const QString &msg);
     static unsigned char checkSum(const unsigned char *bMsg, int n);
-    static bool validateResponse(const QString &msg, K8090Traits::CommandID cmd);
-    static bool validateResponse(const unsigned char *bMsg, int n, K8090Traits::CommandID cmd);
+    static bool validateResponse(const unsigned char *bMsg);
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
 
@@ -259,8 +263,8 @@ private:  // NOLINT(whitespace/indent)
                         K8090Traits::as_number(K8090Traits::CommandID::NONE)>>
         pending_commands_;
     QList<K8090Traits::Command> current_commands_[K8090Traits::as_number(K8090Traits::CommandID::NONE)];
-    K8090Traits::Command pendingRemainingDelay_;
-    K8090Traits::Command pendingTotalDelay_;
+    K8090Traits::Command pending_remaining_delay_;
+    K8090Traits::Command pending_total_delay_;
     std::unique_ptr<QTimer> command_timer_;
     std::unique_ptr<QTimer> failure_timer_;
     int failure_counter_;

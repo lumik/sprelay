@@ -235,10 +235,6 @@ using namespace K8090Traits;  // NOLINT(build/namespaces)
     See the Velleman %K8090 card manual for more info about timer delay types.
 */
 /*!
-    \var sprelay::core::K8090Traits::TimerDelayType::NONE
-    \brief None type.
-*/
-/*!
     \var sprelay::core::K8090Traits::TimerDelayType::TOTAL
     \brief Total timer time.
 */
@@ -701,6 +697,8 @@ K8090::K8090(QObject *parent) :
     QObject(parent),
     pending_commands_{new command_queue::CommandQueue<Command, as_number(CommandID::NONE)>},
     current_commands_{},
+    pending_remaining_delay_{},
+    pending_total_delay_{},
     command_timer_{new QTimer},
     failure_timer_{new QTimer}
 {
@@ -1202,6 +1200,36 @@ void K8090::onReadyData()
     int n = data.size();
     unsigned char *buffer = reinterpret_cast<unsigned char*>(data.data());
     qDebug() << byteToHex(buffer, n);
+
+    for (int i = 0; i < n; i += 7) {
+        if (n - i < 7) {
+            qDebug() << "Bad number of bytes.";
+            onCommandFailed();
+            return;
+        } else {
+            if (!validateResponse(buffer + i)) {
+                qDebug() << "Not valid.";
+                onCommandFailed();
+                return;
+            }
+            if (buffer[i + 1] == kResponses_[as_number(ResponseID::BUTTON_MODE)]) {
+                buttonModeResponse(buffer + i);
+            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::TIMER)]) {
+                timerResponse(buffer + i);
+            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::BUTTON_STATUS)]) {
+                buttonStatusResponse(buffer + i);
+            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::RELAY_STATUS)]) {
+                relayStatusResponse(buffer + i);
+            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::JUMPER_STATUS)]) {
+                jumperStatusResponse(buffer + i);
+            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::FIRMWARE_VERSION)]) {
+                firmwareVersionResponse(buffer + i);
+            } else {
+                qDebug() << "No command!";
+                onCommandFailed();
+            }
+        }
+    }
 }
 
 
@@ -1218,6 +1246,14 @@ void K8090::dequeueCommand()
 
 void K8090::onCommandFailed()
 {
+    failure_timer_->stop();
+    qDebug() << "onCommandFailed()";
+    ++failure_counter_;
+    if (failure_counter_ > failure_max_count_) {
+        connected_ = false;
+        serial_port_->disconnect();
+        emit connectionFailed();
+    }
 }
 
 
@@ -1242,31 +1278,29 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
     // response so we must prevent enqueuing theese conflicting queries before the response comes.
     if (command_id == CommandID::TIMER) {
         if (!queryTimerCompatible(mask, param1)) {
-            if (param1 & as_number(TimerDelayType::TOTAL)) {
-                // both total and remainign command query
-                if (param1 & as_number(TimerDelayType::REMAINING)) {
-                    // exclude remaining command query
-                    pendingRemainingDelay_ |= Command{command_id, kPriorities_[as_number(command_id)], as_number(mask),
-                        as_number(TimerDelayType::REMAINING), param2};
-                    param1 &= ~as_number(TimerDelayType::REMAINING);
-                }
-                // test if the new query is compatible
-                if (!queryTimerCompatible(mask, param1)) {
-                    pendingTotalDelay_ |=
-                        Command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
-                    return;
-                }
-            } else {  // Remaining conflicting with some pending total
-                pendingRemainingDelay_ |=
-                    Command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
-                    return;
+            // both total and remainign command query
+            if (param1 == as_number(TimerDelayType::ALL)) {
+                // exclude remaining command query
+                pending_remaining_delay_.id = CommandID::TIMER;
+                pending_remaining_delay_.params[0] = as_number(mask);
+                pending_remaining_delay_.params[1] = as_number(TimerDelayType::REMAINING);
+                pending_remaining_delay_.params[2] = param2;
+                param1 &= ~as_number(TimerDelayType::REMAINING);
+            }
+            // test if the new query is compatible
+            if (!queryTimerCompatible(mask, param1)) {
+                pending_total_delay_.id = CommandID::TIMER;
+                pending_total_delay_.params[0] = as_number(mask);
+                pending_total_delay_.params[1] = param1;
+                pending_total_delay_.params[2] = param2;
+                return;
             }
         }
     }
 
+    // TODO(lumik): enqueue commands also when we are waiting for response from the same command (current_commands_).
     // Send command directly if it is sufficiently delayed from the previous one and there are no commands pending.
     if (!command_timer_->isActive() && pending_commands_->empty()) {
-        qDebug() << "enqueueCommand(): sending directly!";
         sendCommandHelper(command_id, mask, param1, param2);
     } else {  // send command undirectly
         Command command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
@@ -1305,20 +1339,25 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
 bool K8090::queryTimerCompatible(RelayID mask, unsigned char param1) const
 {
     // timer query for total and remaining delay is not valid
-    if ((param1 & as_number(TimerDelayType::TOTAL)) && (param1 & as_number(TimerDelayType::REMAINING))) {
+    if (param1 == as_number(TimerDelayType::ALL)) {
         return false;
     }
     const Command *pending = nullptr;
-    if (param1  & as_number(TimerDelayType::TOTAL)) {
+    // TODO(lumik): better treatment of current commands
+    if (!current_commands_[as_number(CommandID::TIMER)].isEmpty()) {
+        return false;
+    }
+    // total timer
+    if (~param1 & as_number(TimerDelayType::REMAINING)) {
         for (const Command *command : pending_commands_->get(CommandID::TIMER)) {
-            if (command->params[1] & as_number(TimerDelayType::REMAINING)) {
+            if ((command->params[1]) & as_number(TimerDelayType::REMAINING)) {
                 pending = command;
                 break;
             }
         }
-    } else if (param1  & as_number(TimerDelayType::REMAINING)) {
+    } else if (param1 & as_number(TimerDelayType::REMAINING)) {
         for (const Command *command : pending_commands_->get(CommandID::TIMER)) {
-            if (command->params[1] & as_number(TimerDelayType::TOTAL)) {
+            if (~(command->params[1]) & as_number(TimerDelayType::REMAINING)) {
                 pending = command;
                 break;
             }
@@ -1361,7 +1400,6 @@ bool K8090::updateCommand(const Command &command, const QList<const Command *> &
 // constructs command
 void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
-    qDebug() << "K8090::sendCommandHelper()";
     static const int n = 7;  // Number of command bytes.
     std::unique_ptr<unsigned char []> cmd = std::unique_ptr<unsigned char []>{new unsigned char[n]};
     cmd[0] = kStxByte_;
@@ -1402,7 +1440,7 @@ bool K8090::hasResponse(CommandID command_id)
 // sends command to serial port
 void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 {
-    qDebug() << byteToHex(buffer.get(), n);
+    qDebug() << "sendToSerial():" << byteToHex(buffer.get(), n);
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
             connected_ = false;
@@ -1416,6 +1454,122 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
     }
     serial_port_->write(reinterpret_cast<char*>(buffer.release()), n);
     serial_port_->flush();
+}
+
+
+// processes button mode response
+void K8090::buttonModeResponse(const unsigned char *buffer)
+{
+    if (current_commands_[as_number(CommandID::BUTTON_MODE)].isEmpty()) {
+        onCommandFailed();
+        return;
+    }
+    current_commands_[as_number(CommandID::BUTTON_MODE)].removeFirst();
+    failure_timer_->stop();
+    qDebug() << "buttonModeResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
+            << static_cast<int>(buffer[4]);
+    emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+            static_cast<RelayID>(buffer[4]));
+}
+
+
+// processes timer response
+void K8090::timerResponse(const unsigned char *buffer)
+{
+    if (current_commands_[as_number(CommandID::TIMER)].isEmpty()) {
+        onCommandFailed();
+        return;
+    }
+    const Command &command = current_commands_[as_number(CommandID::TIMER)].at(0);
+    bool is_total;
+    // total timer
+    if (~(command.params[1]) & as_number(TimerDelayType::REMAINING)) {
+        // remove current response from the list of waiting to response commands.
+        is_total = true;
+        current_commands_[as_number(CommandID::TIMER)][0].params[0] &= ~buffer[2];
+        if (!command.params[0]) {
+            current_commands_[as_number(CommandID::TIMER)].removeFirst();
+        }
+    } else {
+        is_total = false;
+        current_commands_[as_number(CommandID::TIMER)][0].params[0] &= ~buffer[2];
+        if (!command.params[0]) {
+            current_commands_[as_number(CommandID::TIMER)].removeFirst();
+        }
+    }
+    failure_timer_->stop();
+    // issue pending query timer commands
+    if (current_commands_[as_number(CommandID::TIMER)].isEmpty()) {
+        if (pending_total_delay_.id != CommandID::NONE) {
+            RelayID relay = static_cast<RelayID>(pending_total_delay_.params[0]);
+            pending_total_delay_.id = CommandID::NONE;
+            enqueueCommand(CommandID::TIMER, relay, pending_total_delay_.params[1]);
+        } else if (pending_remaining_delay_.id != CommandID::NONE) {
+            RelayID relay = static_cast<RelayID>(pending_remaining_delay_.params[0]);
+            pending_remaining_delay_.id = CommandID::NONE;
+            enqueueCommand(CommandID::TIMER, relay, pending_remaining_delay_.params[1]);
+        }
+    }
+    qDebug() << "timerResponse(): reported delay: " << static_cast<quint16>(buffer[3] << 8 | buffer[4]);
+    if (is_total) {
+        emit totalTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+    } else {
+        emit remainingTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+    }
+}
+
+
+// processes button status response
+void K8090::buttonStatusResponse(const unsigned char *buffer)
+{
+    failure_timer_->stop();
+    qDebug() << "buttonStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
+            << static_cast<int>(buffer[4]);
+    emit buttonStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+            static_cast<RelayID>(buffer[4]));
+}
+
+
+// processes relay status response
+void K8090::relayStatusResponse(const unsigned char *buffer)
+{
+    if (!current_commands_[as_number(CommandID::QUERY_RELAY)].isEmpty()) {
+        current_commands_[as_number(CommandID::QUERY_RELAY)].removeFirst();
+    }
+    failure_timer_->stop();
+    qDebug() << "relayStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
+            << static_cast<int>(buffer[4]);
+    emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+            static_cast<RelayID>(buffer[4]));
+}
+
+
+// processes jumper status response
+void K8090::jumperStatusResponse(const unsigned char *buffer)
+{
+    if (current_commands_[as_number(CommandID::JUMPER_STATUS)].isEmpty()) {
+        onCommandFailed();
+        return;
+    }
+    current_commands_[as_number(CommandID::JUMPER_STATUS)].clear();
+    failure_timer_->stop();
+    qDebug() << "jumperStatusResponse(): " << static_cast<bool>(buffer[3]);
+    emit jumperStatus(static_cast<bool>(buffer[3]));
+}
+
+
+// processes firmware version response
+void K8090::firmwareVersionResponse(const unsigned char *buffer)
+{
+    if (current_commands_[as_number(CommandID::FIRMWARE_VERSION)].isEmpty()) {
+        onCommandFailed();
+        return;
+    }
+    current_commands_[as_number(CommandID::FIRMWARE_VERSION)].clear();
+    failure_timer_->stop();
+    qDebug() << "firmwareVersionResponse(): " << 2000 + static_cast<int>(buffer[3]) << "."
+            << static_cast<int>(buffer[4]);
+    emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
 }
 
 
@@ -1457,21 +1611,6 @@ QString K8090::byteToHex(const unsigned char *buffer, int n)
 }
 
 
-// helper method which computes checksum from string command representation
-QString K8090::checkSum(const QString &msg)
-{
-    unsigned char *bMsg;
-    int n;
-    hexToByte(&bMsg, &n, msg);
-
-    unsigned char bChk = checkSum(bMsg, n);
-
-    delete[] bMsg;
-
-    return QString("%1").arg((unsigned int)bChk, 2, 16, QChar('0')).toUpper();
-}
-
-
 // helper method which computes checksum from binary command representation
 unsigned char K8090::checkSum(const unsigned char *bMsg, int n)
 {
@@ -1487,38 +1626,17 @@ unsigned char K8090::checkSum(const unsigned char *bMsg, int n)
 }
 
 
-// validates response from card in string representation
-bool K8090::validateResponse(const QString &msg, CommandID cmd)
-{
-    unsigned char *bMsg;
-    int n;
-    hexToByte(&bMsg, &n, msg);
-    if (validateResponse(bMsg, n, cmd)) {
-        delete[] bMsg;
-        return true;
-    } else {
-        delete[] bMsg;
-        return false;
-    }
-}
-
-
 // validates response from card in binary representation
-bool K8090::validateResponse(const unsigned char *bMsg, int n, CommandID cmd)
+bool K8090::validateResponse(const unsigned char *bMsg)
 {
-    if (n >= 6) {
-        if (bMsg[0] != kStxByte_)
-            return false;
-        if (bMsg[1] != kCommands_[as_number(cmd)])
-            return false;
-        unsigned char bTest[5];
-        for (int ii = 0; ii < 5; ++ii)
-            bTest[ii] = bMsg[ii];
-        unsigned char bChkSum = checkSum(bTest, 5);
-        if ((unsigned int)bChkSum == (unsigned int)bMsg[5])
-            return true;
-    }
-    return false;
+    if (bMsg[0] != kStxByte_)
+        return false;
+    unsigned char bChkSum = checkSum(bMsg, 5);
+    if (bChkSum != bMsg[5])
+        return false;
+    if (bMsg[6] != kEtxByte_)
+        return false;
+    return true;
 }
 
 }  // namespace core
