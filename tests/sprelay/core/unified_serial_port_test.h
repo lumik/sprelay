@@ -20,39 +20,52 @@
 **                                                                        **
 ****************************************************************************/
 
-#include <QCoreApplication>
-#include <QtTest>
+#ifndef SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_
+#define SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_
+
+#include <QObject>
+#include <QString>
 
 #include <memory>
 
-#include "command_queue_test.h"
-#include "k8090_test.h"
-#include "serial_port_utils_test.h"
-#include "unified_serial_port_test.h"
+namespace sprelay {
+namespace core {
 
-using namespace sprelay::core;  // NOLINT(build/namespaces)
+class UnifiedSerialPort;
 
-int main(int argc, char **argv)
+class UnifiedSerialPortTest : public QObject
 {
-    QCoreApplication app(argc, argv);
-    app.setAttribute(Qt::AA_Use96Dpi, true);
-    int status = 0;
+    Q_OBJECT
+public:  // NOLINT(whitespace/indent)
+    static const int kCommandTimeoutMs;
 
-    // SerialPortUtilsTest
-    std::unique_ptr<SerialPortUtilsTest> serial_port_utils_test{new SerialPortUtilsTest};
-    status |= QTest::qExec(serial_port_utils_test.get(), argc, argv);
+private slots:  // NOLINT(whitespace/indent)
+    void initTestCase();
+    void availablePortsTest();
+    void realBenchmark_data();
+    void realBenchmark();
+    void realJumperStatus();
+    void realFirmwareVersion();
+    void realQueryAllTimers();
+    void realTestTimer();
+    void realTestDefaultTimer();
 
-    // UnifiedSerialPortTest
-    std::unique_ptr<UnifiedSerialPortTest> unified_serial_port_test{new UnifiedSerialPortTest};
-    status |= QTest::qExec(unified_serial_port_test.get(), argc, argv);
+private:  // NOLINT(whitespace/indent)
+    unsigned char checkSum(const unsigned char *bMsg, int n);
 
-    // CommandQueueTest
-    std::unique_ptr<command_queue::CommandQueueTest> command_queue_test{new command_queue::CommandQueueTest};
-    status |= QTest::qExec(command_queue_test.get(), argc, argv);
+    std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
+    void resetRelays(UnifiedSerialPort *serial_port) const;
+    bool compareResponse(const unsigned char *response, const unsigned char *expected);
+    void sendCommand(UnifiedSerialPort *serial_port, const unsigned char *command) const;
+    bool measureCommandWithResponse(UnifiedSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
+    bool real_card_present_;
+    QString real_card_port_name_;
+};
 
-    // K8090Test
-    std::unique_ptr<K8090Test> k8090_test{new K8090Test};
-    status |= QTest::qExec(k8090_test.get(), argc, argv);
+}  // namespace core
+}  // namespace sprelay
 
-    return status;
-}
+Q_DECLARE_METATYPE(unsigned char)
+Q_DECLARE_METATYPE(const unsigned char *)
+
+#endif  // SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_
