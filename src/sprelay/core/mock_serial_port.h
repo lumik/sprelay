@@ -20,23 +20,52 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_K8090_TEST_H_
-#define SPRELAY_CORE_K8090_TEST_H_
+#ifndef SPRELAY_CORE_MOCK_SERIAL_PORT_H_
+#define SPRELAY_CORE_MOCK_SERIAL_PORT_H_
 
+#include <QByteArray>
+#include <QIODevice>
 #include <QObject>
+#include <QSerialPort>
+#include <QString>
 
 namespace sprelay {
 namespace core {
 
-class K8090Test: public QObject
+class MockSerialPort : public QObject
 {
     Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
-    void testCase();
+public:  // NOLINT(whitespace/indent)
+    static const quint16 kProductID;
+    static const quint16 kVendorID;
+
+    explicit MockSerialPort(QObject *parent = nullptr);
+
+    void setPortName(const QString &com_port_name);
+    bool setBaudRate(qint32 baud_rate);
+    bool setDataBits(QSerialPort::DataBits data_bits);
+    bool setParity(QSerialPort::Parity parity);
+    bool setStopBits(QSerialPort::StopBits stop_bits);
+    bool setFlowControl(QSerialPort::FlowControl flow_control);
+
+    bool isOpen();
+    bool open(QIODevice::OpenMode mode);
+    void close();
+
+    QByteArray readAll();
+    qint64 write(const char *data, qint64 max_size);
+    bool flush();
+
+    QSerialPort::SerialPortError error();
+    void clearError();
+
+signals:  // NOLINT(whitespace/indent)
+    void readyRead();
+
+private:  // NOLINT(whitespace/indent)
 };
 
 }  // namespace core
 }  // namespace sprelay
 
-#endif  // SPRELAY_CORE_K8090_TEST_H_
-
+#endif  // SPRELAY_CORE_MOCK_SERIAL_PORT_H_

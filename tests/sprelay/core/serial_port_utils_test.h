@@ -20,23 +20,22 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_K8090_TEST_H_
-#define SPRELAY_CORE_K8090_TEST_H_
+#ifndef SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_
+#define SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_
 
 #include <QObject>
 
 namespace sprelay {
 namespace core {
 
-class K8090Test: public QObject
+class SerialPortUtilsTest : public QObject
 {
     Q_OBJECT
 private slots:  // NOLINT(whitespace/indent)
-    void testCase();
+    void hexToByteTestCase();
 };
 
 }  // namespace core
 }  // namespace sprelay
 
-#endif  // SPRELAY_CORE_K8090_TEST_H_
-
+#endif  // SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_

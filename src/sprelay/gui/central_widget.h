@@ -39,11 +39,8 @@ class QSpinBox;
 
 namespace sprelay {
 namespace core {
-namespace K8090Traits {
-// forward declarations of k8090Traits
-class ComPortParams;
-}
 // forward declarations of core classes
+class ComPortParams;
 class K8090;
 }
 namespace gui {

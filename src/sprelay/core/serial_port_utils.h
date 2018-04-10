@@ -20,23 +20,37 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_K8090_TEST_H_
-#define SPRELAY_CORE_K8090_TEST_H_
+#ifndef SPRELAY_CORE_SERIAL_PORT_UTILS_H_
+#define SPRELAY_CORE_SERIAL_PORT_UTILS_H_
 
-#include <QObject>
+#include <QString>
+
+#include "memory"
 
 namespace sprelay {
 namespace core {
 
-class K8090Test: public QObject
+struct ComPortParams
 {
-    Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
-    void testCase();
+    QString port_name;
+    QString description;
+    QString manufacturer;
+    quint16 product_identifier;
+    quint16 vendor_identifier;
+};
+
+bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, int *n);
+QString byte_to_hex(const unsigned char *buffer, int n);
+
+// specify deleter to enbale forward declarations
+class MockSerialPort;
+struct MockSerialPortDeleter
+{
+    void operator()(MockSerialPort *p);
 };
 
 }  // namespace core
 }  // namespace sprelay
 
-#endif  // SPRELAY_CORE_K8090_TEST_H_
+#endif  // SPRELAY_CORE_SERIAL_PORT_UTILS_H_
 

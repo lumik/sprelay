@@ -31,16 +31,19 @@
 #include <type_traits>
 
 #include "enum_flags.h"
+#include "serial_port_utils.h"
 
 // forward declarations
-class QSerialPort;
 class QTimer;
 
 namespace sprelay {
 namespace core {
 
 // forward declarations
+class UnifiedSerialPort;
+
 namespace command_queue {
+// command_queue forward declaration
 template<typename TCommand, int tSize>
 class CommandQueue;
 }  // namespace command_queue
@@ -151,16 +154,6 @@ struct Command
 };
 
 
-struct ComPortParams
-{
-    QString portName;
-    QString description;
-    QString manufacturer;
-    quint16 productIdentifier;
-    quint16 vendorIdentifier;
-};
-
-
 }  // namespace K8090Traits
 
 
@@ -172,10 +165,10 @@ public:  // NOLINT(whitespace/indent)
     static const quint16 kProductID;
     static const quint16 kVendorID;
 
-    explicit K8090(QObject *parent = 0);
+    explicit K8090(QObject *parent = nullptr);
     ~K8090() override;
 
-    static QList<K8090Traits::ComPortParams> availablePorts();
+    static QList<ComPortParams> availablePorts();
     void setComPortName(const QString &name);
     void setCommandDelay(int msec);
     void setFailureDelay(int msec);
@@ -239,8 +232,6 @@ private:  // NOLINT(whitespace/indent)
     void jumperStatusResponse(const unsigned char *buffer);
     void firmwareVersionResponse(const unsigned char *buffer);
 
-    static void hexToByte(unsigned char **pbuffer, int *n, const QString &msg);
-    static QString byteToHex(const unsigned char *buffer, int n);
     static unsigned char checkSum(const unsigned char *bMsg, int n);
     static bool validateResponse(const unsigned char *bMsg);
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
@@ -257,7 +248,7 @@ private:  // NOLINT(whitespace/indent)
 
 
     QString com_port_name_;
-    QSerialPort *serial_port_;
+    UnifiedSerialPort *serial_port_;
 
     std::unique_ptr<command_queue::CommandQueue<K8090Traits::Command,
                         K8090Traits::as_number(K8090Traits::CommandID::NONE)>>

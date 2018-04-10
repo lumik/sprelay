@@ -27,12 +27,11 @@
 #include "k8090.h"
 
 #include <QDebug>
-#include <QSerialPort>
-#include <QSerialPortInfo>
 #include <QStringBuilder>
 #include <QTimer>
 
 #include "command_queue.h"
+#include "unified_serial_port.h"
 
 /*!
     \brief Namespace containing sprelay application.
@@ -439,34 +438,6 @@ bool Command::isCompatible(const Command &other) const
     }
 }
 
-/*!
-    \struct sprelay::core::K8090Traits::ComPortParams
-    \ingroup K8090_traits
-    \brief Structure representing informations about one serial port. Used by the K8090::availablePorts() method.
-*/
-
-/*!
-    \var ComPortParams::portName;
-    \brief Port name.
-*/
-/*!
-    \var ComPortParams::description;
-    \brief Port description.
-*/
-/*!
-    \var ComPortParams::manufacturer;
-    \brief Port manufacturer.
-*/
-/*!
-    \var ComPortParams::productIdentifier;
-    \brief Port product identifier.
-*/
-/*!
-    \var ComPortParams::vendorIdentifier;
-    \brief Port vendor identifier.
-*/
-
-
 // generate static arrays containing commands, command priorities and responses at compile time
 namespace {  // unnamed namespace
 
@@ -682,7 +653,7 @@ const unsigned char K8090::kStxByte_ = 0x04;
 // End delimiting command byte.
 const unsigned char K8090::kEtxByte_ = 0x0f;
 // Shortest interval in ms from sending one command to sending a new one.
-const int K8090::kDefaultCommandDelay_ = 10;
+const int K8090::kDefaultCommandDelay_ = 50;
 // Maximal time in ms to wait for response.
 const int K8090::kDefaultFailureDelay_ = 1000;
 // Maximal number of consecutive failures to disconnect realy;
@@ -702,7 +673,7 @@ K8090::K8090(QObject *parent) :
     command_timer_{new QTimer},
     failure_timer_{new QTimer}
 {
-    serial_port_ = new QSerialPort(this);
+    serial_port_ = new UnifiedSerialPort{this};
     failure_counter_ = 0;
     command_timer_->setSingleShot(true);
     failure_timer_->setSingleShot(true);
@@ -712,7 +683,7 @@ K8090::K8090(QObject *parent) :
     failure_delay_ = kDefaultFailureDelay_;
     failure_max_count_ = kDefaultMaxFailureCount_;
 
-    connect(serial_port_, &QSerialPort::readyRead, this, &K8090::onReadyData);
+    connect(serial_port_, &UnifiedSerialPort::readyRead, this, &K8090::onReadyData);
     connect(command_timer_.get(), &QTimer::timeout, this, &K8090::dequeueCommand);
     connect(failure_timer_.get(), &QTimer::timeout, this, &K8090::onCommandFailed);
 }
@@ -734,17 +705,7 @@ K8090::~K8090()
 */
 QList<ComPortParams> K8090::availablePorts()
 {
-    QList<ComPortParams> comPortParamsList;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
-        ComPortParams comPortParams;
-        comPortParams.portName = info.portName();
-        comPortParams.description = info.description();
-        comPortParams.manufacturer = info.manufacturer();
-        comPortParams.productIdentifier = info.productIdentifier();
-        comPortParams.vendorIdentifier = info.vendorIdentifier();
-        comPortParamsList.append(comPortParams);
-    }
-    return comPortParamsList;
+    return UnifiedSerialPort::availablePorts();
 }
 
 
@@ -937,16 +898,16 @@ bool K8090::isConnected()
 void K8090::connectK8090()
 {
     connected_ = false;
-    bool cardFound = false;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
-        if (info.portName() == com_port_name_
-                && info.productIdentifier() == kProductID
-                && info.vendorIdentifier() == kVendorID) {
-            cardFound = true;
+    bool card_found = false;
+    foreach (const ComPortParams &params, UnifiedSerialPort::availablePorts()) {  // NOLINT(whitespace/parens)
+        if (params.port_name == com_port_name_
+                && params.product_identifier == kProductID
+                && params.vendor_identifier == kVendorID) {
+            card_found = true;
         }
     }
 
-    if (!cardFound) {
+    if (!card_found) {
         emit connectionFailed();
         return;
     }
@@ -1198,8 +1159,8 @@ void K8090::onReadyData()
     // converting the data to unsigned char
     QByteArray data = serial_port_->readAll();
     int n = data.size();
-    unsigned char *buffer = reinterpret_cast<unsigned char*>(data.data());
-    qDebug() << byteToHex(buffer, n);
+    const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    qDebug() << byte_to_hex(buffer, n);
 
     for (int i = 0; i < n; i += 7) {
         if (n - i < 7) {
@@ -1251,7 +1212,7 @@ void K8090::onCommandFailed()
     ++failure_counter_;
     if (failure_counter_ > failure_max_count_) {
         connected_ = false;
-        serial_port_->disconnect();
+        serial_port_->close();
         emit connectionFailed();
     }
 }
@@ -1440,7 +1401,7 @@ bool K8090::hasResponse(CommandID command_id)
 // sends command to serial port
 void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 {
-    qDebug() << "sendToSerial():" << byteToHex(buffer.get(), n);
+    qDebug() << "sendToSerial():" << byte_to_hex(buffer.get(), n);
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
             connected_ = false;
@@ -1452,7 +1413,7 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
     if (command_delay_) {
         command_timer_->start(command_delay_);
     }
-    serial_port_->write(reinterpret_cast<char*>(buffer.release()), n);
+    serial_port_->write(reinterpret_cast<char*>(buffer.get()), n);
     serial_port_->flush();
 }
 
@@ -1570,44 +1531,6 @@ void K8090::firmwareVersionResponse(const unsigned char *buffer)
     qDebug() << "firmwareVersionResponse(): " << 2000 + static_cast<int>(buffer[3]) << "."
             << static_cast<int>(buffer[4]);
     emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
-}
-
-
-// converts hexadecimal string message to its binary representation
-void K8090::hexToByte(unsigned char **pbuffer, int *n, const QString &msg)
-{
-    // remove white spaces
-    QString newMsg = msg;
-    newMsg.remove(' ');
-
-    int msgSize = newMsg.size();
-
-    // test correct size of msg, all hex codes consit of 2 characters
-    if (msgSize % 2) {
-        *pbuffer = nullptr;
-        *n = 0;
-    } else {
-        *n = msgSize / 2;
-        *pbuffer = new unsigned char[*n];
-        bool ok;
-        for (int ii = 0; ii < *n; ++ii) {
-            (*pbuffer)[ii] = newMsg.midRef(2 * ii, 2).toUInt(&ok, 16);
-        }
-    }
-}
-
-
-// converts binary message to its string representation
-QString K8090::byteToHex(const unsigned char *buffer, int n)
-{
-    QString msg;
-    for (int ii = 0; ii < n - 1; ++ii) {
-        msg.append(QString("%1").arg((unsigned int)buffer[ii], 2, 16, QChar('0')).toUpper()).append(' ');
-    }
-    if (n > 0) {
-        msg.append(QString("%1").arg((unsigned int)buffer[n - 1], 2, 16, QChar('0')).toUpper());
-    }
-    return msg;
 }
 
 

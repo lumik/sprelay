@@ -20,23 +20,36 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_K8090_TEST_H_
-#define SPRELAY_CORE_K8090_TEST_H_
+#include "serial_port_utils_test.h"
 
-#include <QObject>
+#include <QtTest>
+
+#include <memory>
+
+#include "serial_port_utils.h"
 
 namespace sprelay {
 namespace core {
 
-class K8090Test: public QObject
+void SerialPortUtilsTest::hexToByteTestCase()
 {
-    Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
-    void testCase();
-};
+    std::unique_ptr<unsigned char[]> bMsg;
+    int n;
+
+    // testing message
+    unsigned char nMsg[3] = {0x1, 0xFF, 0xF};
+    QString msg = "01 FF 0F";
+
+    bool ok = hex_to_byte(msg, &bMsg, &n);
+
+    for (int i = 0; i < n; i++) {
+        if (bMsg[i] != nMsg[i]) {
+            ok = 0;
+        }
+    }
+
+    QCOMPARE(ok, true);
+}
 
 }  // namespace core
 }  // namespace sprelay
-
-#endif  // SPRELAY_CORE_K8090_TEST_H_
-

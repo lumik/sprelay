@@ -77,14 +77,14 @@ void CentralWidget::onRefreshPortsButtonClicked()
         QString msg;
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
-        foreach (const core::K8090Traits::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
+        foreach (const core::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
                  core::K8090::availablePorts()) {
-            msg.append("Port name: " % comPortParams.portName % "\n" %
+            msg.append("Port name: " % comPortParams.port_name % "\n" %
                        "Description: " % comPortParams.description % "\n" %
                        "Manufacturer: " % comPortParams.manufacturer % "\n" %
-                       "Product Identifier: " % QString::number(comPortParams.productIdentifier) % "\n" %
-                       "Vendor Identifier: " % QString::number(comPortParams.vendorIdentifier) % "\n");
-            comPortNames.append(comPortParams.portName);
+                       "Product Identifier: " % QString::number(comPortParams.product_identifier) % "\n" %
+                       "Vendor Identifier: " % QString::number(comPortParams.vendor_identifier) % "\n");
+            comPortNames.append(comPortParams.port_name);
         }
         QMessageBox::information(this, tr("Serial ports information:"), msg, QMessageBox::Ok);
         bool ok = true;
@@ -225,22 +225,22 @@ void CentralWidget::createUiElements()
 void CentralWidget::initializePortsCombobox()
 {
     int index = 0;
-    QList<core::K8090Traits::ComPortParams> com_port_params_list = core::K8090::availablePorts();
+    QList<core::ComPortParams> com_port_params_list = core::K8090::availablePorts();
     bool current_port_found = false;
     // fill combo box
-    for (const core::K8090Traits::ComPortParams &com_port_params : com_port_params_list) {
-        ports_combo_box_->insertItem(index++, com_port_params.portName);
-        if (com_port_name_ == com_port_params.portName) {
+    for (const core::ComPortParams &com_port_params : com_port_params_list) {
+        ports_combo_box_->insertItem(index++, com_port_params.port_name);
+        if (com_port_name_ == com_port_params.port_name) {
             current_port_found = true;
         }
     }
 
     // if com_port_name_ doesn't match any port, try to find card.
     if (!current_port_found) {
-        for (const core::K8090Traits::ComPortParams &com_port_params : com_port_params_list) {
-            if (com_port_params.productIdentifier == core::K8090::kProductID
-                    && com_port_params.vendorIdentifier == core::K8090::kVendorID) {
-                com_port_name_ = com_port_params.portName;
+        for (const core::ComPortParams &com_port_params : com_port_params_list) {
+            if (com_port_params.product_identifier == core::K8090::kProductID
+                    && com_port_params.vendor_identifier == core::K8090::kVendorID) {
+                com_port_name_ = com_port_params.port_name;
                 break;
             }
         }

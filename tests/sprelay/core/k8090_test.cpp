@@ -32,27 +32,9 @@
 namespace sprelay {
 namespace core {
 
-void K8090Test::hexToByte()
+void K8090Test::testCase()
 {
-    unsigned char *bMsg;
-    int n;
-
-    // testing message
-    unsigned char nMsg[3] = {0x1, 0xFF, 0xF};
-    QString msg = "01 FF 0F";
-
-    K8090::hexToByte(&bMsg, &n, msg);
-
-    bool ok = 1;
-    for (int i = 0; i < n; i++) {
-        if (bMsg[i] != nMsg[i]) {
-            ok = 0;
-        }
-    }
-
-    delete[] bMsg;  // hexToByte created new variable, don't forget to delete it
-
-    QCOMPARE(ok, true);
+    QCOMPARE(true, true);
 }
 
 }  // namespace core

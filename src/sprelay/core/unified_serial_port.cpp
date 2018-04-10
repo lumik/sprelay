@@ -1,0 +1,463 @@
+/***************************************************************************
+**                                                                        **
+**  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
+**  through usb using virtual serial port in Qt.                          **
+**  Copyright (C) 2018 Jakub Klener                                       **
+**                                                                        **
+**  This file is part of SpRelay application.                             **
+**                                                                        **
+**  You can redistribute it and/or modify it under the terms of the       **
+**  3-Clause BSD License as published by the Open Source Initiative.      **
+**                                                                        **
+**  This program is distributed in the hope that it will be useful,       **
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of        **
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          **
+**  3-Clause BSD License for more details.                                **
+**                                                                        **
+**  You should have received a copy of the 3-Clause BSD License along     **
+**  with this program.                                                    **
+**  If not, see https://opensource.org/licenses/                          **
+**                                                                        **
+****************************************************************************/
+
+/*!
+    \file unified_serial_port.cpp
+*/
+
+#include "unified_serial_port.h"
+
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
+#include "mock_serial_port.h"
+
+namespace sprelay {
+namespace core {
+
+
+/*!
+    \class UnifiedSerialPort
+    \ingroup Core
+    \brief Class which unifies QSerialPort and sprelay::core::MockSerialPort and can internaly switch between them.
+
+    The port can be switched by port name. The mock serial port is used as port with name
+    UnifiedSerialPort::kMockPortName. The mock port is added to the list of available serial ports which can be
+    obtained by the UnifiedSerialPort::availablePorts() method.
+
+    Parameters, as port name, baud rate, data bits, parity, stop bits and flow control are set to port only if some
+    port is openned. Otherwise, they are stored only for later use when the port is opened. When the port is switched
+    from real to mock or other way, the parameters are moved to the new one. More information about the methods can be
+    obtained from QSerialPort documentation.
+
+    \remark reentrant
+*/
+
+
+/*!
+    \brief The name of mock com port.
+*/
+const char *UnifiedSerialPort::kMockPortName = "MOCKCOM";
+
+
+/*!
+    \brief Returns a list of available serial ports extended with mock serial port.
+    \return The ports list.
+ */
+QList<ComPortParams> UnifiedSerialPort::availablePorts()
+{
+    QList<ComPortParams> com_port_params_list;
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
+        ComPortParams com_port_params;
+        com_port_params.port_name = info.portName();
+        com_port_params.description = info.description();
+        com_port_params.manufacturer = info.manufacturer();
+        com_port_params.product_identifier = info.productIdentifier();
+        com_port_params.vendor_identifier = info.vendorIdentifier();
+        com_port_params_list.append(com_port_params);
+    }
+    // add mock port
+    ComPortParams com_port_params;
+    com_port_params.port_name = kMockPortName;
+    com_port_params.description = "Mock K8090 card serial port.";
+    com_port_params.manufacturer = "Sprelay";
+    com_port_params.product_identifier = MockSerialPort::kProductID;
+    com_port_params.vendor_identifier = MockSerialPort::kVendorID;
+    com_port_params_list.append(com_port_params);
+    return com_port_params_list;
+}
+
+
+/*!
+    \brief Constructor.
+    \param parent Parent object in Qt ownership system.
+*/
+UnifiedSerialPort::UnifiedSerialPort(QObject *parent)
+    : QObject{parent},
+      port_name_pristine_{true},
+      baud_rate_pristine_{true},
+      data_bits_pristine_{true},
+      parity_pristine_{true},
+      stop_bits_pristine_{true},
+      flow_control_pristine_{true}
+{
+}
+
+
+/*!
+    \brief Sets port name.
+    \param port_name The port name.
+*/
+void UnifiedSerialPort::setPortName(const QString &port_name)
+{
+    port_name_ = port_name;
+    port_name_pristine_ = false;
+    if (isReal()) {
+        serial_port_->setPortName(port_name);
+    } else if (isMock()) {
+        mock_serial_port_->setPortName(port_name);
+    }
+}
+
+
+/*!
+    \brief Sets baud rate.
+    \param baud_rate The baud rate.
+    \return True if successful.
+*/
+bool UnifiedSerialPort::setBaudRate(qint32 baud_rate)
+{
+    baud_rate_ = baud_rate;
+    baud_rate_pristine_ = false;
+    if (isReal()) {
+        return serial_port_->setBaudRate(baud_rate);
+    } else if (isMock()) {
+        return mock_serial_port_->setBaudRate(baud_rate);
+    } else {
+        return true;
+    }
+}
+
+
+/*!
+    \brief Sets data bits.
+    \param data_bits The data bits.
+    \return True if successful.
+*/
+bool UnifiedSerialPort::setDataBits(QSerialPort::DataBits data_bits)
+{
+    data_bits_ = data_bits;
+    data_bits_pristine_ = false;
+    if (isReal()) {
+        return serial_port_->setDataBits(data_bits);
+    } else if (isMock()) {
+        return mock_serial_port_->setDataBits(data_bits);
+    } else {
+        return true;
+    }
+}
+
+
+/*!
+    \brief Sets parity.
+    \param parity The parity
+    \return True if successful.
+*/
+bool UnifiedSerialPort::setParity(QSerialPort::Parity parity)
+{
+    parity_ = parity;
+    parity_pristine_ = false;
+    if (isReal()) {
+        return serial_port_->setParity(parity);
+    } else if (isMock()) {
+        return mock_serial_port_->setParity(parity);
+    } else {
+        return true;
+    }
+}
+
+
+/*!
+    \brief Sets stop bits.
+    \param stop_bits The stop bits.
+    \return True if successful.
+*/
+bool UnifiedSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
+{
+    stop_bits_ = stop_bits;
+    stop_bits_pristine_ = false;
+    if (isReal()) {
+        return serial_port_->setStopBits(stop_bits);
+    } else if (isMock()) {
+        return mock_serial_port_->setStopBits(stop_bits);
+    } else {
+        return true;
+    }
+}
+
+
+/*!
+    \brief Sets flow control.
+    \param flow_control The flow control.
+    \return True if successful.
+*/
+bool UnifiedSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
+{
+    flow_control_ = flow_control;
+    flow_control_pristine_ = false;
+    if (isReal()) {
+        return serial_port_->setFlowControl(flow_control);
+    } else if (isMock()) {
+        return mock_serial_port_->setFlowControl(flow_control);
+    } else {
+        return true;
+    }
+}
+
+
+/*!
+    \brief Tests if the port is open.
+    \return True if open.
+*/
+bool UnifiedSerialPort::isOpen()
+{
+    if (isReal()) {
+        return serial_port_->isOpen();
+    } else if (isMock()) {
+        return mock_serial_port_->isOpen();
+    } else {
+        return false;
+    }
+}
+
+
+/*!
+    \brief Opens the port.
+
+    Port type selection between real and mock serial port is done according to the port name.
+
+    \param mode Open mode.
+    \return True if successful.
+    \sa UnifiedSerialPort::setPortName()
+*/
+bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
+{
+    // until now, serial port has been connected and its name changes
+    if (serial_port_) {
+        // change to mock serial port
+        if (!port_name_pristine_ && port_name_ == kMockPortName) {
+            if (!createMockPort()) {
+                return false;
+            }
+            return mock_serial_port_->open(mode);
+        // change only port name
+        } else {
+            return serial_port_->open(mode);
+        }
+    // serial port is not connected
+    } else {
+        // changing to mock serial, !!! mock port can't have pristine port name because the only way to set mock port
+        // is by name
+        if (!port_name_pristine_ && port_name_ == kMockPortName) {
+            if (!mock_serial_port_ && !createMockPort()) {
+                return false;
+            }
+            return mock_serial_port_->open(mode);
+        // creating new serial port
+        } else {
+            if (!createSerialPort()) {
+                return false;
+            }
+            return serial_port_->open(mode);
+        }
+    }
+}
+
+
+/*!
+    \brief Closes the port.
+*/
+void UnifiedSerialPort::close()
+{
+    if (isReal()) {
+        serial_port_->close();
+    } else if (isMock()) {
+        mock_serial_port_->close();
+    }
+}
+
+
+/*!
+    \brief Reads all data in buffer.
+    \return The data.
+
+    \sa UnifiedSerialPort::readyRead()
+*/
+QByteArray UnifiedSerialPort::readAll()
+{
+    if (isReal()) {
+        return serial_port_->readAll();
+    } else if (isMock()) {
+        return mock_serial_port_->readAll();
+    } else {
+        return QByteArray{};
+    }
+}
+
+
+/*!
+    \brief Writes data to serial port.
+    \param data The data.
+    \param max_size The size of data.
+    \return The number of written bytes or -1 in the case of error.
+*/
+qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
+{
+    if (isReal()) {
+        return serial_port_->write(data, max_size);
+    } else if (isMock()) {
+        return mock_serial_port_->write(data, max_size);
+    } else {
+        return -1;
+    }
+}
+
+
+/*!
+    \brief Flushes the buffer.
+    \return True if any data was written.
+    \sa UnifiedSerialPort::write()
+*/
+bool UnifiedSerialPort::flush()
+{
+    if (isReal()) {
+        return serial_port_->flush();
+    } else if (isMock()) {
+        return mock_serial_port_->flush();
+    } else {
+        return false;
+    }
+}
+
+
+/*!
+    \brief Holds the error status of the serial port.
+    \return The error code.
+    \sa UnifiedSerialPort::clearError()
+*/
+QSerialPort::SerialPortError UnifiedSerialPort::error()
+{
+    if (isReal()) {
+        return serial_port_->error();
+    } else if (isMock()) {
+        return mock_serial_port_->error();
+    }
+    return QSerialPort::NoError;
+}
+
+
+/*!
+    \brief Clears error.
+    \sa UnifiedSerialPort::error()
+*/
+void UnifiedSerialPort::clearError()
+{
+    if (isReal()) {
+        return serial_port_->clearError();
+    } else {
+        return mock_serial_port_->clearError();
+    }
+}
+
+
+/*!
+    \brief Tests if the serial port is mock now.
+
+    The port can be mock only when some port is created with UnifiedSerialPort::open() method.
+
+    \return True if mock.
+    \sa UnifiedSerialPort::isReal()
+*/
+bool UnifiedSerialPort::isMock()
+{
+    return mock_serial_port_.get() != nullptr;
+}
+
+
+/*!
+    \brief Tests if the serial port is real now.
+
+    The port can be real only when some port is created with UnifiedSerialPort::open() method.
+
+    \return True if real.
+    \sa UnifiedSerialPort::isMock()
+*/
+bool UnifiedSerialPort::isReal()
+{
+    return serial_port_ != nullptr;
+}
+
+
+/*!
+    \fn UnifiedSerialPort::readyRead()
+    \brief Emited, when some data comes through serial port.
+
+    The data can be readed with UnifiedSerialPort::readAll() method.
+*/
+
+
+bool UnifiedSerialPort::createSerialPort()
+{
+    serial_port_.reset(new QSerialPort);
+    mock_serial_port_.reset();
+    connect(serial_port_.get(), &QSerialPort::readyRead, this, &UnifiedSerialPort::readyRead);
+    return setupPort(serial_port_.get());
+}
+
+
+bool UnifiedSerialPort::createMockPort()
+{
+    mock_serial_port_.reset(new MockSerialPort);
+    serial_port_.reset();
+    connect(mock_serial_port_.get(), &MockSerialPort::readyRead, this, &UnifiedSerialPort::readyRead);
+    return setupPort(mock_serial_port_.get());
+}
+
+
+template<typename TSerialPort>
+bool UnifiedSerialPort::setupPort(TSerialPort *serial_port)
+{
+    // TODO(lumik): change return code to exception
+    if (!port_name_pristine_) {
+        serial_port->setPortName(port_name_);
+    }
+    if (!baud_rate_pristine_) {
+        if (!serial_port->setBaudRate(baud_rate_)) {
+            return false;
+        }
+    }
+    if (!data_bits_pristine_) {
+        if (!serial_port->setDataBits(data_bits_)) {
+            return false;
+        }
+    }
+    if (!parity_pristine_) {
+        if (!serial_port->setParity(parity_)) {
+            return false;
+        }
+    }
+    if (!stop_bits_pristine_) {
+        if (!serial_port->setStopBits(stop_bits_)) {
+            return false;
+        }
+    }
+    if (!flow_control_pristine_) {
+        if (!serial_port->setFlowControl(flow_control_)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+}  // namespace core
+}  // namespace sprelay
