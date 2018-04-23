@@ -27,6 +27,7 @@
 
 namespace sprelay {
 namespace core {
+namespace serial_utils {
 
 class SerialPortUtilsTest : public QObject
 {
@@ -35,6 +36,7 @@ private slots:  // NOLINT(whitespace/indent)
     void hexToByteTestCase();
 };
 
+}  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
 

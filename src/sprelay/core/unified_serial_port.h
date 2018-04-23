@@ -46,7 +46,7 @@ class UnifiedSerialPort : public QObject
 public:  // NOLINT(whitespace/indent)
     static const char *kMockPortName;
 
-    static QList<ComPortParams> availablePorts();
+    static QList<serial_utils::ComPortParams> availablePorts();
 
     explicit UnifiedSerialPort(QObject *parent = nullptr);
 
@@ -81,7 +81,7 @@ private:  // NOLINT(whitespace/indent)
     bool setupPort(TSerialPort *serial_port);
 
     std::unique_ptr<QSerialPort> serial_port_;
-    std::unique_ptr<MockSerialPort, MockSerialPortDeleter> mock_serial_port_;
+    std::unique_ptr<MockSerialPort, serial_utils::MockSerialPortDeleter> mock_serial_port_;
     QString port_name_;
     bool port_name_pristine_;
     qint32 baud_rate_;

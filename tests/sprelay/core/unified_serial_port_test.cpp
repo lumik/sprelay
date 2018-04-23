@@ -42,12 +42,14 @@ namespace sprelay {
 namespace core {
 
 const int UnifiedSerialPortTest::kCommandTimeoutMs = 50;
+const int UnifiedSerialPortTest::kDelayBetweenCommandsMs = 20;
 
 
 void UnifiedSerialPortTest::initTestCase()
 {
     real_card_present_ = false;
-    foreach (const ComPortParams &params, UnifiedSerialPort::availablePorts()) {  // NOLINT(whitespace/parens)
+    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
+            UnifiedSerialPort::availablePorts()) {
         if (params.product_identifier == K8090::kProductID && params.vendor_identifier == K8090::kVendorID) {
             if (params.port_name != UnifiedSerialPort::kMockPortName) {
                 real_card_port_name_ = params.port_name;
@@ -59,11 +61,12 @@ void UnifiedSerialPortTest::initTestCase()
 }
 
 
-void UnifiedSerialPortTest::availablePortsTest()
+void UnifiedSerialPortTest::availablePorts()
 {
     // test, if the mock port is always present
     bool mock_found = false;
-    foreach (const ComPortParams &params, UnifiedSerialPort::availablePorts()) {  // NOLINT(whitespace/parens)
+    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
+            UnifiedSerialPort::availablePorts()) {
         if (params.port_name == UnifiedSerialPort::kMockPortName
                 && params.product_identifier == K8090::kProductID
                 && params.vendor_identifier == K8090::kVendorID) {
@@ -257,9 +260,10 @@ void UnifiedSerialPortTest::realBenchmark()
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
     }
     QVERIFY2(compareResponse(buffer, response),
-             qPrintable(QString{"The response '%1' does not match the expected %2."}
-                        .arg(byte_to_hex(buffer, 7)).arg(byte_to_hex(response, 7))));
+        qPrintable(QString{"The response '%1' does not match the expected %2."}
+            .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(response, 7))));
 }
+
 
 void UnifiedSerialPortTest::realJumperStatus()
 {
@@ -289,14 +293,15 @@ void UnifiedSerialPortTest::realJumperStatus()
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
     }
     QVERIFY2(buffer[1] == jumper_off[1],
-             qPrintable(QString{"The response '%1' does not match the expected %2."}
-                        .arg(byte_to_hex(&buffer[1], 1)).arg(byte_to_hex(&jumper_off[1], 1))));
+        qPrintable(QString{"The response '%1' does not match the expected %2."}
+            .arg(serial_utils::byte_to_hex(&buffer[1], 1)).arg(serial_utils::byte_to_hex(&jumper_off[1], 1))));
     if (buffer[3]) {
         qDebug() << "Jumper is switched on.";
     } else {
         qDebug() << "Jumper is switched off.";
     }
 }
+
 
 void UnifiedSerialPortTest::realFirmwareVersion()
 {
@@ -326,11 +331,12 @@ void UnifiedSerialPortTest::realFirmwareVersion()
         QFAIL(qPrintable(QString{"Response has %1 but should have 7 bytes"}.arg(n)));
     }
     QVERIFY2(buffer[1] == version[1],
-             qPrintable(QString{"The response '%1' does not match the expected %2."}
-                        .arg(byte_to_hex(&buffer[1], 1)).arg(byte_to_hex(&version[1], 1))));
+        qPrintable(QString{"The response '%1' does not match the expected %2."}
+            .arg(serial_utils::byte_to_hex(&buffer[1], 1)).arg(serial_utils::byte_to_hex(&version[1], 1))));
     qDebug() << QString{"Firmware version is: year = %1, week = %2."}.arg(2000 + static_cast<int>(buffer[3]))
             .arg(static_cast<int>(buffer[4]));
 }
+
 
 void UnifiedSerialPortTest::realQueryAllTimers()
 {
@@ -343,7 +349,7 @@ void UnifiedSerialPortTest::realQueryAllTimers()
     }
 
     // benchmark the command
-    //                                            STX   CMD   MASK  PAR1  PAR2  CHK   ETX
+    //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char query_timers[] = {0x04, 0x44, 0xff, 0x00, 0x00, 0xb9, 0x0f};
     static const unsigned char responses[] = {
     //  STX   CMD   MASK  PAR1  PAR2  CHK   ETX
@@ -389,7 +395,8 @@ void UnifiedSerialPortTest::realQueryAllTimers()
             it = std::find_if(remaining_responses.begin(), remaining_responses.end(),
                     [&buffer, &i, this](int j) { return compareResponse(&buffer[i], &responses[j]); });
             QVERIFY2(it != remaining_responses.end(),
-                     qPrintable(QString{"The response '%1' does not match."}.arg(byte_to_hex(&buffer[i], 7))));
+                qPrintable(QString{"The response '%1' does not match."}
+                    .arg(serial_utils::byte_to_hex(&buffer[i], 7))));
             remaining_responses.erase(it);
         }
         chunk_list.emplace_back(n / 7);
@@ -405,7 +412,8 @@ void UnifiedSerialPortTest::realQueryAllTimers()
     qDebug() << QString{"Responses were gathered in %1."}.arg(chunk_str);
 }
 
-void UnifiedSerialPortTest::realTestTimer()
+
+void UnifiedSerialPortTest::realTimer()
 {
     if (!real_card_present_) {
         QSKIP("This test needs a real K8090 card connected.");
@@ -439,12 +447,12 @@ void UnifiedSerialPortTest::realTestTimer()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiply of 7."}.arg(n)));
+            QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
-                 qPrintable(QString{"The response '%1' does not match the expected %2."}
-                            .arg(byte_to_hex(buffer, 7)).arg(byte_to_hex(on_status, 7))));
+            qPrintable(QString{"The response '%1' does not match the expected %2."}
+                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status, 7))));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     {  // query remaining time
@@ -457,12 +465,12 @@ void UnifiedSerialPortTest::realTestTimer()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiply of 7."}.arg(n)));
+            QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(buffer[1] == remaining_timer,
-                 qPrintable(QString{"The response '%1' does not match the expected %2."}
-                            .arg(byte_to_hex(buffer, 1)).arg(byte_to_hex(&remaining_timer, 1))));
+            qPrintable(QString{"The response '%1' does not match the expected %2."}
+                .arg(serial_utils::byte_to_hex(buffer, 1)).arg(serial_utils::byte_to_hex(&remaining_timer, 1))));
         qDebug() << QString{"Remaining timer is %1s"}.arg(256 * buffer[3] + buffer[4]);
     }
     {  // wait for relay timer to elapse
@@ -478,18 +486,19 @@ void UnifiedSerialPortTest::realTestTimer()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiply of 7."}.arg(n)));
+            QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
-                 qPrintable(QString{"The response '%1' does not match the expected %2."}
-                            .arg(byte_to_hex(buffer, 7)).arg(byte_to_hex(off_status, 7))));
+            qPrintable(QString{"The response '%1' does not match the expected %2."}
+                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status, 7))));
     }
     elapsed_ms = elapsed_timer.elapsed();
     qDebug() << QString{"The timer took %1ms"}.arg(elapsed_ms);
 }
 
-void UnifiedSerialPortTest::realTestDefaultTimer()
+
+void UnifiedSerialPortTest::realDefaultTimer()
 {
     if (!real_card_present_) {
         QSKIP("This test needs a real K8090 card connected.");
@@ -524,12 +533,12 @@ void UnifiedSerialPortTest::realTestDefaultTimer()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiply of 7."}.arg(n)));
+            QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
-                 qPrintable(QString{"The response '%1' does not match the expected %2."}
-                            .arg(byte_to_hex(buffer, 7)).arg(byte_to_hex(on_status, 7))));
+            qPrintable(QString{"The response '%1' does not match the expected %2."}
+                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status, 7))));
     }
     {  // wait for relay timer to elapse
         QTimer timer;
@@ -548,8 +557,8 @@ void UnifiedSerialPortTest::realTestDefaultTimer()
         }
         const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
-                 qPrintable(QString{"The response '%1' does not match the expected %2."}
-                            .arg(byte_to_hex(buffer, 7)).arg(byte_to_hex(off_status, 7))));
+            qPrintable(QString{"The response '%1' does not match the expected %2."}
+                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status, 7))));
     }
     elapsed_ms = elapsed_timer.elapsed();
     qDebug() << QString{"The timer took %1ms"}.arg(elapsed_ms);
@@ -590,7 +599,7 @@ bool UnifiedSerialPortTest::compareResponse(const unsigned char *response, const
 {
     unsigned char check_sum = checkSum(expected, 5);
     if (check_sum != expected[5]) {
-        qDebug() << "Check sum should be:" << byte_to_hex(&check_sum, 1);
+        qDebug() << "Check sum should be:" << serial_utils::byte_to_hex(&check_sum, 1);
         return false;
     }
     for (int i = 0; i < 7; ++i) {

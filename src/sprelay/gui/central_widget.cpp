@@ -77,7 +77,7 @@ void CentralWidget::onRefreshPortsButtonClicked()
         QString msg;
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
-        foreach (const core::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
+        foreach (const core::serial_utils::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
                  core::K8090::availablePorts()) {
             msg.append("Port name: " % comPortParams.port_name % "\n" %
                        "Description: " % comPortParams.description % "\n" %
@@ -225,10 +225,10 @@ void CentralWidget::createUiElements()
 void CentralWidget::initializePortsCombobox()
 {
     int index = 0;
-    QList<core::ComPortParams> com_port_params_list = core::K8090::availablePorts();
+    QList<core::serial_utils::ComPortParams> com_port_params_list = core::K8090::availablePorts();
     bool current_port_found = false;
     // fill combo box
-    for (const core::ComPortParams &com_port_params : com_port_params_list) {
+    for (const core::serial_utils::ComPortParams &com_port_params : com_port_params_list) {
         ports_combo_box_->insertItem(index++, com_port_params.port_name);
         if (com_port_name_ == com_port_params.port_name) {
             current_port_found = true;
@@ -237,7 +237,7 @@ void CentralWidget::initializePortsCombobox()
 
     // if com_port_name_ doesn't match any port, try to find card.
     if (!current_port_found) {
-        for (const core::ComPortParams &com_port_params : com_port_params_list) {
+        for (const core::serial_utils::ComPortParams &com_port_params : com_port_params_list) {
             if (com_port_params.product_identifier == core::K8090::kProductID
                     && com_port_params.vendor_identifier == core::K8090::kVendorID) {
                 com_port_name_ = com_port_params.port_name;

@@ -20,38 +20,14 @@
 **                                                                        **
 ****************************************************************************/
 
-#include "serial_port_utils_test.h"
+#include <QMetaType>
 
-#include <QtTest>
+#ifndef SPRELAY_CORE_CORE_TEST_UTILS_H_
+#define SPRELAY_CORE_CORE_TEST_UTILS_H_
 
-#include <memory>
+// enables usage of const unsigned char* pointer in signals and slots
+Q_DECLARE_METATYPE(unsigned char)
+Q_DECLARE_METATYPE(const unsigned char *)
 
-#include "serial_port_utils.h"
+#endif  // SPRELAY_CORE_CORE_TEST_UTILS_H_
 
-namespace sprelay {
-namespace core {
-namespace serial_utils {
-
-void SerialPortUtilsTest::hexToByteTestCase()
-{
-    std::unique_ptr<unsigned char[]> bMsg;
-    int n;
-
-    // testing message
-    unsigned char nMsg[3] = {0x1, 0xFF, 0xF};
-    QString msg = "01 FF 0F";
-
-    bool ok = hex_to_byte(msg, &bMsg, &n);
-
-    for (int i = 0; i < n; i++) {
-        if (bMsg[i] != nMsg[i]) {
-            ok = 0;
-        }
-    }
-
-    QCOMPARE(ok, true);
-}
-
-}  // namespace serial_utils
-}  // namespace core
-}  // namespace sprelay

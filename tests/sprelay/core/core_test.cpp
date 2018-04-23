@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     int status = 0;
 
     // SerialPortUtilsTest
-    std::unique_ptr<SerialPortUtilsTest> serial_port_utils_test{new SerialPortUtilsTest};
+    std::unique_ptr<serial_utils::SerialPortUtilsTest> serial_port_utils_test{new serial_utils::SerialPortUtilsTest};
     status |= QTest::qExec(serial_port_utils_test.get(), argc, argv);
 
     // UnifiedSerialPortTest

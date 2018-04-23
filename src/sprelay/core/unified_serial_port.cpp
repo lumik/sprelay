@@ -63,11 +63,11 @@ const char *UnifiedSerialPort::kMockPortName = "MOCKCOM";
     \brief Returns a list of available serial ports extended with mock serial port.
     \return The ports list.
  */
-QList<ComPortParams> UnifiedSerialPort::availablePorts()
+QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
 {
-    QList<ComPortParams> com_port_params_list;
+    QList<serial_utils::ComPortParams> com_port_params_list;
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
-        ComPortParams com_port_params;
+        serial_utils::ComPortParams com_port_params;
         com_port_params.port_name = info.portName();
         com_port_params.description = info.description();
         com_port_params.manufacturer = info.manufacturer();
@@ -76,7 +76,7 @@ QList<ComPortParams> UnifiedSerialPort::availablePorts()
         com_port_params_list.append(com_port_params);
     }
     // add mock port
-    ComPortParams com_port_params;
+    serial_utils::ComPortParams com_port_params;
     com_port_params.port_name = kMockPortName;
     com_port_params.description = "Mock K8090 card serial port.";
     com_port_params.manufacturer = "Sprelay";
@@ -323,9 +323,9 @@ qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
 
 
 /*!
-    \brief Flushes the buffer.
+    \brief Nonblockingly flushes the buffer.
     \return True if any data was written.
-    \sa UnifiedSerialPort::write()
+    \sa UnifiedSerialPort::write(), UnifiedSerialPort::waitForBytesWritten()
 */
 bool UnifiedSerialPort::flush()
 {
@@ -337,7 +337,6 @@ bool UnifiedSerialPort::flush()
         return false;
     }
 }
-
 
 /*!
     \brief Holds the error status of the serial port.
@@ -405,6 +404,7 @@ bool UnifiedSerialPort::isReal()
 */
 
 
+// helper method which resets private variables to represent real serial port
 bool UnifiedSerialPort::createSerialPort()
 {
     serial_port_.reset(new QSerialPort);
@@ -414,6 +414,7 @@ bool UnifiedSerialPort::createSerialPort()
 }
 
 
+// helper method which resets private variables to represent mock serial port
 bool UnifiedSerialPort::createMockPort()
 {
     mock_serial_port_.reset(new MockSerialPort);
@@ -423,6 +424,7 @@ bool UnifiedSerialPort::createMockPort()
 }
 
 
+// moves port parameters to the newly created one
 template<typename TSerialPort>
 bool UnifiedSerialPort::setupPort(TSerialPort *serial_port)
 {
@@ -457,7 +459,6 @@ bool UnifiedSerialPort::setupPort(TSerialPort *serial_port)
     }
     return true;
 }
-
 
 }  // namespace core
 }  // namespace sprelay

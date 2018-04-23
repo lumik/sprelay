@@ -25,7 +25,8 @@ HEADERS  += \
     command_queue_test.h \
     k8090_test.h \
     serial_port_utils_test.h \
-    unified_serial_port_test.h
+    unified_serial_port_test.h \
+    core_test_utils.h
 
 DESTDIR = $$PWD/../../../bin
 

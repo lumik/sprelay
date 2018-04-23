@@ -32,6 +32,7 @@
 
 namespace sprelay {
 namespace core {
+namespace serial_utils {
 
 /*!
     \defgroup Serial_port_utils Serial port utilities
@@ -160,6 +161,7 @@ void MockSerialPortDeleter::operator()(MockSerialPort *p)
     delete p;
 }
 
+}  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
 

@@ -40,8 +40,11 @@ class QSpinBox;
 namespace sprelay {
 namespace core {
 // forward declarations of core classes
-class ComPortParams;
 class K8090;
+// forward declarations of serial_utils classes
+namespace serial_utils {
+class ComPortParams;
+}
 }
 namespace gui {
 class IndicatorButton;

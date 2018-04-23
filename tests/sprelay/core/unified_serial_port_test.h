@@ -28,6 +28,9 @@
 
 #include <memory>
 
+#include "core_test_utils.h"
+
+
 namespace sprelay {
 namespace core {
 
@@ -38,17 +41,18 @@ class UnifiedSerialPortTest : public QObject
     Q_OBJECT
 public:  // NOLINT(whitespace/indent)
     static const int kCommandTimeoutMs;
+    static const int kDelayBetweenCommandsMs;
 
 private slots:  // NOLINT(whitespace/indent)
     void initTestCase();
-    void availablePortsTest();
+    void availablePorts();
     void realBenchmark_data();
     void realBenchmark();
     void realJumperStatus();
     void realFirmwareVersion();
     void realQueryAllTimers();
-    void realTestTimer();
-    void realTestDefaultTimer();
+    void realTimer();
+    void realDefaultTimer();
 
 private:  // NOLINT(whitespace/indent)
     unsigned char checkSum(const unsigned char *bMsg, int n);
@@ -64,8 +68,5 @@ private:  // NOLINT(whitespace/indent)
 
 }  // namespace core
 }  // namespace sprelay
-
-Q_DECLARE_METATYPE(unsigned char)
-Q_DECLARE_METATYPE(const unsigned char *)
 
 #endif  // SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_

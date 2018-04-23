@@ -441,7 +441,7 @@ bool Command::isCompatible(const Command &other) const
 // generate static arrays containing commands, command priorities and responses at compile time
 namespace {  // unnamed namespace
 
-// template function to fill the array with appropriate commands
+// template function to fill the array with appropriate commands and priorities
 template<unsigned int N>
 struct CommandDataValue;
 
@@ -580,7 +580,7 @@ struct CommandArrayGenerator_<1u, Args...>
 };
 
 // CommandArray generates recursively kCommands nad kPriorities types, which contains static constant array kValues.
-// Usage: unsigned char arr = CommandArray<K8090Traits::Comand::None>::kCommands::kValues
+// Usage: unsigned char *arr = CommandArray<K8090Traits::Comand::None>::kCommands::kValues
 template<unsigned char N>
 struct CommandArray
 {
@@ -603,7 +603,7 @@ struct ResponseArrayGenerator_<1u, Args...>
 };
 
 // ResponseArray generates recursively kResponses type, which contains static constant array kValues.
-// Usage: unsigned char arr = ResponseArray<K8090Traits::Comand::None>::kCommands::kValues
+// Usage: unsigned char *arr = ResponseArray<K8090Traits::Comand::None>::kCommands::kValues
 template<unsigned char N>
 struct ResponseArray
 {
@@ -703,7 +703,7 @@ K8090::~K8090()
   \brief Lists available serial ports.
   \return Available serial ports information list.
 */
-QList<ComPortParams> K8090::availablePorts()
+QList<serial_utils::ComPortParams> K8090::availablePorts()
 {
     return UnifiedSerialPort::availablePorts();
 }
@@ -899,7 +899,8 @@ void K8090::connectK8090()
 {
     connected_ = false;
     bool card_found = false;
-    foreach (const ComPortParams &params, UnifiedSerialPort::availablePorts()) {  // NOLINT(whitespace/parens)
+    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
+            UnifiedSerialPort::availablePorts()) {
         if (params.port_name == com_port_name_
                 && params.product_identifier == kProductID
                 && params.vendor_identifier == kVendorID) {
@@ -1160,7 +1161,7 @@ void K8090::onReadyData()
     QByteArray data = serial_port_->readAll();
     int n = data.size();
     const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
-    qDebug() << byte_to_hex(buffer, n);
+    qDebug() << serial_utils::byte_to_hex(buffer, n);
 
     for (int i = 0; i < n; i += 7) {
         if (n - i < 7) {
@@ -1401,7 +1402,7 @@ bool K8090::hasResponse(CommandID command_id)
 // sends command to serial port
 void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 {
-    qDebug() << "sendToSerial():" << byte_to_hex(buffer.get(), n);
+    qDebug() << "sendToSerial():" << serial_utils::byte_to_hex(buffer.get(), n);
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
             connected_ = false;
@@ -1535,29 +1536,29 @@ void K8090::firmwareVersionResponse(const unsigned char *buffer)
 
 
 // helper method which computes checksum from binary command representation
-unsigned char K8090::checkSum(const unsigned char *bMsg, int n)
+unsigned char K8090::checkSum(const unsigned char *msg, int n)
 {
-    unsigned int iSum = 0u;
+    unsigned int sum = 0u;
     for (int ii = 0; ii < n; ++ii) {
-        iSum += (unsigned int)bMsg[ii];
+        sum += (unsigned int)msg[ii];
     }
-    unsigned char byteSum = iSum % 256;
-    iSum = (unsigned int) (~byteSum) + 1u;
-    byteSum = (unsigned char) iSum % 256;
+    unsigned char sum_byte = sum % 256;
+    sum = (unsigned int) (~sum_byte) + 1u;
+    sum_byte = (unsigned char) sum % 256;
 
-    return byteSum;
+    return sum_byte;
 }
 
 
 // validates response from card in binary representation
-bool K8090::validateResponse(const unsigned char *bMsg)
+bool K8090::validateResponse(const unsigned char *msg)
 {
-    if (bMsg[0] != kStxByte_)
+    if (msg[0] != kStxByte_)
         return false;
-    unsigned char bChkSum = checkSum(bMsg, 5);
-    if (bChkSum != bMsg[5])
+    unsigned char chk = checkSum(msg, 5);
+    if (chk != msg[5])
         return false;
-    if (bMsg[6] != kEtxByte_)
+    if (msg[6] != kEtxByte_)
         return false;
     return true;
 }

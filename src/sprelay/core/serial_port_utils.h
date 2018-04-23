@@ -30,6 +30,11 @@
 namespace sprelay {
 namespace core {
 
+// forwad declarations
+class MockSerialPort;
+
+namespace serial_utils {
+
 struct ComPortParams
 {
     QString port_name;
@@ -43,12 +48,12 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
 QString byte_to_hex(const unsigned char *buffer, int n);
 
 // specify deleter to enbale forward declarations
-class MockSerialPort;
 struct MockSerialPortDeleter
 {
     void operator()(MockSerialPort *p);
 };
 
+}  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
 

@@ -168,7 +168,7 @@ public:  // NOLINT(whitespace/indent)
     explicit K8090(QObject *parent = nullptr);
     ~K8090() override;
 
-    static QList<ComPortParams> availablePorts();
+    static QList<serial_utils::ComPortParams> availablePorts();
     void setComPortName(const QString &name);
     void setCommandDelay(int msec);
     void setFailureDelay(int msec);
@@ -232,8 +232,8 @@ private:  // NOLINT(whitespace/indent)
     void jumperStatusResponse(const unsigned char *buffer);
     void firmwareVersionResponse(const unsigned char *buffer);
 
-    static unsigned char checkSum(const unsigned char *bMsg, int n);
-    static bool validateResponse(const unsigned char *bMsg);
+    static unsigned char checkSum(const unsigned char *msg, int n);
+    static bool validateResponse(const unsigned char *msg);
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
 
