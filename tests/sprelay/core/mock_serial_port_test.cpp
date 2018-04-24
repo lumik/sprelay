@@ -20,7 +20,7 @@
 **                                                                        **
 ****************************************************************************/
 
-#include "unified_serial_port_test.h"
+#include "mock_serial_port_test.h"
 
 #include <QByteArray>
 #include <QElapsedTimer>
@@ -37,173 +37,44 @@
 
 #include "core_test_utils.h"
 #include "k8090.h"
-#include "unified_serial_port.h"
+
 
 namespace sprelay {
 namespace core {
 
-const int UnifiedSerialPortTest::kCommandTimeoutMs = 50;
-const int UnifiedSerialPortTest::kDelayBetweenCommandsMs = 20;
+const int MockSerialPortTest::kCommandTimeoutMs = 50;
+const int MockSerialPortTest::kDelayBetweenCommandsMs = 20;
 
 
-void UnifiedSerialPortTest::initTestCase()
+void sprelay::core::MockSerialPortTest::init()
 {
-    real_card_present_ = false;
-    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
-            UnifiedSerialPort::availablePorts()) {
-        if (params.product_identifier == K8090::kProductID && params.vendor_identifier == K8090::kVendorID) {
-            if (params.port_name != UnifiedSerialPort::kMockPortName) {
-                real_card_port_name_ = params.port_name;
-                real_card_present_ = true;
-                break;
-            }
+    mock_serial_port_.reset(new MockSerialPort);
+    mock_serial_port_->setPortName("MOCKCOM");
+    mock_serial_port_->setBaudRate(QSerialPort::Baud19200);
+    mock_serial_port_->setDataBits(QSerialPort::Data8);
+    mock_serial_port_->setParity(QSerialPort::NoParity);
+    mock_serial_port_->setStopBits(QSerialPort::OneStop);
+    mock_serial_port_->setFlowControl(QSerialPort::NoFlowControl);
+
+    if (!mock_serial_port_->isOpen()) {
+        if (!mock_serial_port_->open(QIODevice::ReadWrite)) {
+            mock_serial_port_.reset(nullptr);
         }
+    }
+
+    if (!mock_serial_port_) {
+        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg("MOCKCOM")));
     }
 }
 
-
-void UnifiedSerialPortTest::availablePorts()
+void MockSerialPortTest::cleanup()
 {
-    // test, if the mock port is always present
-    bool mock_found = false;
-    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
-            UnifiedSerialPort::availablePorts()) {
-        if (params.port_name == UnifiedSerialPort::kMockPortName
-                && params.product_identifier == K8090::kProductID
-                && params.vendor_identifier == K8090::kVendorID) {
-            mock_found = true;
-        }
-    }
-    QCOMPARE(mock_found, true);
+    mock_serial_port_.reset();
 }
 
 
-void UnifiedSerialPortTest::switchRealVirtual()
+void MockSerialPortTest::commandBenchmark_data()
 {
-    if (!real_card_present_) {
-        QSKIP("Benchmark of real serial port needs a real K8090 card connected.");
-    }
-
-    // create real port
-    std::unique_ptr<UnifiedSerialPort> serial_port{new UnifiedSerialPort};
-    serial_port->setPortName(real_card_port_name_);
-    serial_port->setBaudRate(QSerialPort::Baud19200);
-    serial_port->setDataBits(QSerialPort::Data8);
-    serial_port->setParity(QSerialPort::NoParity);
-    serial_port->setStopBits(QSerialPort::OneStop);
-    serial_port->setFlowControl(QSerialPort::NoFlowControl);
-
-    QVERIFY2(!serial_port->isOpen(), "The serial port shouldn't be oppened yet.");
-    QVERIFY2(!serial_port->isReal(), "The serial port can be real or virtual only after it is opened.");
-    QVERIFY2(!serial_port->isMock(), "The serial port can be real or virtual only after it is opened.");
-
-    // open serial port
-    if (!serial_port->open(QIODevice::ReadWrite)) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-    QVERIFY2(serial_port->isOpen(), "The serial port should be oppened by now.");
-    QVERIFY2(serial_port->isReal(), "The serial port should be real or virtual when it is opened.");
-    resetRelays(serial_port.get());
-
-    //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char on[]           = {0x04, 0x11, 0x01, 0x00, 0x00, 0xea, 0x0f};
-    static const unsigned char response_on[]  = {0x04, 0x51, 0x00, 0x01, 0x00, 0xaa, 0x0f};
-    static const unsigned char query_status[] = {0x04, 0x18, 0x00, 0x00, 0x00, 0xe4, 0x0f};
-    static const unsigned char response1[]    = {0x04, 0x51, 0x00, 0x00, 0x00, 0xab, 0x0f};
-    static const unsigned char response2[]    = {0x04, 0x51, 0x01, 0x01, 0x00, 0xa9, 0x0f};
-
-    // benchmark the command
-    qint64 real_elapsed_time = 0;
-    {  // real port
-        qint64 local_elapsed_time;
-        if (!measureCommandWithResponse(serial_port.get(), on, &local_elapsed_time)) {
-            QFAIL("There is no response from the card.");
-        }
-        real_elapsed_time += local_elapsed_time;
-
-        // check for expected response
-        QByteArray data = serial_port->readAll();
-        int n = data.size();
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
-        if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
-        }
-        QVERIFY2(compareResponse(buffer, response_on),
-            qPrintable(QString{"The response '%1' does not match the expected %2."}
-                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(response_on, 7))));
-    }
-
-    // change to virtual port, the parameters should preserve and transfer to the newly oppened port
-    serial_port->setPortName(UnifiedSerialPort::kMockPortName);
-    QVERIFY2(serial_port->isOpen(), "The serial port should be still oppened now.");
-    QVERIFY2(serial_port->isReal(), "The serial port should be still real now.");
-    if (!serial_port->open(QIODevice::ReadWrite)) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(UnifiedSerialPort::kMockPortName)));
-    }
-    QVERIFY2(serial_port->isOpen(), "The serial port should be oppened by now.");
-    QVERIFY2(serial_port->isMock(), "The serial port should be virtual now.");
-
-    // benchmark the command
-    qint64 mock_elapsed_time = 0;
-    {  // real port
-        qint64 local_elapsed_time;
-        if (!measureCommandWithResponse(serial_port.get(), query_status, &local_elapsed_time)) {
-            QFAIL("There is no response from the card.");
-        }
-        mock_elapsed_time += local_elapsed_time;
-
-        // check for expected response
-        QByteArray data = serial_port->readAll();
-        int n = data.size();
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
-        if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
-        }
-        QVERIFY2(compareResponse(buffer, response1),
-            qPrintable(QString{"The response '%1' does not match the expected %2."}
-                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(response1, 7))));
-    }
-
-    // change back to real port, the parameters should preserve and transfer to the newly oppened port
-    serial_port->setPortName(real_card_port_name_);
-    QVERIFY2(serial_port->isOpen(), "The serial port should be still oppened now.");
-    QVERIFY2(serial_port->isMock(), "The serial port should be still real now.");
-    if (!serial_port->open(QIODevice::ReadWrite)) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-    QVERIFY2(serial_port->isOpen(), "The serial port should be oppened by now.");
-    QVERIFY2(serial_port->isReal(), "The serial port should be virtual now.");
-    // benchmark the command
-    {  // real port
-        qint64 local_elapsed_time;
-        if (!measureCommandWithResponse(serial_port.get(), query_status, &local_elapsed_time)) {
-            QFAIL("There is no response from the card.");
-        }
-        real_elapsed_time += local_elapsed_time;
-
-        // check for expected response
-        QByteArray data = serial_port->readAll();
-        int n = data.size();
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
-        if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
-        }
-        QVERIFY2(compareResponse(buffer, response2),
-            qPrintable(QString{"The response '%1' does not match the expected %2."}
-                .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(response2, 7))));
-    }
-    qDebug() << QString("Real card command took: %1 ms").arg(real_elapsed_time / 2);
-    qDebug() << QString("Mock card command took: %1 ms").arg(mock_elapsed_time);
-
-    QTest::setBenchmarkResult((real_elapsed_time + mock_elapsed_time) / 2, QTest::WalltimeMilliseconds);
-}
-
-
-void UnifiedSerialPortTest::realBenchmark_data()
-{
-    if (!real_card_present_) {
-        QSKIP("Benchmark of real serial port needs a real K8090 card connected.");
-    }
     QTest::addColumn<const unsigned char *>("prepare");
     QTest::addColumn<int>("n_prepare");
     QTest::addColumn<const unsigned char *>("message");
@@ -362,13 +233,8 @@ void UnifiedSerialPortTest::realBenchmark_data()
 }
 
 
-void UnifiedSerialPortTest::realBenchmark()
+void MockSerialPortTest::commandBenchmark()
 {
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // fetch data
     QFETCH(const unsigned char *, prepare);
     QFETCH(int, n_prepare);
@@ -377,22 +243,22 @@ void UnifiedSerialPortTest::realBenchmark()
 
     // prepare relay for the command
     for (int i = 0; i < n_prepare; ++i) {
-        sendCommand(serial_port.get(), &prepare[i * 7]);
+        sendCommand(mock_serial_port_.get(), &prepare[i * 7]);
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
     QCoreApplication::sendPostedEvents();
     QCoreApplication::processEvents(QEventLoop::AllEvents);
-    serial_port->readAll();
+    mock_serial_port_->readAll();
 
     // benchmark the command
     qint64 elapsed_time;
-    if (!measureCommandWithResponse(serial_port.get(), message, &elapsed_time)) {
+    if (!measureCommandWithResponse(mock_serial_port_.get(), message, &elapsed_time)) {
         QFAIL("There is no response from the card.");
     }
     QTest::setBenchmarkResult(elapsed_time, QTest::WalltimeMilliseconds);
 
     // check for expected response
-    QByteArray data = serial_port->readAll();
+    QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
     const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
@@ -404,28 +270,20 @@ void UnifiedSerialPortTest::realBenchmark()
 }
 
 
-void UnifiedSerialPortTest::realJumperStatus()
+void MockSerialPortTest::jumperStatus()
 {
-    if (!real_card_present_) {
-        QSKIP("Benchmark of real serial port needs real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char query_jumper[] = {0x04, 0x70, 0x00, 0x00, 0x00, 0x8c, 0x0f};
     static const unsigned char jumper_off[]   = {0x04, 0x70, 0x00, 0x00, 0x00, 0x8c, 0x0f};
     qint64 elapsed_time;
-    if (!measureCommandWithResponse(serial_port.get(), query_jumper, &elapsed_time)) {
+    if (!measureCommandWithResponse(mock_serial_port_.get(), query_jumper, &elapsed_time)) {
         QFAIL("There is no response from the card.");
     }
     QTest::setBenchmarkResult(elapsed_time, QTest::WalltimeMilliseconds);
 
     // check for expected response
-    QByteArray data = serial_port->readAll();
+    QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
     const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
@@ -442,28 +300,20 @@ void UnifiedSerialPortTest::realJumperStatus()
 }
 
 
-void UnifiedSerialPortTest::realFirmwareVersion()
+void MockSerialPortTest::firmwareVersion()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                            STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char query_version[] = {0x04, 0x71, 0x00, 0x00, 0x00, 0x8b, 0x0f};
     static const unsigned char version[]    = {0x04, 0x71, 0x00, 0x00, 0x00, 0x8b, 0x0f};
     qint64 elapsed_time;
-    if (!measureCommandWithResponse(serial_port.get(), query_version, &elapsed_time)) {
+    if (!measureCommandWithResponse(mock_serial_port_.get(), query_version, &elapsed_time)) {
         QFAIL("There is no response from the card.");
     }
     QTest::setBenchmarkResult(elapsed_time, QTest::WalltimeMilliseconds);
 
     // check for expected response
-    QByteArray data = serial_port->readAll();
+    QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
     const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
@@ -477,16 +327,8 @@ void UnifiedSerialPortTest::realFirmwareVersion()
 }
 
 
-void UnifiedSerialPortTest::realQueryAllTimers()
+void MockSerialPortTest::queryAllTimers()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char query_timers[] = {0x04, 0x44, 0xff, 0x00, 0x00, 0xb9, 0x0f};
@@ -512,18 +354,18 @@ void UnifiedSerialPortTest::realQueryAllTimers()
     std::list<int> chunk_list;
 
     elapsed_timer.start();
-    serial_port->write(reinterpret_cast<const char*>(query_timers), 7);
-    serial_port->flush();
+    mock_serial_port_->write(reinterpret_cast<const char*>(query_timers), 7);
+    mock_serial_port_->flush();
 
     timer.start(kCommandTimeoutMs * 8);
     while (!remaining_responses.empty() && timer.isActive()) {
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         loop.exec();
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n % 7 != 0) {
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
@@ -552,16 +394,8 @@ void UnifiedSerialPortTest::realQueryAllTimers()
 }
 
 
-void UnifiedSerialPortTest::realSetMoreTimers()
+void MockSerialPortTest::setMoreTimers()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char set_timers1[]  = {0x04, 0x42, 0x0f, 0x00, 0x01, 0xaa, 0x0f};
@@ -580,9 +414,9 @@ void UnifiedSerialPortTest::realSetMoreTimers()
         0x04, 0x44, 0x80, 0x00, 0x03, 0x35, 0x0f
     };
 
-    sendCommand(serial_port.get(), set_timers1);
-    sendCommand(serial_port.get(), set_timers2);
-    sendCommand(serial_port.get(), set_timers3);
+    sendCommand(mock_serial_port_.get(), set_timers1);
+    sendCommand(mock_serial_port_.get(), set_timers2);
+    sendCommand(mock_serial_port_.get(), set_timers3);
     std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
 
     // measure time to get all responses and compute number of chunks
@@ -595,18 +429,18 @@ void UnifiedSerialPortTest::realSetMoreTimers()
     std::list<int> chunk_list;
 
     elapsed_timer.start();
-    serial_port->write(reinterpret_cast<const char*>(query_timers), 7);
-    serial_port->flush();
+    mock_serial_port_->write(reinterpret_cast<const char*>(query_timers), 7);
+    mock_serial_port_->flush();
 
     timer.start(kCommandTimeoutMs * 8);
     while (!remaining_responses.empty() && timer.isActive()) {
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         loop.exec();
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n % 7 != 0) {
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
@@ -635,16 +469,8 @@ void UnifiedSerialPortTest::realSetMoreTimers()
 }
 
 
-void UnifiedSerialPortTest::realTimer()
+void MockSerialPortTest::startTimer()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char start_timer[] = {0x04, 0x41, 0x10, 0x00, 0x03, 0xa8, 0x0f};
@@ -662,13 +488,13 @@ void UnifiedSerialPortTest::realTimer()
     elapsed_timer.start();
     {  // start timer
         qint64 start_timer_elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), start_timer, &start_timer_elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         QTest::setBenchmarkResult(start_timer_elapsed_ms, QTest::WalltimeMilliseconds);
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -681,12 +507,12 @@ void UnifiedSerialPortTest::realTimer()
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     {  // query remaining time
         qint64 dummy_elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), query_timer, &dummy_elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), query_timer, &dummy_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -699,12 +525,12 @@ void UnifiedSerialPortTest::realTimer()
     }
     {  // query remaining time
         qint64 dummy_elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), query_total, &dummy_elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), query_total, &dummy_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -719,13 +545,13 @@ void UnifiedSerialPortTest::realTimer()
         QTimer timer;
         timer.setSingleShot(true);
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         timer.start(3000);
         loop.exec();
         QVERIFY2(timer.isActive(), "There is no response from the card.");
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -740,16 +566,8 @@ void UnifiedSerialPortTest::realTimer()
 }
 
 
-void UnifiedSerialPortTest::realDefaultTimer()
+void MockSerialPortTest::defaultTimer()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char set_timer[]   = {0x04, 0x42, 0x20, 0x00, 0x01, 0x99, 0x0f};
@@ -757,7 +575,7 @@ void UnifiedSerialPortTest::realDefaultTimer()
     static const unsigned char on_status[]   = {0x04, 0x51, 0x00, 0x20, 0x20, 0x6b, 0x0f};
     static const unsigned char off_status[]  = {0x04, 0x51, 0x20, 0x00, 0x00, 0x8b, 0x0f};
 
-    sendCommand(serial_port.get(), set_timer);
+    sendCommand(mock_serial_port_.get(), set_timer);
     std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
 
     // measure timer
@@ -767,13 +585,13 @@ void UnifiedSerialPortTest::realDefaultTimer()
     elapsed_timer.start();
     {  // start timer
         qint64 start_timer_elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), start_timer, &start_timer_elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         QTest::setBenchmarkResult(start_timer_elapsed_ms, QTest::WalltimeMilliseconds);
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -787,13 +605,13 @@ void UnifiedSerialPortTest::realDefaultTimer()
         QTimer timer;
         timer.setSingleShot(true);
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         timer.start(3000);
         loop.exec();
         QVERIFY2(timer.isActive(), "There is no response from the card.");
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -808,16 +626,8 @@ void UnifiedSerialPortTest::realDefaultTimer()
 }
 
 
-void UnifiedSerialPortTest::realMoreTimers()
+void MockSerialPortTest::moreTimers()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char start_timer[] = {0x04, 0x41, 0xc0, 0x00, 0x01, 0xfa, 0x0f};
@@ -831,13 +641,13 @@ void UnifiedSerialPortTest::realMoreTimers()
     elapsed_timer.start();
     {  // start timer
         qint64 start_timer_elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), start_timer, &start_timer_elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         QTest::setBenchmarkResult(start_timer_elapsed_ms, QTest::WalltimeMilliseconds);
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -851,13 +661,13 @@ void UnifiedSerialPortTest::realMoreTimers()
         QTimer timer;
         timer.setSingleShot(true);
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         timer.start(3000);
         loop.exec();
         QVERIFY2(timer.isActive(), "There is no response from the card.");
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -872,16 +682,8 @@ void UnifiedSerialPortTest::realMoreTimers()
 }
 
 
-void UnifiedSerialPortTest::realMoreDefaultTimers()
+void MockSerialPortTest::moreDefaultTimers()
 {
-    if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
-    }
-    std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-    if (!serial_port) {
-        QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-    }
-
     // benchmark the command
     //                                            STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char set_timers1[]   = {0x04, 0x42, 0x0f, 0x00, 0x01, 0xaa, 0x0f};
@@ -900,9 +702,9 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
     static const unsigned char off_status2[]   = {0x04, 0x51, 0xf0, 0xc0, 0xc0, 0x3b, 0x0f};
     static const unsigned char off_status3[]   = {0x04, 0x51, 0xc0, 0x00, 0x00, 0xeb, 0x0f};
 
-    sendCommand(serial_port.get(), set_timers1);
-    sendCommand(serial_port.get(), set_timers2);
-    sendCommand(serial_port.get(), set_timers3);
+    sendCommand(mock_serial_port_.get(), set_timers1);
+    sendCommand(mock_serial_port_.get(), set_timers2);
+    sendCommand(mock_serial_port_.get(), set_timers3);
     std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
 
     // measure timer
@@ -921,13 +723,13 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
     qint64 start_timer_elapsed_ms = 0;
     {  // start timers 1
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), start_timer1, &elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer1, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         start_timer_elapsed_ms += elapsed_ms;
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -939,13 +741,13 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
     }
     {  // start timers 2
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), start_timer2, &elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer2, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         start_timer_elapsed_ms += elapsed_ms;
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -957,19 +759,19 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
     }
     QTest::setBenchmarkResult(start_timer_elapsed_ms / 2, QTest::WalltimeMilliseconds);
     // on command should not take any effect
-    sendCommand(serial_port.get(), on);
+    sendCommand(mock_serial_port_.get(), on);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     {  // interupt one timer
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), off, &elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), off, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         elapsed_ms = off_elapsed_timer.elapsed();
         qDebug() << QString{"The timer 1 was switched off after %1ms"}.arg(elapsed_ms);
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -982,14 +784,14 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     {  // interupt one timer
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(serial_port.get(), toggle, &elapsed_ms)) {
+        if (!measureCommandWithResponse(mock_serial_port_.get(), toggle, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         elapsed_ms = toggle_elapsed_timer.elapsed();
         qDebug() << QString{"The timer 2 was toggled off after %1ms"}.arg(elapsed_ms);
 
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -1003,13 +805,13 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
         QTimer timer;
         timer.setSingleShot(true);
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         timer.start(3000);
         loop.exec();
         QVERIFY2(timer.isActive(), "There is no response from the card.");
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -1025,13 +827,13 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
         QTimer timer;
         timer.setSingleShot(true);
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         timer.start(3000);
         loop.exec();
         QVERIFY2(timer.isActive(), "There is no response from the card.");
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
@@ -1047,16 +849,16 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
         QTimer timer;
         timer.setSingleShot(true);
         QEventLoop loop;
-        connect(serial_port.get(), &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+        connect(mock_serial_port_.get(), &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         timer.start(3000);
         loop.exec();
         QVERIFY2(timer.isActive(), "There is no response from the card.");
         // check for expected response
-        QByteArray data = serial_port->readAll();
+        QByteArray data = mock_serial_port_->readAll();
         int n = data.size();
         if (n != 7) {
-            QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
+            QFAIL(qPrintable(QString{"Response has %1 but expected 7."}.arg(n)));
         }
         const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status3),
@@ -1068,19 +870,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
 }
 
 
-void UnifiedSerialPortTest::cleanupTestCase()
-{
-    if (real_card_present_) {
-        std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
-        if (!serial_port) {
-            QFAIL(qPrintable(QString{"Port '%1' can't be opened."}.arg(real_card_port_name_)));
-        }
-    }
-}
-
-
-// helper method which computes checksum from binary command representation
-unsigned char UnifiedSerialPortTest::checkSum(const unsigned char *bMsg, int n)
+unsigned char MockSerialPortTest::checkSum(const unsigned char *bMsg, int n)
 {
     unsigned int iSum = 0u;
     for (int ii = 0; ii < n; ++ii) {
@@ -1094,40 +884,7 @@ unsigned char UnifiedSerialPortTest::checkSum(const unsigned char *bMsg, int n)
 }
 
 
-std::unique_ptr<UnifiedSerialPort> UnifiedSerialPortTest::createSerialPort(QString port_name) const
-{
-    std::unique_ptr<UnifiedSerialPort> serial_port{new UnifiedSerialPort};
-    serial_port->setPortName(port_name);
-    serial_port->setBaudRate(QSerialPort::Baud19200);
-    serial_port->setDataBits(QSerialPort::Data8);
-    serial_port->setParity(QSerialPort::NoParity);
-    serial_port->setStopBits(QSerialPort::OneStop);
-    serial_port->setFlowControl(QSerialPort::NoFlowControl);
-
-    if (!serial_port->isOpen()) {
-        if (!serial_port->open(QIODevice::ReadWrite)) {
-            serial_port.reset(nullptr);
-        }
-    }
-    resetRelays(serial_port.get());
-    return std::move(serial_port);
-}
-
-
-void UnifiedSerialPortTest::resetRelays(UnifiedSerialPort *serial_port) const
-{
-    const unsigned char factory_defaults[] = {0x04, 0x66, 0x00, 0x00, 0x00, 0x96, 0x0f};
-    sendCommand(serial_port, factory_defaults);
-    const unsigned char switch_all_relays_off[] = {0x04, 0x12, 0xff, 0x00, 0x00, 0xEB, 0x0f};
-    sendCommand(serial_port, switch_all_relays_off);
-    std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
-    QCoreApplication::sendPostedEvents();
-    QCoreApplication::processEvents(QEventLoop::AllEvents);
-    serial_port->readAll();
-}
-
-
-bool UnifiedSerialPortTest::compareResponse(const unsigned char *response, const unsigned char *expected)
+bool MockSerialPortTest::compareResponse(const unsigned char *response, const unsigned char *expected)
 {
     unsigned char check_sum = checkSum(expected, 5);
     if (check_sum != expected[5]) {
@@ -1143,7 +900,7 @@ bool UnifiedSerialPortTest::compareResponse(const unsigned char *response, const
 }
 
 
-void UnifiedSerialPortTest::sendCommand(UnifiedSerialPort *serial_port, const unsigned char *command) const
+void MockSerialPortTest::sendCommand(MockSerialPort *serial_port, const unsigned char *command) const
 {
     serial_port->write(reinterpret_cast<const char*>(command), 7);
     QCoreApplication::sendPostedEvents();
@@ -1154,13 +911,13 @@ void UnifiedSerialPortTest::sendCommand(UnifiedSerialPort *serial_port, const un
 }
 
 
-bool UnifiedSerialPortTest::measureCommandWithResponse(UnifiedSerialPort *serial_port, const unsigned char *message,
-                                                       qint64 *elapsed_ms)
+bool MockSerialPortTest::measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message,
+    qint64 *elapsed_ms)
 {
     QTimer timer;
     timer.setSingleShot(true);
     QEventLoop loop;
-    connect(serial_port, &UnifiedSerialPort::readyRead, &loop, &QEventLoop::quit);
+    connect(serial_port, &MockSerialPort::readyRead, &loop, &QEventLoop::quit);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     QElapsedTimer elapsed_timer;
     elapsed_timer.start();

@@ -27,6 +27,7 @@
 
 #include "command_queue_test.h"
 #include "k8090_test.h"
+#include "mock_serial_port_test.h"
 #include "serial_port_utils_test.h"
 #include "unified_serial_port_test.h"
 
@@ -41,6 +42,10 @@ int main(int argc, char **argv)
     // SerialPortUtilsTest
     std::unique_ptr<serial_utils::SerialPortUtilsTest> serial_port_utils_test{new serial_utils::SerialPortUtilsTest};
     status |= QTest::qExec(serial_port_utils_test.get(), argc, argv);
+
+    // MockSerialPortTest
+    std::unique_ptr<MockSerialPortTest> mock_serial_port_test{new MockSerialPortTest};
+    status |= QTest::qExec(mock_serial_port_test.get(), argc, argv);
 
     // UnifiedSerialPortTest
     std::unique_ptr<UnifiedSerialPortTest> unified_serial_port_test{new UnifiedSerialPortTest};

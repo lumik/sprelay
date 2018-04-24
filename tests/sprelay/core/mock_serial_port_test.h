@@ -20,21 +20,23 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_
-#define SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_
+#ifndef SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_
+#define SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_
 
 #include <QObject>
 #include <QString>
 
 #include <memory>
 
+#include "mock_serial_port.h"
+
 
 namespace sprelay {
 namespace core {
 
-class UnifiedSerialPort;
+class MockSerialPort;
 
-class UnifiedSerialPortTest : public QObject
+class MockSerialPortTest : public QObject
 {
     Q_OBJECT
 public:  // NOLINT(whitespace/indent)
@@ -42,34 +44,30 @@ public:  // NOLINT(whitespace/indent)
     static const int kDelayBetweenCommandsMs;
 
 private slots:  // NOLINT(whitespace/indent)
-    void initTestCase();
-    void availablePorts();
-    void switchRealVirtual();
-    void realBenchmark_data();
-    void realBenchmark();
-    void realJumperStatus();
-    void realFirmwareVersion();
-    void realQueryAllTimers();
-    void realSetMoreTimers();
-    void realTimer();
-    void realDefaultTimer();
-    void realMoreTimers();
-    void realMoreDefaultTimers();
-    void cleanupTestCase();
+    void init();
+    void cleanup();
+    void commandBenchmark_data();
+    void commandBenchmark();
+    void jumperStatus();
+    void firmwareVersion();
+    void queryAllTimers();
+    void setMoreTimers();
+    void startTimer();
+    void defaultTimer();
+    void moreTimers();
+    void moreDefaultTimers();
 
 private:  // NOLINT(whitespace/indent)
     unsigned char checkSum(const unsigned char *bMsg, int n);
 
-    std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
-    void resetRelays(UnifiedSerialPort *serial_port) const;
     bool compareResponse(const unsigned char *response, const unsigned char *expected);
-    void sendCommand(UnifiedSerialPort *serial_port, const unsigned char *command) const;
-    bool measureCommandWithResponse(UnifiedSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
-    bool real_card_present_;
-    QString real_card_port_name_;
+    void sendCommand(MockSerialPort *serial_port, const unsigned char *command) const;
+    bool measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
+
+    std::unique_ptr<MockSerialPort> mock_serial_port_;
 };
 
 }  // namespace core
 }  // namespace sprelay
 
-#endif  // SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_
+#endif  // SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_

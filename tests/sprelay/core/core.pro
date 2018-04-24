@@ -13,7 +13,8 @@ SOURCES += \
     core_test.cpp \
     k8090_test.cpp \
     serial_port_utils_test.cpp \
-    unified_serial_port_test.cpp
+    unified_serial_port_test.cpp \
+    mock_serial_port_test.cpp
 
 HEADERS  += \
     $$PWD/../../../src/sprelay/core/command_queue.h \
@@ -26,6 +27,7 @@ HEADERS  += \
     k8090_test.h \
     serial_port_utils_test.h \
     unified_serial_port_test.h \
+    mock_serial_port_test.h \
     core_test_utils.h
 
 DESTDIR = $$PWD/../../../bin
