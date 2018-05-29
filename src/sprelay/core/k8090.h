@@ -237,11 +237,6 @@ private:  // NOLINT(whitespace/indent)
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
 
-    static const unsigned char *kCommands_;
-    static const int *kPriorities_;
-    static const unsigned char *kResponses_;
-    static const unsigned char kStxByte_;
-    static const unsigned char kEtxByte_;
     static const int kDefaultCommandDelay_;
     static const int kDefaultFailureDelay_;
     static const int kDefaultMaxFailureCount_;

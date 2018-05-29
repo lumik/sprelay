@@ -159,7 +159,8 @@ struct ResponseDataValue<as_number(K8090Traits::ResponseID::FIRMWARE_VERSION)>
 template<typename T, T ...Args>
 struct XArrayData
 {
-    static const T kValues[sizeof...(Args)];
+    // initializing declaration
+    static constexpr T kValues[sizeof...(Args)] = {Args...};
 };
 
 // recursively generates command typedefs
@@ -206,9 +207,20 @@ struct ResponseArray
     using Responses = typename ResponseArrayGenerator_<N>::Responses;
 };
 
-// static const array initialization
+// static const array definition (needed to create the static array kValues to satisfy ODR, deprecated c++17)
 template<typename T, T ...Args>
-const T XArrayData<T, Args...>::kValues[sizeof...(Args)] = {Args...};
+constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
+
+// Array of hexadecimal representation of commands used to control the relay.
+constexpr const unsigned char *kCommands_ =
+        CommandArray<as_number(K8090Traits::CommandID::NONE)>::Commands::kValues;
+// Array of hexadecimal representation of responses sended by the relay.
+constexpr const unsigned char *kResponses_ =
+        ResponseArray<as_number(K8090Traits::ResponseID::NONE)>::Responses::kValues;
+// Start delimiting command byte.
+constexpr unsigned char kStxByte_ = 0x04;
+// End delimiting command byte.
+constexpr unsigned char kEtxByte_ = 0x0f;
 
 }  // unnamed namespace
 
@@ -276,16 +288,6 @@ const int MockSerialPort::kMinResponseDelayMs_ = 2;
 const int MockSerialPort::kMaxResponseDelayMs_ = 10;
 // probability of success of response delay binomial distribution
 const float MockSerialPort::kResponseDelayDistributionP = 0.3;
-// Array of hexadecimal representation of commands used to control the relay.
-const unsigned char *MockSerialPort::kCommands_ =
-        CommandArray<as_number(K8090Traits::CommandID::NONE)>::Commands::kValues;
-// Array of hexadecimal representation of responses sended by the relay.
-const unsigned char *MockSerialPort::kResponses_ =
-        ResponseArray<as_number(K8090Traits::ResponseID::NONE)>::Responses::kValues;
-// Start delimiting command byte.
-const unsigned char MockSerialPort::kStxByte_ = 0x04;
-// End delimiting command byte.
-const unsigned char MockSerialPort::kEtxByte_ = 0x0f;
 // Serial port settings
 const qint32 MockSerialPort::kNeededBaudRate_ = QSerialPort::Baud19200;
 const QSerialPort::DataBits MockSerialPort::kNeededDataBits_ = QSerialPort::Data8;
@@ -629,30 +631,43 @@ bool MockSerialPort::verifyPortParameters()
 void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
 {
     if (max_size >= 7 && validateCommand(buffer)) {
-        if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::RELAY_ON)]) {
-            relayOn(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::RELAY_OFF)]) {
-            relayOff(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::TOGGLE_RELAY)]) {
-            toggleRelay(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::SET_BUTTON_MODE)]) {
-            setButtonMode(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::BUTTON_MODE)]) {
-            queryButtonMode();
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::START_TIMER)]) {
-            startTimer(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::SET_TIMER)]) {
-            setTimer(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::TIMER)]) {
-            queryTimer(buffer);
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::QUERY_RELAY)]) {
-            queryRelay();
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::RESET_FACTORY_DEFAULTS)]) {
-            factoryDefaults();
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::JUMPER_STATUS)]) {
-            jumperStatus();
-        } else if (buffer[1] == kCommands_[as_number(K8090Traits::CommandID::FIRMWARE_VERSION)]) {
-            firmwareVersion();
+        switch (buffer[1]) {
+            case kCommands_[as_number(K8090Traits::CommandID::RELAY_ON)] :
+                relayOn(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::RELAY_OFF)] :
+                relayOff(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::TOGGLE_RELAY)] :
+                toggleRelay(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::SET_BUTTON_MODE)] :
+                setButtonMode(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::BUTTON_MODE)] :
+                queryButtonMode();
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::START_TIMER)] :
+                startTimer(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::SET_TIMER)] :
+                setTimer(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::TIMER)] :
+                queryTimer(buffer);
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::QUERY_RELAY)] :
+                queryRelay();
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::RESET_FACTORY_DEFAULTS)] :
+                factoryDefaults();
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::JUMPER_STATUS)] :
+                jumperStatus();
+                break;
+            case kCommands_[as_number(K8090Traits::CommandID::FIRMWARE_VERSION)] :
+                firmwareVersion();
+                break;
         }
     }
 }

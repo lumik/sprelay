@@ -77,10 +77,6 @@ private:  // NOLINT(whitespace/indent)
     static const int kMinResponseDelayMs_;
     static const int kMaxResponseDelayMs_;
     static const float kResponseDelayDistributionP;
-    static const unsigned char *kCommands_;
-    static const unsigned char *kResponses_;
-    static const unsigned char kStxByte_;
-    static const unsigned char kEtxByte_;
 
     static const qint32 kNeededBaudRate_;
     static const QSerialPort::DataBits kNeededDataBits_;

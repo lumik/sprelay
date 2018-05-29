@@ -560,7 +560,8 @@ struct ResponseDataValue<as_number(ResponseID::FIRMWARE_VERSION)>
 template<typename T, T ...Args>
 struct XArrayData
 {
-    static const T kValues[sizeof...(Args)];
+    // initializing declaration
+    static constexpr T kValues[sizeof...(Args)] = {Args...};
 };
 
 // recursively generates command typedefs
@@ -610,9 +611,20 @@ struct ResponseArray
     using Responses = typename ResponseArrayGenerator_<N>::Responses;
 };
 
-// static const array initialization
+// static const array definition (needed to create the static array kValues to satisfy ODR, deprecated c++17)
 template<typename T, T ...Args>
-const T XArrayData<T, Args...>::kValues[sizeof...(Args)] = {Args...};
+constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
+
+// Array of hexadecimal representation of commands used to control the relay.
+constexpr const unsigned char *kCommands_ = CommandArray<as_number(CommandID::NONE)>::Commands::kValues;
+// Array of default priorities used to command scheduling.
+constexpr const int *kPriorities_ = CommandArray<as_number(CommandID::NONE)>::Priorities::kValues;
+// Array of hexadecimal representation of responses sended by the relay.
+constexpr const unsigned char *kResponses_ = ResponseArray<as_number(ResponseID::NONE)>::Responses::kValues;
+// Start delimiting command byte.
+constexpr unsigned char kStxByte_ = 0x04;
+// End delimiting command byte.
+constexpr unsigned char kEtxByte_ = 0x0f;
 
 }  // unnamed namespace
 
@@ -642,16 +654,6 @@ const quint16 K8090::kProductID = 32912;
 const quint16 K8090::kVendorID = 4303;
 
 // private
-// Array of hexadecimal representation of commands used to control the relay.
-const unsigned char *K8090::kCommands_ = CommandArray<as_number(CommandID::NONE)>::Commands::kValues;
-// Array of default priorities used to command scheduling.
-const int *K8090::kPriorities_ = CommandArray<as_number(CommandID::NONE)>::Priorities::kValues;
-// Array of hexadecimal representation of responses sended by the relay.
-const unsigned char *K8090::kResponses_ = ResponseArray<as_number(ResponseID::NONE)>::Responses::kValues;
-// Start delimiting command byte.
-const unsigned char K8090::kStxByte_ = 0x04;
-// End delimiting command byte.
-const unsigned char K8090::kEtxByte_ = 0x0f;
 // Shortest interval in ms from sending one command to sending a new one.
 const int K8090::kDefaultCommandDelay_ = 50;
 // Maximal time in ms to wait for response.
@@ -1174,21 +1176,28 @@ void K8090::onReadyData()
                 onCommandFailed();
                 return;
             }
-            if (buffer[i + 1] == kResponses_[as_number(ResponseID::BUTTON_MODE)]) {
-                buttonModeResponse(buffer + i);
-            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::TIMER)]) {
-                timerResponse(buffer + i);
-            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::BUTTON_STATUS)]) {
-                buttonStatusResponse(buffer + i);
-            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::RELAY_STATUS)]) {
-                relayStatusResponse(buffer + i);
-            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::JUMPER_STATUS)]) {
-                jumperStatusResponse(buffer + i);
-            } else if (buffer[i + 1] == kResponses_[as_number(ResponseID::FIRMWARE_VERSION)]) {
-                firmwareVersionResponse(buffer + i);
-            } else {
-                qDebug() << "No command!";
-                onCommandFailed();
+            switch (buffer[i + 1]) {
+                case kResponses_[as_number(ResponseID::BUTTON_MODE)] :
+                    buttonModeResponse(buffer + i);
+                    break;
+                case kResponses_[as_number(ResponseID::TIMER)] :
+                    timerResponse(buffer + i);
+                    break;
+                case kResponses_[as_number(ResponseID::BUTTON_STATUS)] :
+                    buttonStatusResponse(buffer + i);
+                    break;
+                case kResponses_[as_number(ResponseID::RELAY_STATUS)] :
+                    relayStatusResponse(buffer + i);
+                    break;
+                case kResponses_[as_number(ResponseID::JUMPER_STATUS)] :
+                    jumperStatusResponse(buffer + i);
+                    break;
+                case kResponses_[as_number(ResponseID::FIRMWARE_VERSION)] :
+                    firmwareVersionResponse(buffer + i);
+                    break;
+                default:
+                    qDebug() << "No command!";
+                    onCommandFailed();
             }
         }
     }
