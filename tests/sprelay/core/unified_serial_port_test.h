@@ -42,11 +42,13 @@ public:  // NOLINT(whitespace/indent)
     static const int kDelayBetweenCommandsMs;
 
 private slots:  // NOLINT(whitespace/indent)
+    // TODO(lumik): store relay states before tests (timers, button modes, relay statuses) and reset them at the end
     void initTestCase();
     void availablePorts();
     void switchRealVirtual();
     void realBenchmark_data();
     void realBenchmark();
+    // TODO(lumik): test conflicting button modes behavior (reaction to none button mode set)
     void realJumperStatus();
     void realFirmwareVersion();
     void realQueryAllTimers();

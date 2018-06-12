@@ -955,6 +955,7 @@ void MockSerialPort::queryRelay()
 // resets to factory defaults
 void MockSerialPort::factoryDefaults()
 {
+    on_ = as_number(K8090Traits::RelayID::NONE);
     momentary_ = as_number(K8090Traits::RelayID::NONE);
     toggle_ = as_number(K8090Traits::RelayID::ALL);
     timed_ = as_number(K8090Traits::RelayID::NONE);

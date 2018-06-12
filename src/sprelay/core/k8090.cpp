@@ -429,7 +429,8 @@ bool Command::isCompatible(const Command &other) const
             }
             return true;
         case CommandID::TIMER :
-            if (params[1] != other.params[1]) {
+            // compare only first bits
+            if ((params[1] & 1) != (other.params[1] & 1)) {
                 return false;
             }
             return true;
@@ -667,25 +668,22 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
   \param parent K8090 parent object in Qt ownership system.
 */
 K8090::K8090(QObject *parent) :
-    QObject(parent),
+    QObject{parent},
+    serial_port_{new UnifiedSerialPort},
     pending_commands_{new command_queue::CommandQueue<Command, as_number(CommandID::NONE)>},
-    current_commands_{},
-    pending_remaining_delay_{},
-    pending_total_delay_{},
     command_timer_{new QTimer},
-    failure_timer_{new QTimer}
+    failure_timer_{new QTimer},
+    failure_counter_{0},
+    connected_{false},
+    command_delay_{kDefaultCommandDelay_},
+    factory_defaults_command_delay_{2 * kDefaultCommandDelay_},
+    failure_delay_{kDefaultFailureDelay_},
+    failure_max_count_{kDefaultMaxFailureCount_}
 {
-    serial_port_ = new UnifiedSerialPort{this};
-    failure_counter_ = 0;
     command_timer_->setSingleShot(true);
     failure_timer_->setSingleShot(true);
 
-    connected_ = false;
-    command_delay_ = kDefaultCommandDelay_;
-    failure_delay_ = kDefaultFailureDelay_;
-    failure_max_count_ = kDefaultMaxFailureCount_;
-
-    connect(serial_port_, &UnifiedSerialPort::readyRead, this, &K8090::onReadyData);
+    connect(serial_port_.get(), &UnifiedSerialPort::readyRead, this, &K8090::onReadyData);
     connect(command_timer_.get(), &QTimer::timeout, this, &K8090::dequeueCommand);
     connect(failure_timer_.get(), &QTimer::timeout, this, &K8090::onCommandFailed);
 }
@@ -697,7 +695,6 @@ K8090::K8090(QObject *parent) :
 K8090::~K8090()
 {
     serial_port_->close();
-    delete serial_port_;
 }
 
 
@@ -744,6 +741,7 @@ void K8090::setComPortName(const QString &name)
 void K8090::setCommandDelay(int msec)
 {
     command_delay_ = msec;
+    factory_defaults_command_delay_ = 2 * command_delay_;
 }
 
 
@@ -783,6 +781,18 @@ bool K8090::isConnected()
 {
     return connected_;
 }
+
+
+/*!
+    \brief Gets a number of commands waiting for execution in queue.
+    \param id Queried command.
+    \return The number of commands in queue.
+*/
+int K8090::pendingCommandCount(CommandID id)
+{
+    return pending_commands_->get(id).size();
+}
+
 
 // public signals
 /*!
@@ -933,7 +943,8 @@ void K8090::connectK8090()
     emit connected();
     enqueueCommand(CommandID::QUERY_RELAY);
     enqueueCommand(CommandID::BUTTON_MODE);
-    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::ALL));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::REMAINING));
     enqueueCommand(CommandID::JUMPER_STATUS);
     enqueueCommand(CommandID::FIRMWARE_VERSION);
 }
@@ -962,7 +973,8 @@ void K8090::refreshRelaysInfo()
 {
     enqueueCommand(CommandID::QUERY_RELAY);
     enqueueCommand(CommandID::BUTTON_MODE);
-    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::ALL));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::REMAINING));
     enqueueCommand(CommandID::JUMPER_STATUS);
     enqueueCommand(CommandID::FIRMWARE_VERSION);
 }
@@ -1121,7 +1133,9 @@ void K8090::queryButtonModes()
 /*!
     \brief Resets card to factory defaults.
 
-    Sets all buttons to toggle mode and all timer delays to 5 seconds.
+    Sets all buttons off and to toggle mode and all timer delays to 5 seconds. If some button states is modified, the
+    K8090::relayStatus() signal will be emited.
+
     \sa K8090::setButtonMode() \sa K8090::setRelayTimerDelay()
 */
 void K8090::resetFactoryDefaults()
@@ -1205,9 +1219,31 @@ void K8090::onReadyData()
 
 
 // There must be some delay between commands, so the commands are inserted inside queue and dequeued after
-// command_delay_ miliseconds which is controlled by commad_timer_.
+// command_delay_ miliseconds which is controlled by commad_timer_. Commands with a response are dequeued after the
+// response comes.
 void K8090::dequeueCommand()
 {
+    // commands without response sends after delay the appropriate query command to test connection.
+    CommandID command_id = current_command_.id;
+    current_command_.id = CommandID::NONE;
+    switch (command_id) {
+        case CommandID::RELAY_ON:
+        case CommandID::RELAY_OFF:
+        case CommandID::TOGGLE_RELAY:
+        case CommandID::START_TIMER:
+        case CommandID::RESET_FACTORY_DEFAULTS:
+            sendCommandHelper(CommandID::QUERY_RELAY);
+            return;
+        case CommandID::SET_BUTTON_MODE:
+            sendCommandHelper(CommandID::BUTTON_MODE);
+            return;
+        case CommandID::SET_TIMER:
+            sendCommandHelper(CommandID::TIMER, static_cast<RelayID>(current_command_.params[0]), 0);
+            return;
+        default:
+            break;
+    }
+
     if (!pending_commands_->empty()) {
         Command command = pending_commands_->pop();
         sendCommandHelper(command.id, static_cast<RelayID>(command.params[0]), command.params[1], command.params[2]);
@@ -1245,58 +1281,34 @@ void K8090::sendCommand(CommandID command_id, RelayID mask, unsigned char param1
 // too small delay in between them.
 void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
-    // query timer has two conflicting queries for total and remaining delay which can't be distinguished from the
-    // response so we must prevent enqueuing theese conflicting queries before the response comes.
-    if (command_id == CommandID::TIMER) {
-        if (!queryTimerCompatible(mask, param1)) {
-            // both total and remainign command query
-            if (param1 == as_number(TimerDelayType::ALL)) {
-                // exclude remaining command query
-                pending_remaining_delay_.id = CommandID::TIMER;
-                pending_remaining_delay_.params[0] = as_number(mask);
-                pending_remaining_delay_.params[1] = as_number(TimerDelayType::REMAINING);
-                pending_remaining_delay_.params[2] = param2;
-                param1 &= ~as_number(TimerDelayType::REMAINING);
-            }
-            // test if the new query is compatible
-            if (!queryTimerCompatible(mask, param1)) {
-                pending_total_delay_.id = CommandID::TIMER;
-                pending_total_delay_.params[0] = as_number(mask);
-                pending_total_delay_.params[1] = param1;
-                pending_total_delay_.params[2] = param2;
-                return;
-            }
-        }
-    }
-
-    // TODO(lumik): enqueue commands also when we are waiting for response from the same command (current_commands_).
     // Send command directly if it is sufficiently delayed from the previous one and there are no commands pending.
-    if (!command_timer_->isActive() && pending_commands_->empty()) {
+    if (!command_timer_->isActive() && current_command_.id == CommandID::NONE && pending_commands_->empty()) {
         sendCommandHelper(command_id, mask, param1, param2);
     } else {  // send command undirectly
+        // TODO(lumik): don't insert query commands if set command with the same response is already inside
+        // TODO(lumik): treat commands, which are directly sended better (avoid duplication)
         Command command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
         const QList<const Command *> & pending_command_list = pending_commands_->get(command_id);
+        // if there is no command with the same id waiting
         if (pending_command_list.isEmpty()) {
             pending_commands_->push(command);
-        } else if (pending_command_list[0]->id == CommandID::NONE){
-            // TODO(lumik): Error handling
+        // else try to update stored command and if it is not possible (updateCommand returns false), push it to the
+        // queue
         } else if (!updateCommand(command, pending_command_list)) {
             pending_commands_->push(command, false);
         }
+
+        // if the enqueued command was switch relay on or off command and there is the oposit command stored
+        // TODO(lumik): test if updated oposite command doesn't update any relay and if it does, remove it from the
+        // queue
         if (command_id == CommandID::RELAY_ON) {
             const QList<const Command *> & off_pending_command_list = pending_commands_->get(CommandID::RELAY_OFF);
             if (!off_pending_command_list.isEmpty()) {
-                if (off_pending_command_list[0]->id == CommandID::NONE){
-                    // TODO(lumik): Error handling
-                }
                 updateCommand(command, off_pending_command_list);
             }
         } else if (command_id == CommandID::RELAY_OFF) {
             const QList<const Command *> & on_pending_command_list = pending_commands_->get(CommandID::RELAY_ON);
             if (!on_pending_command_list.isEmpty()) {
-                if (on_pending_command_list[0]->id == CommandID::NONE){
-                    // TODO(lumik): Error handling
-                }
                 updateCommand(command, on_pending_command_list);
             }
         }
@@ -1304,50 +1316,10 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
 }
 
 
-// helper method which tests, if query timer commands are compatible. Query timer commands must be treated separately
-// because the response for the total timer query is not distinguishable from the response for the remaining timer and
-// therefore it is not possible to query the same relays for the total and remaining timer at the same time.
-bool K8090::queryTimerCompatible(RelayID mask, unsigned char param1) const
-{
-    // timer query for total and remaining delay is not valid
-    if (param1 == as_number(TimerDelayType::ALL)) {
-        return false;
-    }
-    const Command *pending = nullptr;
-    // TODO(lumik): better treatment of current commands
-    if (!current_commands_[as_number(CommandID::TIMER)].isEmpty()) {
-        return false;
-    }
-    // total timer
-    if (~param1 & as_number(TimerDelayType::REMAINING)) {
-        for (const Command *command : pending_commands_->get(CommandID::TIMER)) {
-            if ((command->params[1]) & as_number(TimerDelayType::REMAINING)) {
-                pending = command;
-                break;
-            }
-        }
-    } else if (param1 & as_number(TimerDelayType::REMAINING)) {
-        for (const Command *command : pending_commands_->get(CommandID::TIMER)) {
-            if (~(command->params[1]) & as_number(TimerDelayType::REMAINING)) {
-                pending = command;
-                break;
-            }
-        }
-    } else {  // neither total nor remaining is asked
-        return true;
-    }
-    if (pending) {
-        return !(pending->params[0] & as_number(mask));
-    } else {
-        return true;
-    }
-}
-
-
 // helper method which updates already enqueued command
 bool K8090::updateCommand(const Command &command, const QList<const Command *> &pending_command_list)
 {
-    // check if equal command is pending command list
+    // check if equal command is in pending command list
     int compatible_idx = pending_command_list.size();
     for (int i = 0; i < pending_command_list.size(); ++i) {
         if (pending_command_list[i]->isCompatible(command)) {
@@ -1380,12 +1352,31 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
     cmd[4] = param2;
     cmd[5] = checkSum(cmd.get(), 5);
     cmd[6] = kEtxByte_;
-    // if command can be without response, do not start failure check
+    // store current command for response testing. Commands with no response triggers query task after the command
+    // timer elapses, see the dequeuCommand() method.
+    current_command_.id = command_id;
+    current_command_.params[0] = as_number(mask);
+    current_command_.params[1] = param1;
+    current_command_.params[2] = param2;
+    // if command can be without response, do not start failure check, next command is sent when the responses for the
+    // command is processed
     if (hasResponse(command_id)) {
-        // TODO(lumik): better storage for commands with response withou space wasting for commands withou response.
-        current_commands_[as_number(command_id)].append(
-            Command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2});
         failure_timer_->start(failure_delay_);
+        if (command_id == CommandID::QUERY_RELAY) {
+            command_timer_->start(command_delay_);
+        } else if (command_id == CommandID::TOGGLE_RELAY) {
+            // relay status can be response to many situations so it is better to not rely on right response and rather
+            // send the next command after command delays
+            command_timer_->start(command_delay_);
+        }
+    // if there is some delay between commands specified and the command hasn't response, start the delay
+    } else if (command_delay_) {
+        if (command_id == CommandID::RESET_FACTORY_DEFAULTS) {
+            // reset factory defaults execution takes longer
+            command_timer_->start(factory_defaults_command_delay_);
+        } else {
+            command_timer_->start(command_delay_);
+        }
     }
     sendToSerial(std::move(cmd), n);
 }
@@ -1415,13 +1406,11 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
             connected_ = false;
-            emit connectionFailed();
             failure_timer_->stop();
+            command_timer_->stop();
+            emit connectionFailed();
             return;
         }
-    }
-    if (command_delay_) {
-        command_timer_->start(command_delay_);
     }
     serial_port_->write(reinterpret_cast<char*>(buffer.get()), n);
     serial_port_->flush();
@@ -1431,54 +1420,53 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 // processes button mode response
 void K8090::buttonModeResponse(const unsigned char *buffer)
 {
-    if (current_commands_[as_number(CommandID::BUTTON_MODE)].isEmpty()) {
+    // button mode was not requested
+    if (current_command_.id != CommandID::BUTTON_MODE) {
         onCommandFailed();
         return;
     }
-    current_commands_[as_number(CommandID::BUTTON_MODE)].removeFirst();
+    // query button mode has no parameters. It is satisfactory only to remove one button mode request from the list
+    current_command_.id = CommandID::NONE;
     failure_timer_->stop();
     qDebug() << "buttonModeResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
             << static_cast<int>(buffer[4]);
     emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
             static_cast<RelayID>(buffer[4]));
+    dequeueCommand();
 }
 
 
 // processes timer response
 void K8090::timerResponse(const unsigned char *buffer)
 {
-    if (current_commands_[as_number(CommandID::TIMER)].isEmpty()) {
+    // timer was not requested
+    if (current_command_.id != CommandID::TIMER) {
         onCommandFailed();
         return;
     }
-    const Command &command = current_commands_[as_number(CommandID::TIMER)].at(0);
     bool is_total;
+    bool should_dequeue_next = false;
     // total timer
-    if (~(command.params[1]) & as_number(TimerDelayType::REMAINING)) {
+    if (~(current_command_.params[1]) & (1 << 0)) {
         // remove current response from the list of waiting to response commands.
         is_total = true;
-        current_commands_[as_number(CommandID::TIMER)][0].params[0] &= ~buffer[2];
-        if (!command.params[0]) {
-            current_commands_[as_number(CommandID::TIMER)].removeFirst();
+        current_command_.params[0] &= ~buffer[2];
+        if (!current_command_.params[0]) {
+            current_command_.id = CommandID::NONE;
+            failure_timer_->stop();
+            should_dequeue_next = true;
+        } else {
+            failure_timer_->start();
         }
     } else {
         is_total = false;
-        current_commands_[as_number(CommandID::TIMER)][0].params[0] &= ~buffer[2];
-        if (!command.params[0]) {
-            current_commands_[as_number(CommandID::TIMER)].removeFirst();
-        }
-    }
-    failure_timer_->stop();
-    // issue pending query timer commands
-    if (current_commands_[as_number(CommandID::TIMER)].isEmpty()) {
-        if (pending_total_delay_.id != CommandID::NONE) {
-            RelayID relay = static_cast<RelayID>(pending_total_delay_.params[0]);
-            pending_total_delay_.id = CommandID::NONE;
-            enqueueCommand(CommandID::TIMER, relay, pending_total_delay_.params[1]);
-        } else if (pending_remaining_delay_.id != CommandID::NONE) {
-            RelayID relay = static_cast<RelayID>(pending_remaining_delay_.params[0]);
-            pending_remaining_delay_.id = CommandID::NONE;
-            enqueueCommand(CommandID::TIMER, relay, pending_remaining_delay_.params[1]);
+        current_command_.params[0] &= ~buffer[2];
+        if (!current_command_.params[0]) {
+            current_command_.id = CommandID::NONE;
+            failure_timer_->stop();
+            should_dequeue_next = true;
+        } else {
+            failure_timer_->start();
         }
     }
     qDebug() << "timerResponse(): reported delay: " << static_cast<quint16>(buffer[3] << 8 | buffer[4]);
@@ -1487,60 +1475,129 @@ void K8090::timerResponse(const unsigned char *buffer)
     } else {
         emit remainingTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
     }
+    if (should_dequeue_next) {
+        dequeueCommand();
+    }
 }
 
 
 // processes button status response
 void K8090::buttonStatusResponse(const unsigned char *buffer)
 {
-    failure_timer_->stop();
     qDebug() << "buttonStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
             << static_cast<int>(buffer[4]);
     emit buttonStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
             static_cast<RelayID>(buffer[4]));
+    // button status is emited only after user interaction with physical buttons on the relay, no query command is
+    // connected with it
 }
 
 
 // processes relay status response
 void K8090::relayStatusResponse(const unsigned char *buffer)
 {
-    if (!current_commands_[as_number(CommandID::QUERY_RELAY)].isEmpty()) {
-        current_commands_[as_number(CommandID::QUERY_RELAY)].removeFirst();
+    // relay status can be a response to many commands. If status changes by the command, it is not necessary to query
+    if (current_command_.id == CommandID::QUERY_RELAY) {
+        current_command_.id = CommandID::NONE;
+        failure_timer_->stop();
+    // switch relay on
+    } else if (current_command_.id == CommandID::RELAY_ON) {
+        // test if all required relays are on:
+        bool match = true;
+        for (int i = 0; i < 8; ++i) {
+            if (current_command_.params[0] & (1 << i) & ~buffer[3]) {
+                match = false;
+            }
+        }
+        if (match) {
+            current_command_.id = CommandID::NONE;
+        }
+        // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
+        // or user interaction directly with the card
+        failure_timer_->stop();
+    // switch relay off
+    } else if (current_command_.id == CommandID::RELAY_OFF) {
+        // test if all required relays are off:
+        bool match = true;
+        for (int i = 0; i < 8; ++i) {
+            if (current_command_.params[0] & (1 << i) & buffer[3]) {
+                match = false;
+            }
+        }
+        if (match) {
+            current_command_.id = CommandID::NONE;
+        }
+        // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
+        // or user interaction directly with the card
+        failure_timer_->stop();
+    } else if (current_command_.id == CommandID::TOGGLE_RELAY) {
+        // TODO(lumik): consider the toggle relay testing
+        current_command_.id = CommandID::NONE;
+        failure_timer_->stop();
+    } else if (current_command_.id == CommandID::START_TIMER) {
+        // test if all required relays are on:
+        bool match = true;
+        for (int i = 0; i < 8; ++i) {
+            if (current_command_.params[0] & (1 << i) & ~buffer[3]) {
+                match = false;
+            }
+        }
+        if (match) {
+            current_command_.id = CommandID::NONE;
+        }
+        // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
+        // or user interaction directly with the card
+        failure_timer_->stop();
+    } else if (current_command_.id == CommandID::RESET_FACTORY_DEFAULTS) {
+        // test if all required relays are off:
+        bool match = true;
+        if (buffer[3]) {
+            match = false;
+        }
+        if (match) {
+            current_command_.id = CommandID::NONE;
+        }
+        // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
+        // or user interaction directly with the card
+        failure_timer_->stop();
     }
-    failure_timer_->stop();
     qDebug() << "relayStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
             << static_cast<int>(buffer[4]);
     emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
             static_cast<RelayID>(buffer[4]));
+    // relay status can be also emited in reaction to on, off, toggle, start timer commands or physical button press,
+    // so it is better to leave the next command sending to timer. So it is treated in sendCommandHelper() method.
 }
 
 
 // processes jumper status response
 void K8090::jumperStatusResponse(const unsigned char *buffer)
 {
-    if (current_commands_[as_number(CommandID::JUMPER_STATUS)].isEmpty()) {
+    if (current_command_.id != CommandID::JUMPER_STATUS) {
         onCommandFailed();
         return;
     }
-    current_commands_[as_number(CommandID::JUMPER_STATUS)].clear();
+    current_command_.id = CommandID::NONE;
     failure_timer_->stop();
     qDebug() << "jumperStatusResponse(): " << static_cast<bool>(buffer[3]);
     emit jumperStatus(static_cast<bool>(buffer[3]));
+    dequeueCommand();
 }
 
 
 // processes firmware version response
 void K8090::firmwareVersionResponse(const unsigned char *buffer)
 {
-    if (current_commands_[as_number(CommandID::FIRMWARE_VERSION)].isEmpty()) {
+    if (current_command_.id != CommandID::FIRMWARE_VERSION) {
         onCommandFailed();
         return;
     }
-    current_commands_[as_number(CommandID::FIRMWARE_VERSION)].clear();
+    current_command_.id = CommandID::NONE;
     failure_timer_->stop();
     qDebug() << "firmwareVersionResponse(): " << 2000 + static_cast<int>(buffer[3]) << "."
             << static_cast<int>(buffer[4]);
     emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
+    dequeueCommand();
 }
 
 

@@ -174,13 +174,17 @@ public:  // NOLINT(whitespace/indent)
     void setFailureDelay(int msec);
     void setMaxFailureCount(int count);
     bool isConnected();
+    int pendingCommandCount(K8090Traits::CommandID id);
 
 signals:  // NOLINT(whitespace/indent)
-    void relayStatus(K8090Traits::RelayID previous, K8090Traits::RelayID current, K8090Traits::RelayID timed);
-    void buttonStatus(K8090Traits::RelayID state, K8090Traits::RelayID pressed, K8090Traits::RelayID released);
-    void totalTimerDelay(K8090Traits::RelayID relay, quint16 delay);
-    void remainingTimerDelay(K8090Traits::RelayID relay, quint16 delay);
-    void buttonModes(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle, K8090Traits::RelayID timed);
+    void relayStatus(sprelay::core::K8090Traits::RelayID previous, sprelay::core::K8090Traits::RelayID current,
+        sprelay::core::K8090Traits::RelayID timed);
+    void buttonStatus(sprelay::core::K8090Traits::RelayID state, sprelay::core::K8090Traits::RelayID pressed,
+        sprelay::core::K8090Traits::RelayID released);
+    void totalTimerDelay(sprelay::core::K8090Traits::RelayID relay, quint16 delay);
+    void remainingTimerDelay(sprelay::core::K8090Traits::RelayID relay, quint16 delay);
+    void buttonModes(sprelay::core::K8090Traits::RelayID momentary, sprelay::core::K8090Traits::RelayID toggle,
+       sprelay::core::K8090Traits::RelayID timed);
     void jumperStatus(bool on);
     void firmwareVersion(int year, int week);
     void connected();
@@ -192,15 +196,16 @@ public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
     void disconnect();
     void refreshRelaysInfo();
-    void switchRelayOn(K8090Traits::RelayID relays);
-    void switchRelayOff(K8090Traits::RelayID relays);
-    void toggleRelay(K8090Traits::RelayID relays);
-    void setButtonMode(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle, K8090Traits::RelayID timed);
-    void startRelayTimer(K8090Traits::RelayID relays, quint16 delay = 0);
-    void setRelayTimerDelay(K8090Traits::RelayID relays, quint16 delay);
+    void switchRelayOn(sprelay::core::K8090Traits::RelayID relays);
+    void switchRelayOff(sprelay::core::K8090Traits::RelayID relays);
+    void toggleRelay(sprelay::core::K8090Traits::RelayID relays);
+    void setButtonMode(sprelay::core::K8090Traits::RelayID momentary, sprelay::core::K8090Traits::RelayID toggle,
+        sprelay::core::K8090Traits::RelayID timed);
+    void startRelayTimer(sprelay::core::K8090Traits::RelayID relays, quint16 delay = 0);
+    void setRelayTimerDelay(sprelay::core::K8090Traits::RelayID relays, quint16 delay);
     void queryRelayStatus();
-    void queryTotalTimerDelay(K8090Traits::RelayID relays);
-    void queryRemainingTimerDelay(K8090Traits::RelayID relays);
+    void queryTotalTimerDelay(sprelay::core::K8090Traits::RelayID relays);
+    void queryRemainingTimerDelay(sprelay::core::K8090Traits::RelayID relays);
     void queryButtonModes();
     void resetFactoryDefaults();
     void queryJumperStatus();
@@ -216,7 +221,6 @@ private:  // NOLINT(whitespace/indent)
             unsigned char param1 = 0, unsigned char param2 = 0);
     void enqueueCommand(K8090Traits::CommandID command_id, K8090Traits::RelayID mask = K8090Traits::RelayID::NONE,
                         unsigned char param1 = 0, unsigned char param2 = 0);
-    bool queryTimerCompatible(K8090Traits::RelayID mask, unsigned char param1) const;
     bool updateCommand(
             const K8090Traits::Command &command,
             const QList<const K8090Traits::Command *> &pending_command_list);
@@ -243,24 +247,25 @@ private:  // NOLINT(whitespace/indent)
 
 
     QString com_port_name_;
-    UnifiedSerialPort *serial_port_;
+    std::unique_ptr<UnifiedSerialPort> serial_port_;
 
     std::unique_ptr<command_queue::CommandQueue<K8090Traits::Command,
                         K8090Traits::as_number(K8090Traits::CommandID::NONE)>>
         pending_commands_;
-    QList<K8090Traits::Command> current_commands_[K8090Traits::as_number(K8090Traits::CommandID::NONE)];
-    K8090Traits::Command pending_remaining_delay_;
-    K8090Traits::Command pending_total_delay_;
+    K8090Traits::Command current_command_;
     std::unique_ptr<QTimer> command_timer_;
     std::unique_ptr<QTimer> failure_timer_;
     int failure_counter_;
     bool connected_;
     int command_delay_;
+    int factory_defaults_command_delay_;
     int failure_delay_;
     int failure_max_count_;
 };
 
 }  // namespace core
 }  // namespace sprelay
+
+Q_DECLARE_METATYPE(sprelay::core::K8090Traits::RelayID)
 
 #endif  // SPRELAY_CORE_K8090_H_

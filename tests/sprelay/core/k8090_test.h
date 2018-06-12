@@ -24,15 +24,58 @@
 #define SPRELAY_CORE_K8090_TEST_H_
 
 #include <QObject>
+#include <QString>
+
+#include <memory>
+
+#include "k8090.h"
+
+// forward declarations
+class QSignalSpy;
 
 namespace sprelay {
 namespace core {
+
+// forward declarations
+class K8090;
 
 class K8090Test: public QObject
 {
     Q_OBJECT
 private slots:  // NOLINT(whitespace/indent)
-    void testCase();
+    void initTestCase();
+    void init();
+    void cleanup();
+    void disconnect_data();
+    void disconnect();
+    void refreshRelaysInfo_data();
+    void refreshRelaysInfo();
+    void switchRelayOnOff_data();
+    void switchRelayOnOff();
+    void toggleRelay_data();
+    void toggleRelay();
+    void buttonMode_data();
+    void buttonMode();
+    void totalTimer_data();
+    void totalTimer();
+    void startTimer_data();
+    void startTimer();
+    void factoryDefaults_data();
+    void factoryDefaults();
+    void jumperStatus_data();
+    void jumperStatus();
+    void firmwareVersion_data();
+    void firmwareVersion();
+    void priorities_data();
+    void priorities();
+
+private:  // NOLINT(whitespace/indent)
+    void createTestData();
+    bool checkNoSpyData(QSignalSpy **spies, int n);
+
+    std::unique_ptr<K8090> k8090_;
+    bool real_card_present_;
+    QString real_card_port_name_;
 };
 
 }  // namespace core

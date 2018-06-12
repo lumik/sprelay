@@ -37,6 +37,7 @@
 
 #include "core_test_utils.h"
 #include "k8090.h"
+#include "serial_port_utils.h"
 #include "unified_serial_port.h"
 
 namespace sprelay {
@@ -286,15 +287,15 @@ void UnifiedSerialPortTest::realBenchmark_data()
     static const unsigned char response8[]    = {0x04, 0x44, 0x40, 0x00, 0x01, 0x77, 0x0f};
     QTest::newRow("query timer delay") << &prepare8[0] << 1 << &query_timer8[0] << &response8[0];
 
+    // test right values of factory defaults //
+    //***************************************//
+
     // query relay status
     //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
     static const unsigned char *prepare9       = nullptr;
     static const unsigned char query_status9[] = {0x04, 0x18, 0x00, 0x00, 0x00, 0xe4, 0x0f};
     static const unsigned char response9[]     = {0x04, 0x51, 0x00, 0x00, 0x00, 0xab, 0x0f};
-    QTest::newRow("button status") << prepare9 << 0 << &query_status9[0] << &response9[0];
-
-    // test right values of factory defaults //
-    //***************************************//
+    QTest::newRow("factory defaults - button status") << prepare9 << 0 << &query_status9[0] << &response9[0];
 
     // query button modes
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
