@@ -56,6 +56,7 @@ private slots:  // NOLINT(whitespace/indent)
     void defaultTimer();
     void moreTimers();
     void moreDefaultTimers();
+    // TODO(lumik): add test for factory defaults command
 
 private:  // NOLINT(whitespace/indent)
     unsigned char checkSum(const unsigned char *bMsg, int n);
