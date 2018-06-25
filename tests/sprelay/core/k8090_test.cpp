@@ -22,10 +22,8 @@
 
 #include "k8090_test.h"
 
-#include <QEventLoop>
 #include <QList>
 #include <QSignalSpy>
-#include <QTimer>
 #include <QtTest>
 #include <QVariant>
 
@@ -54,28 +52,25 @@ void K8090Test::initTestCase()
         }
     }
 
-    // test if real card can be connected
+    // test if cards can be connected
+    QList<QString> port_names;
     if (real_card_present_) {
-        k8090_.reset(new K8090);
-        k8090_->setComPortName(real_card_port_name_);
-        QSignalSpy spy(k8090_.get(), SIGNAL(connected()));
-        k8090_->connectK8090();
-        if (spy.count() < 1) {
-            QVERIFY2(spy.wait(), "Real card was not connected!");
-        } else {
-            QCOMPARE(spy.count(), 1);
-        }
+        port_names << real_card_port_name_;
+        qDebug() << "Real card port name:" << port_names.last();
     }
+    port_names << UnifiedSerialPort::kMockPortName;
+    qDebug() << "Virtual card port name:" << port_names.last();
 
-    // test if virtual card can be connected
-    k8090_.reset(new K8090);
-    k8090_->setComPortName(UnifiedSerialPort::kMockPortName);
-    QSignalSpy spy(k8090_.get(), SIGNAL(connected()));
-    k8090_->connectK8090();
-    if (spy.count() < 1) {
-        QVERIFY2(spy.wait(), "Virtual card was not connected!");
-    } else {
-        QCOMPARE(spy.count(), 1);
+    for (auto port_name : port_names) {
+        k8090_.reset(new K8090);
+        k8090_->setComPortName(port_name);
+        QSignalSpy spy_connect(k8090_.get(), SIGNAL(connected()));
+        k8090_->connectK8090();
+        if (spy_connect.count() < 1) {
+            QVERIFY2(spy_connect.wait(), "Real card was not connected!");
+        } else {
+            QCOMPARE(spy_connect.count(), 1);
+        }
     }
     k8090_.reset();
     // TODO(lumik): store initial relay state (button statuses, button modes, timer delays) at the beginning and
@@ -94,22 +89,49 @@ void K8090Test::init()
         QVERIFY2(spy.wait(), "Card was not connected!");
     }
     QCOMPARE(spy.count(), 1);
-
-    // TODO(lumik): this is due to connectK8090 method not implemented yet properly, connected should be emited after
-    // all signals are processed when implemented. Do not forget to remove dependeces on QEventLoop and QTimer
-    // let k8090_ run to process all inside stuff
-    QTimer timer;
-    timer.setSingleShot(true);
-    QEventLoop loop;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(500);
-    loop.exec();
 }
 
 
 void K8090Test::cleanup()
 {
     k8090_.reset();
+}
+
+
+void K8090Test::connectK8090_data()
+{
+    createTestData();
+}
+
+
+void K8090Test::connectK8090()
+{
+    QSignalSpy spy_connect(k8090_.get(), SIGNAL(connected()));
+    QSignalSpy spy_relay_status(k8090_.get(),
+        SIGNAL(relayStatus(sprelay::core::K8090Traits::RelayID, sprelay::core::K8090Traits::RelayID,
+            sprelay::core::K8090Traits::RelayID)));
+    QSignalSpy spy_button_modes(k8090_.get(),
+        SIGNAL(buttonModes(sprelay::core::K8090Traits::RelayID, sprelay::core::K8090Traits::RelayID,
+            sprelay::core::K8090Traits::RelayID)));
+    QSignalSpy spy_total_timer_delay(k8090_.get(),
+        SIGNAL(totalTimerDelay(sprelay::core::K8090Traits::RelayID, quint16)));
+    QSignalSpy spy_remaining_timer_delay(k8090_.get(),
+        SIGNAL(remainingTimerDelay(sprelay::core::K8090Traits::RelayID, quint16)));
+    QSignalSpy spy_jumper_status(k8090_.get(), SIGNAL(jumperStatus(bool)));
+    QSignalSpy spy_firmware_version(k8090_.get(), SIGNAL(firmwareVersion(int, int)));
+    k8090_->connectK8090();
+    if (spy_connect.count() < 1) {
+        QVERIFY2(spy_connect.wait(), "Real card was not connected!");
+    } else {
+        QCOMPARE(spy_connect.count(), 1);
+    }
+    // compare, if connect method emited all the expected responsnes
+    QCOMPARE(spy_relay_status.count(), 1);
+    QCOMPARE(spy_button_modes.count(), 1);
+    QCOMPARE(spy_total_timer_delay.count(), 8);
+    QCOMPARE(spy_remaining_timer_delay.count(), 8);
+    QCOMPARE(spy_jumper_status.count(), 1);
+    QCOMPARE(spy_firmware_version.count(), 1);
 }
 
 

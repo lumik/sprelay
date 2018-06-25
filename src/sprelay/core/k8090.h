@@ -201,6 +201,8 @@ public slots:  // NOLINT(whitespace/indent)
     void toggleRelay(sprelay::core::K8090Traits::RelayID relays);
     void setButtonMode(sprelay::core::K8090Traits::RelayID momentary, sprelay::core::K8090Traits::RelayID toggle,
         sprelay::core::K8090Traits::RelayID timed);
+    // TODO(lumik): add method to toggle button mode of specified buttons which treats buttons with no mode set as
+    // buttons, the mode of which would not be modified.
     void startRelayTimer(sprelay::core::K8090Traits::RelayID relays, quint16 delay = 0);
     void setRelayTimerDelay(sprelay::core::K8090Traits::RelayID relays, quint16 delay);
     void queryRelayStatus();
@@ -237,6 +239,7 @@ private:  // NOLINT(whitespace/indent)
     void relayStatusResponse(const unsigned char *buffer);
     void jumperStatusResponse(const unsigned char *buffer);
     void firmwareVersionResponse(const unsigned char *buffer);
+    void connectionSuccessful();
 
     static unsigned char checkSum(const unsigned char *msg, int n);
     static bool validateResponse(const unsigned char *msg);
@@ -259,6 +262,7 @@ private:  // NOLINT(whitespace/indent)
     std::unique_ptr<QTimer> failure_timer_;
     int failure_counter_;
     bool connected_;
+    bool connecting_;
     int command_delay_;
     int factory_defaults_command_delay_;
     int failure_delay_;

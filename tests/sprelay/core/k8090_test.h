@@ -46,6 +46,8 @@ private slots:  // NOLINT(whitespace/indent)
     void initTestCase();
     void init();
     void cleanup();
+    void connectK8090_data();
+    void connectK8090();
     void disconnect_data();
     void disconnect();
     void refreshRelaysInfo_data();

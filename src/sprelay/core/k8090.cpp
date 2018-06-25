@@ -675,6 +675,7 @@ K8090::K8090(QObject *parent) :
     failure_timer_{new QTimer},
     failure_counter_{0},
     connected_{false},
+    connecting_{false},
     command_delay_{kDefaultCommandDelay_},
     factory_defaults_command_delay_{2 * kDefaultCommandDelay_},
     failure_delay_{kDefaultFailureDelay_},
@@ -939,8 +940,7 @@ void K8090::connectK8090()
         }
     }
 
-    connected_ = true;
-    emit connected();
+    connecting_ = true;
     enqueueCommand(CommandID::QUERY_RELAY);
     enqueueCommand(CommandID::BUTTON_MODE);
     enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
@@ -1031,12 +1031,16 @@ void K8090::toggleRelay(RelayID relays)
 
     Configures the modes of each button. Available modes are momentary, toggle, timed. In case of duplicate assignments
     momentary mode has priority over toggle mode, and toggle mode has priority over timed mode. See the Velleman %K8090
-    card manual for more details.
+    card manual for more details. There is also feature which is not documented in Velleman %K8090 card manual. If you
+    don't set any mode for the given button, the physical button is disabled. For example, if you set
+    `momentary = K8090Traits::RelayID::ONE`, `toggle = K8090Traits::RelayID::NONE` and
+    `timed = K8090Traits::RelayID::NONE`, the physical button one will be in momentary mode and all the other buttons
+    will be disabled.
 
     \param momentary Relays to be set to momentary mode.
     \param toggle Relays to be set to toggle mode.
     \param timed Relays to be set to timed mode.
-    \sa K8090::queryButtonModes(), K8090::buttonModes()
+    \sa K8090::queryButtonModes(), K8090::buttonModes().
 */
 void K8090::setButtonMode(RelayID momentary, RelayID toggle, RelayID timed)
 {
@@ -1053,9 +1057,12 @@ void K8090::setButtonMode(RelayID momentary, RelayID toggle, RelayID timed)
     delay can be queried by K8090::queryRemainingTimerDelay(). If the delay is set to zero, the default delay will be
     used (see K8090::setRelayTimerDelay()). See the Velleman %K8090 card manual for more details.
 
-    \param relays The relays
-    \param delay Required delay in seconds.
-    \sa K8090::setRelayTimerDelay(), K8090::relayStatus()
+    \note If a timer is started immediately after the timer ellapse, its timeout time is usually usually shorter (the
+    difference can be as high as 0.5 sec).
+
+    \param relays The relays.
+    \param delay Required delay in seconds or 0 for default delay.
+    \sa K8090::setRelayTimerDelay(), K8090::relayStatus().
 */
 void K8090::startRelayTimer(RelayID relays, quint16 delay)
 {
@@ -1067,7 +1074,7 @@ void K8090::startRelayTimer(RelayID relays, quint16 delay)
     \brief Sets the default timer delays.
     \param relays The influenced relays.
     \param delay Required delay in seconds.
-    \sa K8090::startRelayTimer()
+    \sa K8090::startRelayTimer().
 */
 void K8090::setRelayTimerDelay(RelayID relays, quint16 delay)
 {
@@ -1258,6 +1265,7 @@ void K8090::onCommandFailed()
     ++failure_counter_;
     if (failure_counter_ > failure_max_count_) {
         connected_ = false;
+        connecting_ = false;
         serial_port_->close();
         emit connectionFailed();
     }
@@ -1430,9 +1438,22 @@ void K8090::buttonModeResponse(const unsigned char *buffer)
     failure_timer_->stop();
     qDebug() << "buttonModeResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
             << static_cast<int>(buffer[4]);
-    emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+    if (connected_) {
+        emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
             static_cast<RelayID>(buffer[4]));
-    dequeueCommand();
+        dequeueCommand();
+    } else if (connecting_) {
+        emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+            static_cast<RelayID>(buffer[4]));
+        if (pending_commands_->empty()) {
+            connectionSuccessful();
+        } else {
+            dequeueCommand();
+        }
+    } else {
+        // TODO(lumik): this should not occur. Convert it to exception.
+        onCommandFailed();
+    }
 }
 
 
@@ -1470,13 +1491,20 @@ void K8090::timerResponse(const unsigned char *buffer)
         }
     }
     qDebug() << "timerResponse(): reported delay: " << static_cast<quint16>(buffer[3] << 8 | buffer[4]);
-    if (is_total) {
-        emit totalTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+    if (connected_ | connecting_) {
+        if (is_total) {
+            emit totalTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+        } else {
+            emit remainingTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+        }
+        if (connecting_ && pending_commands_->empty()) {
+            connectionSuccessful();
+        } else if (should_dequeue_next) {
+            dequeueCommand();
+        }
     } else {
-        emit remainingTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
-    }
-    if (should_dequeue_next) {
-        dequeueCommand();
+        // TODO(lumik): this should not occur, convert it to exception.
+        onCommandFailed();
     }
 }
 
@@ -1486,8 +1514,10 @@ void K8090::buttonStatusResponse(const unsigned char *buffer)
 {
     qDebug() << "buttonStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
             << static_cast<int>(buffer[4]);
-    emit buttonStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-            static_cast<RelayID>(buffer[4]));
+    if (connected_) {
+        emit buttonStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+                static_cast<RelayID>(buffer[4]));
+    }
     // button status is emited only after user interaction with physical buttons on the relay, no query command is
     // connected with it
 }
@@ -1563,8 +1593,19 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
     }
     qDebug() << "relayStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
             << static_cast<int>(buffer[4]);
-    emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-            static_cast<RelayID>(buffer[4]));
+    if (connected_) {
+        emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+                static_cast<RelayID>(buffer[4]));
+    } else if (connecting_) {
+        // Beware, if the relay status message is obtained from the card as the reaction to the user interaction with
+        // physical buttons, the relay status signal can be emited 2 times because of the message obtained as the
+        // reaction to query message.
+        emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
+                static_cast<RelayID>(buffer[4]));
+        if (pending_commands_->empty()) {
+            connectionSuccessful();
+        }
+    }
     // relay status can be also emited in reaction to on, off, toggle, start timer commands or physical button press,
     // so it is better to leave the next command sending to timer. So it is treated in sendCommandHelper() method.
 }
@@ -1580,8 +1621,20 @@ void K8090::jumperStatusResponse(const unsigned char *buffer)
     current_command_.id = CommandID::NONE;
     failure_timer_->stop();
     qDebug() << "jumperStatusResponse(): " << static_cast<bool>(buffer[3]);
-    emit jumperStatus(static_cast<bool>(buffer[3]));
-    dequeueCommand();
+    if (connected_) {
+        emit jumperStatus(static_cast<bool>(buffer[3]));
+        dequeueCommand();
+    } else if (connecting_) {
+        emit jumperStatus(static_cast<bool>(buffer[3]));
+        if (pending_commands_->empty()) {
+            connectionSuccessful();
+        } else {
+            dequeueCommand();
+        }
+    } else {
+        // TODO(lumik): this should not occur, convert it to exception.
+        onCommandFailed();
+    }
 }
 
 
@@ -1596,8 +1649,31 @@ void K8090::firmwareVersionResponse(const unsigned char *buffer)
     failure_timer_->stop();
     qDebug() << "firmwareVersionResponse(): " << 2000 + static_cast<int>(buffer[3]) << "."
             << static_cast<int>(buffer[4]);
-    emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
-    dequeueCommand();
+    if (connected_) {
+        emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
+        dequeueCommand();
+    } else if (connecting_) {
+        emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
+        if (pending_commands_->empty()) {
+            connectionSuccessful();
+        } else {
+            dequeueCommand();
+        }
+    } else {
+        // TODO(lumik): this should not occur, convert it to exception.
+        onCommandFailed();
+    }
+}
+
+
+// This method should be called at the end of connection process to set class to connected state and notify user about
+// that.
+void K8090::connectionSuccessful()
+{
+    qDebug() << "Connection successful!";
+    connecting_ = false;
+    connected_ = true;
+    emit connected();
 }
 
 
