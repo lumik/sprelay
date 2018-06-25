@@ -1132,8 +1132,6 @@ void UnifiedSerialPortTest::resetRelays(UnifiedSerialPort *serial_port) const
 {
     const unsigned char factory_defaults[] = {0x04, 0x66, 0x00, 0x00, 0x00, 0x96, 0x0f};
     sendCommand(serial_port, factory_defaults);
-    const unsigned char switch_all_relays_off[] = {0x04, 0x12, 0xff, 0x00, 0x00, 0xEB, 0x0f};
-    sendCommand(serial_port, switch_all_relays_off);
     std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
     QCoreApplication::sendPostedEvents();
     QCoreApplication::processEvents(QEventLoop::AllEvents);
