@@ -145,91 +145,104 @@ void MockSerialPortTest::commandBenchmark_data()
     static const unsigned char response7[]   = {0x04, 0x22, 0x18, 0xc7, 0x20, 0xdb, 0x0f};
     QTest::newRow("duplicated button mode") << &prepare7[0] << 1 << &query_mode7[0] << &response7[0];
 
-    // set relay timer delay
+    // !!! Button mode has undocumented feature to disable selected relay buttons by setting them to no mode !!!
+    // Bellow, we set only one relay to mode and the rest modes are zeros, so only one button can be used, all the
+    // other physicals buttons does not work.
+    // test reaction, when only one relay is set and the rest is zero
     static const unsigned char prepare8[]  = {
+    //  STX   CMD   MASK  PAR1  PAR2  CHK   ETX
+        0x04, 0x21, 0x01, 0x00, 0x00, 0xda, 0x0f  // set relay 1 to momentary and 6 to timed and all the rest to toggle
+    };
+    //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
+    static const unsigned char query_mode8[] = {0x04, 0x22, 0x00, 0x00, 0x00, 0xda, 0x0f};
+    static const unsigned char response8[]   = {0x04, 0x22, 0x01, 0x00, 0x00, 0xd9, 0x0f};
+    QTest::newRow("button mode - disable buttons") << &prepare8[0] << 1 << &query_mode8[0] << &response8[0];
+
+    // set relay timer delay
+    static const unsigned char prepare9[]  = {
     //  STX   CMD   MASK  PAR1  PAR2  CHK   ETX
         0x04, 0x42, 0x40, 0x00, 0x01, 0x79, 0x0f  // set relay 7 timer to one second
     };
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char query_timer8[] = {0x04, 0x44, 0x40, 0x00, 0x00, 0x78, 0x0f};
+    static const unsigned char query_timer9[] = {0x04, 0x44, 0x40, 0x00, 0x00, 0x78, 0x0f};
     // !!!BEWARE: there is mistake in the manual, if first byte of par1 is 0, a total timer delay is queried, if 1, a
     // remaining timer delay is queried
-    static const unsigned char response8[]    = {0x04, 0x44, 0x40, 0x00, 0x01, 0x77, 0x0f};
-    QTest::newRow("query timer delay") << &prepare8[0] << 1 << &query_timer8[0] << &response8[0];
+    static const unsigned char response9[]    = {0x04, 0x44, 0x40, 0x00, 0x01, 0x77, 0x0f};
+    QTest::newRow("query timer delay") << &prepare9[0] << 1 << &query_timer9[0] << &response9[0];
 
     // test right values of factory defaults //
     //***************************************//
 
     // query relay status
     //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare9       = nullptr;
-    static const unsigned char query_status9[] = {0x04, 0x18, 0x00, 0x00, 0x00, 0xe4, 0x0f};
-    static const unsigned char response9[]     = {0x04, 0x51, 0x00, 0x00, 0x00, 0xab, 0x0f};
-    QTest::newRow("factory defaults - button status") << prepare9 << 0 << &query_status9[0] << &response9[0];
+    static const unsigned char *prepare10       = nullptr;
+    static const unsigned char query_status10[] = {0x04, 0x18, 0x00, 0x00, 0x00, 0xe4, 0x0f};
+    static const unsigned char response10[]     = {0x04, 0x51, 0x00, 0x00, 0x00, 0xab, 0x0f};
+    QTest::newRow("factory defaults - button status") << prepare10 << 0 << &query_status10[0] << &response10[0];
 
     // query button modes
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare10     = nullptr;
-    static const unsigned char query_mode10[] = {0x04, 0x22, 0x00, 0x00, 0x00, 0xda, 0x0f};
-    static const unsigned char response10[]   = {0x04, 0x22, 0x00, 0xff, 0x00, 0xdb, 0x0f};
-    QTest::newRow("factory defaults - button modes") << prepare10 << 0 << &query_mode10[0] << &response10[0];
+    static const unsigned char *prepare11     = nullptr;
+    static const unsigned char query_mode11[] = {0x04, 0x22, 0x00, 0x00, 0x00, 0xda, 0x0f};
+    static const unsigned char response11[]   = {0x04, 0x22, 0x00, 0xff, 0x00, 0xdb, 0x0f};
+    QTest::newRow("factory defaults - button modes") << prepare11 << 0 << &query_mode11[0] << &response11[0];
 
     // query timer delays
     // timer 1
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare11      = nullptr;
-    static const unsigned char query_timer11[] = {0x04, 0x44, 0x01, 0x00, 0x00, 0xb7, 0x0f};
-    static const unsigned char response11[]    = {0x04, 0x44, 0x01, 0x00, 0x05, 0xb2, 0x0f};
-    QTest::newRow("factory defaults - query timer 1") << prepare11 << 0 << &query_timer11[0] << &response11[0];
+    static const unsigned char *prepare12      = nullptr;
+    static const unsigned char query_timer12[] = {0x04, 0x44, 0x01, 0x00, 0x00, 0xb7, 0x0f};
+    static const unsigned char response12[]    = {0x04, 0x44, 0x01, 0x00, 0x05, 0xb2, 0x0f};
+    QTest::newRow("factory defaults - query timer 1") << prepare12 << 0 << &query_timer12[0] << &response12[0];
 
     // timer 2
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare12      = nullptr;
-    static const unsigned char query_timer12[] = {0x04, 0x44, 0x02, 0x00, 0x00, 0xb6, 0x0f};
-    static const unsigned char response12[]    = {0x04, 0x44, 0x02, 0x00, 0x05, 0xb1, 0x0f};
-    QTest::newRow("factory defaults - query timer 2") << prepare12 << 0 << &query_timer12[0] << &response12[0];
+    static const unsigned char *prepare13      = nullptr;
+    static const unsigned char query_timer13[] = {0x04, 0x44, 0x02, 0x00, 0x00, 0xb6, 0x0f};
+    static const unsigned char response13[]    = {0x04, 0x44, 0x02, 0x00, 0x05, 0xb1, 0x0f};
+    QTest::newRow("factory defaults - query timer 2") << prepare13 << 0 << &query_timer13[0] << &response13[0];
 
     // timer 3
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare13      = nullptr;
-    static const unsigned char query_timer13[] = {0x04, 0x44, 0x04, 0x00, 0x00, 0xb4, 0x0f};
-    static const unsigned char response13[]    = {0x04, 0x44, 0x04, 0x00, 0x05, 0xaf, 0x0f};
-    QTest::newRow("factory defaults - query timer 3") << prepare13 << 0 << &query_timer13[0] << &response13[0];
+    static const unsigned char *prepare14      = nullptr;
+    static const unsigned char query_timer14[] = {0x04, 0x44, 0x04, 0x00, 0x00, 0xb4, 0x0f};
+    static const unsigned char response14[]    = {0x04, 0x44, 0x04, 0x00, 0x05, 0xaf, 0x0f};
+    QTest::newRow("factory defaults - query timer 3") << prepare14 << 0 << &query_timer14[0] << &response14[0];
 
     // timer 4
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare14      = nullptr;
-    static const unsigned char query_timer14[] = {0x04, 0x44, 0x08, 0x00, 0x00, 0xb0, 0x0f};
-    static const unsigned char response14[]    = {0x04, 0x44, 0x08, 0x00, 0x05, 0xab, 0x0f};
-    QTest::newRow("factory defaults - query timer 4") << prepare14 << 0 << &query_timer14[0] << &response14[0];
+    static const unsigned char *prepare15      = nullptr;
+    static const unsigned char query_timer15[] = {0x04, 0x44, 0x08, 0x00, 0x00, 0xb0, 0x0f};
+    static const unsigned char response15[]    = {0x04, 0x44, 0x08, 0x00, 0x05, 0xab, 0x0f};
+    QTest::newRow("factory defaults - query timer 4") << prepare15 << 0 << &query_timer15[0] << &response15[0];
 
     // timer 5
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare15      = nullptr;
-    static const unsigned char query_timer15[] = {0x04, 0x44, 0x10, 0x00, 0x00, 0xa8, 0x0f};
-    static const unsigned char response15[]    = {0x04, 0x44, 0x10, 0x00, 0x05, 0xa3, 0x0f};
-    QTest::newRow("factory defaults - query timer 5") << prepare15 << 0 << &query_timer15[0] << &response15[0];
+    static const unsigned char *prepare16      = nullptr;
+    static const unsigned char query_timer16[] = {0x04, 0x44, 0x10, 0x00, 0x00, 0xa8, 0x0f};
+    static const unsigned char response16[]    = {0x04, 0x44, 0x10, 0x00, 0x05, 0xa3, 0x0f};
+    QTest::newRow("factory defaults - query timer 5") << prepare16 << 0 << &query_timer16[0] << &response16[0];
 
     // timer 6
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare16      = nullptr;
-    static const unsigned char query_timer16[] = {0x04, 0x44, 0x20, 0x00, 0x00, 0x98, 0x0f};
-    static const unsigned char response16[]    = {0x04, 0x44, 0x20, 0x00, 0x05, 0x93, 0x0f};
-    QTest::newRow("factory defaults - query timer 6") << prepare16 << 0 << &query_timer16[0] << &response16[0];
+    static const unsigned char *prepare17      = nullptr;
+    static const unsigned char query_timer17[] = {0x04, 0x44, 0x20, 0x00, 0x00, 0x98, 0x0f};
+    static const unsigned char response17[]    = {0x04, 0x44, 0x20, 0x00, 0x05, 0x93, 0x0f};
+    QTest::newRow("factory defaults - query timer 6") << prepare17 << 0 << &query_timer17[0] << &response17[0];
 
     // timer 7
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare17      = nullptr;
-    static const unsigned char query_timer17[] = {0x04, 0x44, 0x40, 0x00, 0x00, 0x78, 0x0f};
-    static const unsigned char response17[]    = {0x04, 0x44, 0x40, 0x00, 0x05, 0x73, 0x0f};
-    QTest::newRow("factory defaults - query timer 7") << prepare17 << 0 << &query_timer17[0] << &response17[0];
+    static const unsigned char *prepare18      = nullptr;
+    static const unsigned char query_timer18[] = {0x04, 0x44, 0x40, 0x00, 0x00, 0x78, 0x0f};
+    static const unsigned char response18[]    = {0x04, 0x44, 0x40, 0x00, 0x05, 0x73, 0x0f};
+    QTest::newRow("factory defaults - query timer 7") << prepare18 << 0 << &query_timer18[0] << &response18[0];
 
     // timer 8
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare18      = nullptr;
-    static const unsigned char query_timer18[] = {0x04, 0x44, 0x80, 0x00, 0x00, 0x38, 0x0f};
-    static const unsigned char response18[]    = {0x04, 0x44, 0x80, 0x00, 0x05, 0x33, 0x0f};
-    QTest::newRow("factory defaults - query timer 8") << prepare18 << 0 << &query_timer18[0] << &response18[0];
+    static const unsigned char *prepare19      = nullptr;
+    static const unsigned char query_timer19[] = {0x04, 0x44, 0x80, 0x00, 0x00, 0x38, 0x0f};
+    static const unsigned char response19[]    = {0x04, 0x44, 0x80, 0x00, 0x05, 0x33, 0x0f};
+    QTest::newRow("factory defaults - query timer 8") << prepare19 << 0 << &query_timer19[0] << &response19[0];
 }
 
 

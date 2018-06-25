@@ -210,6 +210,8 @@ public slots:  // NOLINT(whitespace/indent)
     void resetFactoryDefaults();
     void queryJumperStatus();
     void queryFirmwareVersion();
+    // TODO(lumik): use undocumented feature which enables to disable physical button by setting all its button modes
+    // to zero. See the UnifiedSerialPort tests.
 
 private slots:  // NOLINT(whitespace/indent)
     void onReadyData();

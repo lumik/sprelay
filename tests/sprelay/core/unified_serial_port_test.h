@@ -48,7 +48,6 @@ private slots:  // NOLINT(whitespace/indent)
     void switchRealVirtual();
     void realBenchmark_data();
     void realBenchmark();
-    // TODO(lumik): test conflicting button modes behavior (reaction to none button mode set)
     void realJumperStatus();
     void realFirmwareVersion();
     void realQueryAllTimers();
