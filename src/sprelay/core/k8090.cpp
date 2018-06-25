@@ -26,7 +26,6 @@
 
 #include "k8090.h"
 
-#include <QDebug>
 #include <QStringBuilder>
 #include <QTimer>
 
@@ -1178,22 +1177,17 @@ void K8090::queryFirmwareVersion()
 // Reaction on received data from the card.
 void K8090::onReadyData()
 {
-    qDebug() << "R8090::onReadyData";
-
     // converting the data to unsigned char
     QByteArray data = serial_port_->readAll();
     int n = data.size();
     const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
-    qDebug() << serial_utils::byte_to_hex(buffer, n);
 
     for (int i = 0; i < n; i += 7) {
         if (n - i < 7) {
-            qDebug() << "Bad number of bytes.";
             onCommandFailed();
             return;
         } else {
             if (!validateResponse(buffer + i)) {
-                qDebug() << "Not valid.";
                 onCommandFailed();
                 return;
             }
@@ -1217,7 +1211,6 @@ void K8090::onReadyData()
                     firmwareVersionResponse(buffer + i);
                     break;
                 default:
-                    qDebug() << "No command!";
                     onCommandFailed();
             }
         }
@@ -1261,7 +1254,6 @@ void K8090::dequeueCommand()
 void K8090::onCommandFailed()
 {
     failure_timer_->stop();
-    qDebug() << "onCommandFailed()";
     ++failure_counter_;
     if (failure_counter_ > failure_max_count_) {
         connected_ = false;
@@ -1410,7 +1402,6 @@ bool K8090::hasResponse(CommandID command_id)
 // sends command to serial port
 void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 {
-    qDebug() << "sendToSerial():" << serial_utils::byte_to_hex(buffer.get(), n);
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
             connected_ = false;
@@ -1436,8 +1427,6 @@ void K8090::buttonModeResponse(const unsigned char *buffer)
     // query button mode has no parameters. It is satisfactory only to remove one button mode request from the list
     current_command_.id = CommandID::NONE;
     failure_timer_->stop();
-    qDebug() << "buttonModeResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
-            << static_cast<int>(buffer[4]);
     if (connected_) {
         emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
             static_cast<RelayID>(buffer[4]));
@@ -1490,7 +1479,6 @@ void K8090::timerResponse(const unsigned char *buffer)
             failure_timer_->start();
         }
     }
-    qDebug() << "timerResponse(): reported delay: " << static_cast<quint16>(buffer[3] << 8 | buffer[4]);
     if (connected_ | connecting_) {
         if (is_total) {
             emit totalTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
@@ -1512,8 +1500,6 @@ void K8090::timerResponse(const unsigned char *buffer)
 // processes button status response
 void K8090::buttonStatusResponse(const unsigned char *buffer)
 {
-    qDebug() << "buttonStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
-            << static_cast<int>(buffer[4]);
     if (connected_) {
         emit buttonStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
                 static_cast<RelayID>(buffer[4]));
@@ -1591,8 +1577,6 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
         // or user interaction directly with the card
         failure_timer_->stop();
     }
-    qDebug() << "relayStatusResponse(): " << static_cast<int>(buffer[2]) << static_cast<int>(buffer[3])
-            << static_cast<int>(buffer[4]);
     if (connected_) {
         emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
                 static_cast<RelayID>(buffer[4]));
@@ -1620,7 +1604,6 @@ void K8090::jumperStatusResponse(const unsigned char *buffer)
     }
     current_command_.id = CommandID::NONE;
     failure_timer_->stop();
-    qDebug() << "jumperStatusResponse(): " << static_cast<bool>(buffer[3]);
     if (connected_) {
         emit jumperStatus(static_cast<bool>(buffer[3]));
         dequeueCommand();
@@ -1647,8 +1630,6 @@ void K8090::firmwareVersionResponse(const unsigned char *buffer)
     }
     current_command_.id = CommandID::NONE;
     failure_timer_->stop();
-    qDebug() << "firmwareVersionResponse(): " << 2000 + static_cast<int>(buffer[3]) << "."
-            << static_cast<int>(buffer[4]);
     if (connected_) {
         emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
         dequeueCommand();
@@ -1670,7 +1651,6 @@ void K8090::firmwareVersionResponse(const unsigned char *buffer)
 // that.
 void K8090::connectionSuccessful()
 {
-    qDebug() << "Connection successful!";
     connecting_ = false;
     connected_ = true;
     emit connected();
