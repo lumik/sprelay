@@ -44,6 +44,7 @@ namespace sprelay {
 namespace core {
 
 const int UnifiedSerialPortTest::kCommandTimeoutMs = 50;
+const int UnifiedSerialPortTest::kFactoryDefaultsTimeoutMs = 2 * UnifiedSerialPortTest::kCommandTimeoutMs;
 const int UnifiedSerialPortTest::kDelayBetweenCommandsMs = 20;
 
 
@@ -1132,7 +1133,7 @@ void UnifiedSerialPortTest::resetRelays(UnifiedSerialPort *serial_port) const
 {
     const unsigned char factory_defaults[] = {0x04, 0x66, 0x00, 0x00, 0x00, 0x96, 0x0f};
     sendCommand(serial_port, factory_defaults);
-    std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
+    std::this_thread::sleep_for(std::chrono::milliseconds(kFactoryDefaultsTimeoutMs - kDelayBetweenCommandsMs));
     QCoreApplication::sendPostedEvents();
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     serial_port->readAll();

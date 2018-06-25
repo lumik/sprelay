@@ -39,6 +39,7 @@ class UnifiedSerialPortTest : public QObject
     Q_OBJECT
 public:  // NOLINT(whitespace/indent)
     static const int kCommandTimeoutMs;
+    static const int kFactoryDefaultsTimeoutMs;
     static const int kDelayBetweenCommandsMs;
 
 private slots:  // NOLINT(whitespace/indent)
