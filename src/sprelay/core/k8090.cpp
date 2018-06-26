@@ -909,6 +909,9 @@ int K8090::pendingCommandCount(CommandID id)
 */
 void K8090::connectK8090()
 {
+    if (connecting_) {
+        return;
+    }
     connected_ = false;
     bool card_found = false;
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
