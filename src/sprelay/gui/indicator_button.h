@@ -75,7 +75,6 @@ class IndicatorButton : public QPushButton
     Q_OBJECT
     Q_PROPERTY(bool state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QString text READ text WRITE setText)
-    Q_PROPERTY(QString sizeHint READ sizeHint)
 
 public:  // NOLINT(whitespace/indent)
     explicit IndicatorButton(QWidget *parent = nullptr);
@@ -87,8 +86,7 @@ public:  // NOLINT(whitespace/indent)
     void setText(const QString &text);
     /// Getter for IndicatorButton::text property.
     QString text() const;
-    /// Getter for IndicatorButton::sizeHint property.
-    QSize sizeHint() const;
+    QSize sizeHint() const override;
     /// Getter for IndicatorButton::state property.
     bool state() const { return indicator_->state(); }
 

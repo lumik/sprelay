@@ -191,16 +191,6 @@ IndicatorButton::IndicatorButton(const QIcon &icon, const QString &text, QWidget
 
 
 /*!
- * \property IndicatorButton::sizeHint
- * \brief This property holds the recommended size for the widget.
- *
- * | Access functions: ||
- * | - | - |
- * | **Access** | QSize %IndicatorButton::sizeHint() |
- */
-
-
-/*!
  * \brief Setter for the IndicatorButton::text property.
  * \param text The text.
  */
@@ -216,6 +206,10 @@ QString IndicatorButton::text() const
 }
 
 
+/*!
+ * \brief Accessor for the inherited QWidget::sizeHint property.
+ * \return The size hint.
+ */
 QSize IndicatorButton::sizeHint() const
 {
     return layout()->sizeHint();
