@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "k8090.h"
 
 // forward declarations
 class QComboBox;
@@ -35,12 +36,10 @@ class QLabel;
 class QPushButton;
 class QSignalMapper;
 class QSpinBox;
-
+class QTimer;
 
 namespace sprelay {
 namespace core {
-// forward declarations of core classes
-class K8090;
 // forward declarations of serial_utils classes
 namespace serial_utils {
 class ComPortParams;
@@ -65,6 +64,7 @@ signals:  // NOLINT(whitespace/indent)
 public slots:  // NOLINT(whitespace/indent)
 
 private slots:  // NOLINT(whitespace/indent)
+    // reactions to user interaction with gui
     void onConnectButtonClicked();
     void onPortsComboBoxCurrentIndexChanged(const QString &portName);
     void onRefreshPortsButtonClicked();
@@ -74,14 +74,36 @@ private slots:  // NOLINT(whitespace/indent)
     void onRelayOffButtonClicked(int relay);
     void onToggleRelayButtonClicked(int relay);
     void onMomentaryButtonClicked(int relay);
-    void onTimedButtonClicked(int relay);
     void onToggleModeButtonClicked(int relay);
+    void onTimedButtonClicked(int relay);
     void onSetDefaultTimerButtonClicked(int relay);
     void onStartTimerButtonClicked(int relay);
     void onTimerSpinBoxValueChanged(int relay);
 
+private slots:  // NOLINT(whitespace/indent)
+    // reactions to signals from the relay
+    void onRelayStatus(sprelay::core::K8090Traits::RelayID previous, sprelay::core::K8090Traits::RelayID current,
+        sprelay::core::K8090Traits::RelayID timed);
+    void onButtonStatus(sprelay::core::K8090Traits::RelayID state, sprelay::core::K8090Traits::RelayID pressed,
+        sprelay::core::K8090Traits::RelayID released);
+    void onTotalTimerDelay(sprelay::core::K8090Traits::RelayID relay, quint16 delay);
+    void onRemainingTimerDelay(sprelay::core::K8090Traits::RelayID relay, quint16 delay);
+    void onButtonModes(sprelay::core::K8090Traits::RelayID momentary, sprelay::core::K8090Traits::RelayID toggle,
+       sprelay::core::K8090Traits::RelayID timed);
+    void onJumperStatus(bool on);
+    void onFirmwareVersion(int year, int week);
+    void onConnected();
+    void onConnectionFailed();
+    void onNotConnected();
+    void onDisconnected();
+
+    // other slots
+    void onRefreshTimersDelay();
+
+
 private:  // NOLINT(whitespace/indent)
-    static const int N_relays = 8;
+    static const int kNRelays = 8;
+    static const int kRefreshTimersRateMs_ = 300;
     void constructGui();
     void createUiElements();
     void initializePortsCombobox();
@@ -105,21 +127,21 @@ private:  // NOLINT(whitespace/indent)
     QLabel *firmware_version_label_;
     IndicatorLight *jumper_status_light;
     // relay button settings
-    std::unique_ptr<IndicatorLight> pushed_indicators_arr_[N_relays];
+    std::unique_ptr<IndicatorLight> pushed_indicators_arr_[kNRelays];
     // power settings
-    std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[N_relays];
-    std::unique_ptr<QPushButton> relay_off_buttons_arr_[N_relays];
-    std::unique_ptr<QPushButton> toggle_relay_buttons_arr_[N_relays];
+    std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[kNRelays];
+    std::unique_ptr<QPushButton> relay_off_buttons_arr_[kNRelays];
+    std::unique_ptr<QPushButton> toggle_relay_buttons_arr_[kNRelays];
     // mode settings
-    std::unique_ptr<IndicatorButton> momentary_buttons_arr_[N_relays];
-    std::unique_ptr<IndicatorButton> timed_buttons_arr_[N_relays];
-    std::unique_ptr<IndicatorButton> toggle_mode_buttons_arr_[N_relays];
+    std::unique_ptr<IndicatorButton> momentary_buttons_arr_[kNRelays];
+    std::unique_ptr<IndicatorButton> toggle_mode_buttons_arr_[kNRelays];
+    std::unique_ptr<IndicatorButton> timed_buttons_arr_[kNRelays];
     // timer settings
-    std::unique_ptr<QLabel> default_timer_labels_arr_[N_relays];
-    std::unique_ptr<QLabel> remaining_time_labels_arr_[N_relays];
-    std::unique_ptr<QPushButton> set_default_timer_buttons_arr_[N_relays];
-    std::unique_ptr<IndicatorButton> start_timer_buttons_arr_[N_relays];
-    std::unique_ptr<QSpinBox> timer_spin_box_arr_[N_relays];
+    std::unique_ptr<QLabel> default_timer_labels_arr_[kNRelays];
+    std::unique_ptr<QLabel> remaining_time_labels_arr_[kNRelays];
+    std::unique_ptr<QPushButton> set_default_timer_buttons_arr_[kNRelays];
+    std::unique_ptr<IndicatorButton> start_timer_buttons_arr_[kNRelays];
+    std::unique_ptr<QSpinBox> timer_spin_box_arr_[kNRelays];
 
     // signal mappers
     std::unique_ptr<QSignalMapper> relay_on_mapper_;
@@ -131,6 +153,8 @@ private:  // NOLINT(whitespace/indent)
     std::unique_ptr<QSignalMapper> set_default_timer_mapper_;
     std::unique_ptr<QSignalMapper> start_timer_mapper_;
     std::unique_ptr<QSignalMapper> timer_spin_box_mapper_;
+
+    std::unique_ptr<QTimer> refresh_delay_timer_;
 };
 
 }  // namespace gui

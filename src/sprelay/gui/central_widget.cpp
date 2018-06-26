@@ -23,7 +23,6 @@
 #include "central_widget.h"
 
 #include <QComboBox>
-#include <QDebug>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
@@ -32,6 +31,7 @@
 #include <QSignalMapper>
 #include <QSpinBox>
 #include <QStringBuilder>
+#include <QTimer>
 
 #include <limits>
 #include <cstdint>
@@ -44,32 +44,40 @@ namespace sprelay {
 namespace gui {
 
 CentralWidget::CentralWidget(core::K8090 *k8090, const QString &com_port_name, QWidget *parent)
-    : QWidget{parent}, com_port_name_{com_port_name}
+    : QWidget{parent},
+      com_port_name_{com_port_name},
+      refresh_delay_timer_{new QTimer}
 {
     if (k8090) {
         k8090_ = k8090;
     } else {
         k8090_ = new core::K8090(this);
     }
+    refresh_delay_timer_->setSingleShot(true);
+    connect(refresh_delay_timer_.get(), &QTimer::timeout, this, &CentralWidget::onRefreshTimersDelay);
 
     constructGui();
 }
+
 
 CentralWidget::~CentralWidget()
 {
 }
 
+
 void CentralWidget::onConnectButtonClicked()
 {
     k8090_->setComPortName(ports_combo_box_->currentText());
     k8090_->connectK8090();
-    connect_button_->setState(!connect_button_->state());
 }
+
 
 void CentralWidget::onPortsComboBoxCurrentIndexChanged(const QString &portName)
 {
-    qDebug() << portName;
+    Q_UNUSED(portName)
+    // TODO(lumik): probably disconnect if port name changes.
 }
+
 
 void CentralWidget::onRefreshPortsButtonClicked()
 {
@@ -110,79 +118,288 @@ void CentralWidget::onRefreshPortsButtonClicked()
             com_port_name_ = ports_combo_box_->currentText();
         }
     } else {
-//        onDisconnected();
-//        onNoSerialPortAvailable();
+        // TODO(lumik): there is no port, probably exception, because there should be virtual one
     }
 }
 
+
 void CentralWidget::onRefreshRelaysButtonClicked()
 {
-    qDebug() << "CentralWidget::onRefreshRelaysButtonClicked()";
     k8090_->refreshRelaysInfo();
 }
 
+
 void CentralWidget::resetFactoryDefaultsButtonClicked()
 {
-    qDebug() << "CentralWidget::onResetFactoryDefaultsButtonClicked()";
     k8090_->resetFactoryDefaults();
+    k8090_->refreshRelaysInfo();
 }
+
 
 void CentralWidget::onRelayOnButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onRelayOnButtonClicked(" << relay << ")";
     k8090_->switchRelayOn(core::K8090Traits::from_number(relay));
 }
 
+
 void CentralWidget::onRelayOffButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onRelayOffButtonClicked(" << relay << ")";
     k8090_->switchRelayOff(core::K8090Traits::from_number(relay));
 }
 
+
 void CentralWidget::onToggleRelayButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onToggleRelayButtonClicked(" << relay << ")";
     k8090_->toggleRelay(core::K8090Traits::from_number(relay));
 }
 
+
 void CentralWidget::onMomentaryButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onMomentaryButtonClicked(" << relay << ")";
-    k8090_->setButtonMode(core::K8090Traits::from_number(relay), core::K8090Traits::RelayID::NONE,
-        core::K8090Traits::RelayID::NONE);
+    // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
+    // mechanism of their synchronisation with states saved in indicator buttons.
+    // get current button modes
+    core::K8090Traits::RelayID momentary = core::K8090Traits::RelayID::NONE;
+    core::K8090Traits::RelayID toggle = core::K8090Traits::RelayID::NONE;
+    core::K8090Traits::RelayID timed = core::K8090Traits::RelayID::NONE;
+    for (int i = 0; i < kNRelays; ++i) {
+        if (momentary_buttons_arr_[i]->state()) {
+            momentary |= core::K8090Traits::from_number(i);
+        }
+        if (toggle_mode_buttons_arr_[i]->state()) {
+            toggle |= core::K8090Traits::from_number(i);
+        }
+        if (timed_buttons_arr_[i]->state()) {
+            timed |= core::K8090Traits::from_number(i);
+        }
+    }
+
+    // set the required mode
+    momentary |= core::K8090Traits::from_number(relay);
+    toggle &= ~core::K8090Traits::from_number(relay);
+    timed &= ~core::K8090Traits::from_number(relay);
+    k8090_->setButtonMode(momentary, toggle, timed);
 }
 
-void CentralWidget::onTimedButtonClicked(int relay)
-{
-    qDebug() << "CentralWidget::onTimedButtonClicked(" << relay << ")";
-    k8090_->setButtonMode(core::K8090Traits::RelayID::NONE, core::K8090Traits::RelayID::NONE,
-        core::K8090Traits::from_number(relay));
-}
 
 void CentralWidget::onToggleModeButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onToggleModeButtonClicked(" << relay << ")";
-    k8090_->setButtonMode(core::K8090Traits::RelayID::NONE, core::K8090Traits::from_number(relay),
-        core::K8090Traits::RelayID::NONE);
+    // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
+    // mechanism of their synchronisation with states saved in indicator buttons.
+    // get current button modes
+    core::K8090Traits::RelayID momentary = core::K8090Traits::RelayID::NONE;
+    core::K8090Traits::RelayID toggle = core::K8090Traits::RelayID::NONE;
+    core::K8090Traits::RelayID timed = core::K8090Traits::RelayID::NONE;
+    for (int i = 0; i < kNRelays; ++i) {
+        if (momentary_buttons_arr_[i]->state()) {
+            momentary |= core::K8090Traits::from_number(i);
+        }
+        if (toggle_mode_buttons_arr_[i]->state()) {
+            toggle |= core::K8090Traits::from_number(i);
+        }
+        if (timed_buttons_arr_[i]->state()) {
+            timed |= core::K8090Traits::from_number(i);
+        }
+    }
+
+    // set the required mode
+    momentary &= ~core::K8090Traits::from_number(relay);
+    toggle |= core::K8090Traits::from_number(relay);
+    timed &= ~core::K8090Traits::from_number(relay);
+    k8090_->setButtonMode(momentary, toggle, timed);
 }
+
+
+void CentralWidget::onTimedButtonClicked(int relay)
+{
+    // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
+    // mechanism of their synchronisation with states saved in indicator buttons.
+    // get current button modes
+    core::K8090Traits::RelayID momentary = core::K8090Traits::RelayID::NONE;
+    core::K8090Traits::RelayID toggle = core::K8090Traits::RelayID::NONE;
+    core::K8090Traits::RelayID timed = core::K8090Traits::RelayID::NONE;
+    for (int i = 0; i < kNRelays; ++i) {
+        if (momentary_buttons_arr_[i]->state()) {
+            momentary |= core::K8090Traits::from_number(i);
+        }
+        if (toggle_mode_buttons_arr_[i]->state()) {
+            toggle |= core::K8090Traits::from_number(i);
+        }
+        if (timed_buttons_arr_[i]->state()) {
+            timed |= core::K8090Traits::from_number(i);
+        }
+    }
+
+    // set the required mode
+    momentary &= ~core::K8090Traits::from_number(relay);
+    toggle &= ~core::K8090Traits::from_number(relay);
+    timed |= core::K8090Traits::from_number(relay);
+    k8090_->setButtonMode(momentary, toggle, timed);
+}
+
 
 void CentralWidget::onSetDefaultTimerButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onSetDefaultTimerButtonClicked(" << relay << "): "
-             << timer_spin_box_arr_[relay]->value();
     k8090_->setRelayTimerDelay(core::K8090Traits::from_number(relay), timer_spin_box_arr_[relay]->value());
 }
 
+
 void CentralWidget::onStartTimerButtonClicked(int relay)
 {
-    qDebug() << "CentralWidget::onStartTimerButtonClicked(" << relay << "): " << timer_spin_box_arr_[relay]->value();
     k8090_->startRelayTimer(core::K8090Traits::from_number(relay), timer_spin_box_arr_[relay]->value());
 }
 
+
 void CentralWidget::onTimerSpinBoxValueChanged(int relay)
 {
-    qDebug() << "CentralWidget::onTimerSpinBoxValueChanged(" << relay << "): " << timer_spin_box_arr_[relay]->value();
+    // TODO(lumik): probably remove this method.
+    Q_UNUSED(relay)
 }
+
+
+void CentralWidget::onRelayStatus(core::K8090Traits::RelayID previous, core::K8090Traits::RelayID current,
+    core::K8090Traits::RelayID timed)
+{
+    Q_UNUSED(previous)
+    bool is_timed = false;
+    for (int i = 0; i < kNRelays; ++i) {
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & current)) {
+            relay_on_buttons_arr_[i]->setState(true);
+        } else {
+            relay_on_buttons_arr_[i]->setState(false);
+            onRemainingTimerDelay(core::K8090Traits::from_number(i), 0);
+        }
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & timed)) {
+            is_timed = true;
+            start_timer_buttons_arr_[i]->setState(true);
+        } else {
+            start_timer_buttons_arr_[i]->setState(false);
+        }
+    }
+    if (is_timed && !refresh_delay_timer_->isActive()) {
+        onRefreshTimersDelay();
+    }
+}
+
+
+void CentralWidget::onButtonStatus(core::K8090Traits::RelayID state, core::K8090Traits::RelayID pressed,
+    core::K8090Traits::RelayID released)
+{
+    Q_UNUSED(pressed)
+    Q_UNUSED(released)
+    for (int i = 0; i < kNRelays; ++i) {
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & state)) {
+            pushed_indicators_arr_[i]->setState(true);
+        } else {
+            pushed_indicators_arr_[i]->setState(false);
+        }
+    }
+}
+
+
+void CentralWidget::onTotalTimerDelay(core::K8090Traits::RelayID relay, quint16 delay)
+{
+    for (int i = 0; i < kNRelays; ++i) {
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & relay)) {
+            default_timer_labels_arr_[i]->setText(tr("%1").arg(delay));
+        }
+    }
+}
+
+
+void CentralWidget::onRemainingTimerDelay(core::K8090Traits::RelayID relay, quint16 delay)
+{
+    for (int i = 0; i < kNRelays; ++i) {
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & relay)) {
+            if (start_timer_buttons_arr_[i]->state()) {
+                remaining_time_labels_arr_[i]->setText(tr("%1").arg(delay));
+            } else {
+                remaining_time_labels_arr_[i]->setText(tr("%1").arg(0));
+            }
+        }
+    }
+}
+
+
+void CentralWidget::onButtonModes(core::K8090Traits::RelayID momentary, core::K8090Traits::RelayID toggle,
+    core::K8090Traits::RelayID timed)
+{
+    for (int i = 0; i < kNRelays; ++i) {
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & momentary)) {
+            momentary_buttons_arr_[i]->setState(true);
+        } else {
+            momentary_buttons_arr_[i]->setState(false);
+        }
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & toggle)) {
+            toggle_mode_buttons_arr_[i]->setState(true);
+        } else {
+            toggle_mode_buttons_arr_[i]->setState(false);
+        }
+        if (static_cast<bool>(core::K8090Traits::from_number(i) & timed)) {
+            timed_buttons_arr_[i]->setState(true);
+        } else {
+            timed_buttons_arr_[i]->setState(false);
+        }
+    }
+}
+
+
+void CentralWidget::onJumperStatus(bool on)
+{
+    jumper_status_light->setState(on);
+}
+
+
+void CentralWidget::onFirmwareVersion(int year, int week)
+{
+    firmware_version_label_->setText(tr("Firmware version: %1.%2").arg(year).arg(week));
+}
+
+
+void CentralWidget::onConnected()
+{
+    connected_ = true;
+    connect_button_->setState(true);
+}
+
+
+void CentralWidget::onConnectionFailed()
+{
+    connected_ = false;
+    QMessageBox::critical(this, tr("Communication failed!"), tr("The communication with the relay failed."));
+}
+
+
+void CentralWidget::onNotConnected()
+{
+    connected_ = false;
+    QMessageBox msgBox;
+    msgBox.setText("Connect the relay before you use it.");
+    msgBox.exec();
+}
+
+
+void CentralWidget::onDisconnected()
+{
+    connected_ = false;
+    connect_button_->setState(false);
+}
+
+
+void CentralWidget::onRefreshTimersDelay()
+{
+    bool is_timed;
+    for (int i = 0; i < kNRelays; ++i) {
+        if (start_timer_buttons_arr_[i]->state()) {
+            is_timed = true;
+            k8090_->queryRemainingTimerDelay(core::K8090Traits::from_number(i));
+        }
+    }
+    if (is_timed & !refresh_delay_timer_->isActive()) {
+        refresh_delay_timer_->start(kRefreshTimersRateMs_);
+    }
+}
+
 
 void CentralWidget::constructGui()
 {
@@ -190,6 +407,7 @@ void CentralWidget::constructGui()
     connectGui();
     makeLayout();
 }
+
 
 void CentralWidget::createUiElements()
 {
@@ -203,16 +421,17 @@ void CentralWidget::createUiElements()
     // globals
     refresh_relays_button_ = new QPushButton{tr("Refresh"), this};
     reset_factory_defaults_button_ = new QPushButton{tr("Factory Reset"), this};
+    // TODO(lumik): version label causes the gui width change. Consider setting reasonable minimal width.
     firmware_version_label_ = new QLabel{tr("Firmware version: 1.0.0"), this};
     jumper_status_light = new IndicatorLight{this};
-    for (int i = 0; i < N_relays; ++i) {
+    for (int i = 0; i < kNRelays; ++i) {
         pushed_indicators_arr_[i] = std::unique_ptr<IndicatorLight>{new IndicatorLight{this}};
         relay_on_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
         relay_off_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
         toggle_relay_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
         momentary_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
-        timed_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
         toggle_mode_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
+        timed_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
         default_timer_labels_arr_[i] = std::unique_ptr<QLabel>{new QLabel{"0", this}};
         remaining_time_labels_arr_[i] = std::unique_ptr<QLabel>{new QLabel{"0", this}};
         set_default_timer_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
@@ -222,6 +441,7 @@ void CentralWidget::createUiElements()
         timer_spin_box_arr_[i]->setMaximum(std::numeric_limits<std::uint16_t>::max());
     }
 }
+
 
 void CentralWidget::initializePortsCombobox()
 {
@@ -251,8 +471,10 @@ void CentralWidget::initializePortsCombobox()
     com_port_name_ = ports_combo_box_->currentText();
 }
 
+
 void CentralWidget::connectGui()
 {
+    // reactions on user interaction with gui
     connect(connect_button_, &QPushButton::clicked, this, &CentralWidget::onConnectButtonClicked);
     connect(refresh_ports_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshPortsButtonClicked);
     connect(ports_combo_box_, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
@@ -266,8 +488,8 @@ void CentralWidget::connectGui()
     relay_off_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     toggle_relay_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     momentary_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
-    timed_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     toggle_mode_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
+    timed_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     set_default_timer_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     start_timer_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     timer_spin_box_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
@@ -286,12 +508,12 @@ void CentralWidget::connectGui()
         momentary_mapper_->setMapping(momentary_buttons_arr_[i].get(), i);
         connect(timed_buttons_arr_[i].get(), &IndicatorButton::clicked,
                 timed_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
-        timed_mapper_->setMapping(timed_buttons_arr_[i].get(), i);
-        connect(toggle_mode_buttons_arr_[i].get(), &IndicatorButton::clicked,
-                toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         toggle_mode_mapper_->setMapping(toggle_mode_buttons_arr_[i].get(), i);
         connect(set_default_timer_buttons_arr_[i].get(), &IndicatorButton::clicked,
                 set_default_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        timed_mapper_->setMapping(timed_buttons_arr_[i].get(), i);
+        connect(toggle_mode_buttons_arr_[i].get(), &IndicatorButton::clicked,
+                toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         set_default_timer_mapper_->setMapping(set_default_timer_buttons_arr_[i].get(), i);
         connect(start_timer_buttons_arr_[i].get(), &IndicatorButton::clicked,
                 start_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
@@ -308,17 +530,31 @@ void CentralWidget::connectGui()
             this, &CentralWidget::onToggleRelayButtonClicked);
     connect(momentary_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
             this, &CentralWidget::onMomentaryButtonClicked);
-    connect(timed_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onTimedButtonClicked);
     connect(toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
             this, &CentralWidget::onToggleModeButtonClicked);
+    connect(timed_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
+            this, &CentralWidget::onTimedButtonClicked);
     connect(set_default_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
             this, &CentralWidget::onSetDefaultTimerButtonClicked);
     connect(start_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
             this, &CentralWidget::onStartTimerButtonClicked);
     connect(timer_spin_box_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
             this, &CentralWidget::onTimerSpinBoxValueChanged);
+
+    // reactions to signals from the relay
+    connect(k8090_, &core::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
+    connect(k8090_, &core::K8090::buttonStatus, this, &CentralWidget::onButtonStatus);
+    connect(k8090_, &core::K8090::totalTimerDelay, this, &CentralWidget::onTotalTimerDelay);
+    connect(k8090_, &core::K8090::remainingTimerDelay, this, &CentralWidget::onRemainingTimerDelay);
+    connect(k8090_, &core::K8090::buttonModes, this, &CentralWidget::onButtonModes);
+    connect(k8090_, &core::K8090::jumperStatus, this, &CentralWidget::onJumperStatus);
+    connect(k8090_, &core::K8090::firmwareVersion, this, &CentralWidget::onFirmwareVersion);
+    connect(k8090_, &core::K8090::connected, this, &CentralWidget::onConnected);
+    connect(k8090_, &core::K8090::connectionFailed, this, &CentralWidget::onConnectionFailed);
+    connect(k8090_, &core::K8090::notConnected, this, &CentralWidget::onNotConnected);
+    connect(k8090_, &core::K8090::disconnected, this, &CentralWidget::onDisconnected);
 }
+
 
 void CentralWidget::makeLayout()
 {
@@ -361,7 +597,7 @@ void CentralWidget::makeLayout()
     QGridLayout *relay_number_grid_layout = new QGridLayout;
     relay_number_box->setLayout(relay_number_grid_layout);
     relay_number_grid_layout->addWidget(new QLabel{tr("Number:"), this}, 0, 0);
-    for (int i = 0; i < N_relays; ++i) {
+    for (int i = 0; i < kNRelays; ++i) {
         relay_number_grid_layout->addWidget(new QLabel{QString::number(i + 1), this}, 0, i + 1, Qt::AlignHCenter);
     }
 
@@ -371,7 +607,7 @@ void CentralWidget::makeLayout()
     QGridLayout *button_status_grid_layout = new QGridLayout;
     relay_button_status_settings_box->setLayout(button_status_grid_layout);
     button_status_grid_layout->addWidget(new QLabel{tr("pushed:"), this}, 0, 0);
-    for (int i = 0; i < N_relays; ++i) {
+    for (int i = 0; i < kNRelays; ++i) {
         button_status_grid_layout->addWidget(pushed_indicators_arr_[i].get(), 0, i + 1, Qt::AlignHCenter);
     }
 
@@ -383,7 +619,7 @@ void CentralWidget::makeLayout()
     power_grid_layout->addWidget(new QLabel{tr("Switch on:"), this}, 0, 0);
     power_grid_layout->addWidget(new QLabel{tr("Switch off:"), this}, 1, 0);
     power_grid_layout->addWidget(new QLabel{tr("Toggle:"), this}, 2, 0);
-    for (int i = 0; i < N_relays; ++i) {
+    for (int i = 0; i < kNRelays; ++i) {
         power_grid_layout->addWidget(relay_on_buttons_arr_[i].get(), 0, i + 1, Qt::AlignHCenter);
         power_grid_layout->addWidget(relay_off_buttons_arr_[i].get(), 1, i + 1, Qt::AlignHCenter);
         power_grid_layout->addWidget(toggle_relay_buttons_arr_[i].get(), 2, i + 1, Qt::AlignHCenter);
@@ -395,12 +631,12 @@ void CentralWidget::makeLayout()
     QGridLayout *mode_grid_layout = new QGridLayout;
     relay_mode_settings_box->setLayout(mode_grid_layout);
     mode_grid_layout->addWidget(new QLabel(tr("Momentary:"), this), 0, 0);
-    mode_grid_layout->addWidget(new QLabel(tr("Timed:"), this), 1, 0);
-    mode_grid_layout->addWidget(new QLabel(tr("Toggle:"), this), 2, 0);
-    for (int i = 0; i < N_relays; ++i) {
+    mode_grid_layout->addWidget(new QLabel(tr("Toggle:"), this), 1, 0);
+    mode_grid_layout->addWidget(new QLabel(tr("Timed:"), this), 2, 0);
+    for (int i = 0; i < kNRelays; ++i) {
         mode_grid_layout->addWidget(momentary_buttons_arr_[i].get(), 0, i + 1, Qt::AlignHCenter);
-        mode_grid_layout->addWidget(timed_buttons_arr_[i].get(), 1, i + 1, Qt::AlignHCenter);
-        mode_grid_layout->addWidget(toggle_mode_buttons_arr_[i].get(), 2, i + 1, Qt::AlignHCenter);
+        mode_grid_layout->addWidget(toggle_mode_buttons_arr_[i].get(), 1, i + 1, Qt::AlignHCenter);
+        mode_grid_layout->addWidget(timed_buttons_arr_[i].get(), 2, i + 1, Qt::AlignHCenter);
     }
 
     // relay timers settings
@@ -413,7 +649,7 @@ void CentralWidget::makeLayout()
     timer_grid_layout->addWidget(new QLabel(tr("Default:"), this), 2, 0);
     timer_grid_layout->addWidget(new QLabel(tr("Start:"), this), 3, 0);
     timer_grid_layout->addWidget(new QLabel(tr("Timer (s):"), this), 4, 0);
-    for (int i = 0; i < N_relays; ++i) {
+    for (int i = 0; i < kNRelays; ++i) {
         timer_grid_layout->addWidget(default_timer_labels_arr_[i].get(), 0, i + 1, Qt::AlignHCenter);
         timer_grid_layout->addWidget(remaining_time_labels_arr_[i].get(), 1, i + 1, Qt::AlignHCenter);
         timer_grid_layout->addWidget(set_default_timer_buttons_arr_[i].get(), 2, i + 1, Qt::AlignHCenter);
