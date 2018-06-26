@@ -206,6 +206,7 @@ void CentralWidget::createUiElements()
     firmware_version_label_ = new QLabel{tr("Firmware version: 1.0.0"), this};
     jumper_status_light = new IndicatorLight{this};
     for (int i = 0; i < N_relays; ++i) {
+        pushed_indicators_arr_[i] = std::unique_ptr<IndicatorLight>{new IndicatorLight{this}};
         relay_on_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
         relay_off_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
         toggle_relay_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
@@ -364,6 +365,16 @@ void CentralWidget::makeLayout()
         relay_number_grid_layout->addWidget(new QLabel{QString::number(i + 1), this}, 0, i + 1, Qt::AlignHCenter);
     }
 
+    // relays button status settings
+    QGroupBox *relay_button_status_settings_box = new QGroupBox{tr("Relay button status")};
+    relays_grid_v_layout->addWidget(relay_button_status_settings_box);
+    QGridLayout *button_status_grid_layout = new QGridLayout;
+    relay_button_status_settings_box->setLayout(button_status_grid_layout);
+    button_status_grid_layout->addWidget(new QLabel{tr("pushed:"), this}, 0, 0);
+    for (int i = 0; i < N_relays; ++i) {
+        button_status_grid_layout->addWidget(pushed_indicators_arr_[i].get(), 0, i + 1, Qt::AlignHCenter);
+    }
+
     // relays power settings
     QGroupBox *relay_power_settings_box = new QGroupBox{tr("Relays power settings")};
     relays_grid_v_layout->addWidget(relay_power_settings_box);
@@ -410,9 +421,9 @@ void CentralWidget::makeLayout()
         timer_grid_layout->addWidget(timer_spin_box_arr_[i].get(), 4, i + 1, Qt::AlignHCenter);
     }
 
-    const int layout_no = 4;
-    QGridLayout * grid_layouts[layout_no] = {relay_number_grid_layout, power_grid_layout, mode_grid_layout,
-        timer_grid_layout};
+    const int layout_no = 5;
+    QGridLayout * grid_layouts[layout_no] = {button_status_grid_layout, relay_number_grid_layout, power_grid_layout,
+        mode_grid_layout, timer_grid_layout};
     int relay_label_min_width = std::numeric_limits<int>::min();
     int relay_label_width;
     for (int i = 0; i < layout_no; ++i) {

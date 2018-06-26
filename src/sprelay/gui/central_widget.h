@@ -104,6 +104,8 @@ private:  // NOLINT(whitespace/indent)
     QPushButton *reset_factory_defaults_button_;
     QLabel *firmware_version_label_;
     IndicatorLight *jumper_status_light;
+    // relay button settings
+    std::unique_ptr<IndicatorLight> pushed_indicators_arr_[N_relays];
     // power settings
     std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[N_relays];
     std::unique_ptr<QPushButton> relay_off_buttons_arr_[N_relays];
