@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -20,6 +22,19 @@
 **                                                                        **
 ****************************************************************************/
 
+/**
+ * \file      indicator_button.cpp
+ * \brief     Indicator button and indicator light widgets which indicates their state by their color.
+
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2018-06-26
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
+
 #include "indicator_button.h"
 
 #include <QHBoxLayout>
@@ -28,38 +43,167 @@
 #include <QString>
 
 namespace sprelay {
+
+/*!
+ * \defgroup gui SpRelay GUI
+ * \brief Groups SpRelay GUI elements.
+ */
+
+/*!
+ * \ingroup gui
+ * \brief Namespace which contains SpRelay GUI elements.
+ */
 namespace gui {
 
+// TODO(lumik): improve documentation with examples.
+/*!
+ * \class IndicatorLight
+ * \ingroup gui
+ * \brief The class defining widget which can be used as two state indicator light.
+ * \remarks reentrant
+ */
 
-IndicatorLight::IndicatorLight(QWidget *parent) : QPushButton(parent)
+
+/*!
+ * \brief Constructs the widget.
+ * \param parent The widget's parent object in Qt ownership system.
+ *
+ * Sets the widget to false IndicatorLight::state and sets the light to red color.
+ */
+IndicatorLight::IndicatorLight(QWidget *parent) : QPushButton(parent), state_{false}
 {
     QSize indicatorSize(10, 10);
     setFixedSize(indicatorSize);
     setEnabled(false);
-    setAttribute(Qt::WA_TransparentForMouseEvents);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    if (state_) {
+        setStyleSheet("background-color: green");
+    } else {
+        setStyleSheet("background-color: red");
+    }
+}
+
+/*!
+ * \property IndicatorLight::state
+ * \brief This property maintains the state of indicator light.
+ *
+ * If the state is set true, the background color is green, otherwise the background color is red. When the state
+ * changes, IndicatorLight::stateChanged() signal is emited.
+ *
+ * | Access functions: ||
+ * | - | - |
+ * | **Access** | %IndicatorLight::state()       |
+ * | **Set**    | IndicatorLight::setState()     |
+ * | **Notify** | IndicatorLight::stateChanged() |
+ */
+
+
+/*!
+ * \brief Setter for IndicatorLight::state property.
+ * \param state The required state.
+ */
+void IndicatorLight::setState(bool state)
+{
+    if (state != state_) {
+        state_ = state;
+        if (state_) {
+            setStyleSheet("background-color: green");
+        } else {
+            setStyleSheet("background-color: red");
+        }
+        emit stateChanged();
+    }
 }
 
 
-IndicatorButton::IndicatorButton(QWidget *parent) : QPushButton{parent}, state_{false}
+/*!
+ * \fn IndicatorLight::stateChanged
+ * \brief Signal which is emited each time the state changes.
+ */
+
+
+/*!
+ * \class IndicatorButton
+ * \ingroup gui
+ * \brief The class defining widget which can be used as two state button with indicator light.
+ * \remarks reentrant
+ */
+
+
+/*!
+ * \brief Constructs the widget.
+ * \param parent The widget's parent object in Qt ownership system.
+ */
+IndicatorButton::IndicatorButton(QWidget *parent) : QPushButton{parent}
 {
     initialize("");
 }
 
 
-IndicatorButton::IndicatorButton(const QString &text, QWidget *parent) : QPushButton{"", parent}, state_{false}
+/*!
+ * \brief Constructs the widget.
+ * \param text The text displayed on the pushbutton.
+ * \param parent The widget's parent object in Qt ownership system.
+ */
+IndicatorButton::IndicatorButton(const QString &text, QWidget *parent) : QPushButton{"", parent}
 {
     initialize(text);
 }
 
 
+/*!
+ * \brief Constructs the widget.
+ * \param icon The icon displayed on the pushbutton. See QPushButton documentation.
+ * \param text The text displayed on the pushbutton.
+ * \param parent The widget's parent object in Qt ownership system.
+ */
 IndicatorButton::IndicatorButton(const QIcon &icon, const QString &text, QWidget *parent)
-    : QPushButton{icon, "", parent}, state_{false}
+    : QPushButton{icon, "", parent}
 {
     initialize(text);
 }
 
 
+/*!
+ * \property IndicatorButton::state
+ * \brief This property maintains the state of indicator button.
+ *
+ * If the state is set true, the indicator light color is green, otherwise the color is red. When the state changes,
+ * IndicatorButton::stateChanged() signal is emited.
+ *
+ * | Access functions: ||
+ * | - | - |
+ * | **Access** | bool %IndicatorButton::state()        |
+ * | **Set**    | IndicatorButton::setState(bool state) |
+ * | **Notify** | IndicatorButton::stateChanged()       |
+ */
+
+
+/*!
+ * \property IndicatorButton::text
+ * \brief This property contains the text displayed on push button.
+ *
+ * | Access functions: ||
+ * | - | - |
+ * | **Access** | QString %IndicatorButton::text()   |
+ * | **Set**    | IndicatorButton::setText(const QString &text) |
+ */
+
+
+/*!
+ * \property IndicatorButton::sizeHint
+ * \brief This property holds the recommended size for the widget.
+ *
+ * | Access functions: ||
+ * | - | - |
+ * | **Access** | QSize %IndicatorButton::sizeHint() |
+ */
+
+
+/*!
+ * \brief Setter for the IndicatorButton::text property.
+ * \param text The text.
+ */
 void IndicatorButton::setText(const QString &text)
 {
     label_->setText(text);
@@ -78,31 +222,25 @@ QSize IndicatorButton::sizeHint() const
 }
 
 
-void IndicatorButton::setState(bool state)
-{
-    if (state != state_) {
-        state_ = state;
-        if (state_) {
-            indicator_->setStyleSheet("background-color: green");
-        } else {
-            indicator_->setStyleSheet("background-color: red");
-        }
-        emit stateChanged();
-    }
-}
+/*!
+ * \fn IndicatorButton::setState(bool state)
+ * \brief Setter for IndicatorLight::state property.
+ * \param state The required state.
+ */
+
+/*!
+ * \fn IndicatorButton::stateChanged
+ * \brief Signal which is emited each time the state changes.
+ */
 
 
 void IndicatorButton::initialize(const QString &text)
 {
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    indicator_ = new IndicatorLight(this);
-    label_ = new QLabel(text, this);
+    QHBoxLayout *layout = new QHBoxLayout{this};
+    indicator_ = new IndicatorLight{this};
+    label_ = new QLabel{text, this};
 
-    if (state_) {
-        indicator_->setStyleSheet("background-color: green");
-    } else {
-        indicator_->setStyleSheet("background-color: red");
-    }
+    indicator_->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label_->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     label_->setTextInteractionFlags(Qt::NoTextInteraction);
@@ -119,6 +257,8 @@ void IndicatorButton::initialize(const QString &text)
 
     setLayout(layout);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    connect(indicator_, &IndicatorLight::stateChanged, this, &IndicatorButton::stateChanged);
 }
 
 }  // namespace gui
