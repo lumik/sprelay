@@ -240,6 +240,7 @@ private:  // NOLINT(whitespace/indent)
     void jumperStatusResponse(const unsigned char *buffer);
     void firmwareVersionResponse(const unsigned char *buffer);
     void connectionSuccessful();
+    void doDisconnect();
 
     static unsigned char checkSum(const unsigned char *msg, int n);
     static bool validateResponse(const unsigned char *msg);

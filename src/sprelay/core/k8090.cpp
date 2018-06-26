@@ -719,12 +719,9 @@ void K8090::setComPortName(const QString &name)
 {
     if (com_port_name_ != name) {
         com_port_name_ = name;
-        if (connected_) {
-            connected_ = false;
-            serial_port_->close();
-            emit notConnected();
-        } else {
-            serial_port_->close();
+        if (connected_ | connecting_) {
+            doDisconnect();
+            emit disconnected();
         }
     }
 }
@@ -959,8 +956,7 @@ void K8090::connectK8090()
 */
 void K8090::disconnect()
 {
-    connected_ = false;
-    serial_port_->close();
+    doDisconnect();
     emit disconnected();
 }
 
@@ -1657,6 +1653,22 @@ void K8090::connectionSuccessful()
     connecting_ = false;
     connected_ = true;
     emit connected();
+}
+
+
+// This method should be called to do all the stuff needed to disconnect from the relay card
+void K8090::doDisconnect()
+{
+    serial_port_->close();
+    // erase all pending commands
+    pending_commands_.reset(new command_queue::CommandQueue<Command, as_number(CommandID::NONE)>);
+    // stop failure timers and erase failure counter
+    command_timer_->stop();
+    failure_timer_->stop();
+    failure_counter_ = 0;
+
+    connected_ = false;
+    connecting_ = false;
 }
 
 
