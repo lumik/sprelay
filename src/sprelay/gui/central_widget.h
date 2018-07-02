@@ -116,17 +116,17 @@ private:  // NOLINT(whitespace/indent)
 
     // GUI elements
     // port settings
-    IndicatorButton *connect_button_;
-    QPushButton *refresh_ports_button_;
-    QComboBox *ports_combo_box_;
+    std::unique_ptr<IndicatorButton> connect_button_;
+    std::unique_ptr<QPushButton> refresh_ports_button_;
+    std::unique_ptr<QComboBox> ports_combo_box_;
 
     // relays
     // relays globals
-    QPushButton *refresh_relays_button_;
-    QPushButton *reset_factory_defaults_button_;
-    QLabel *firmware_version_label_;
-    IndicatorLight *jumper_status_light;
-    // relay button settings
+    std::unique_ptr<QPushButton> refresh_relays_button_;
+    std::unique_ptr<QPushButton> reset_factory_defaults_button_;
+    std::unique_ptr<QLabel> firmware_version_label_;
+    std::unique_ptr<IndicatorLight> jumper_status_light_;
+    // relay button status
     std::unique_ptr<IndicatorLight> pushed_indicators_arr_[kNRelays];
     // power settings
     std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[kNRelays];

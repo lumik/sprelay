@@ -346,7 +346,7 @@ void CentralWidget::onButtonModes(core::K8090Traits::RelayID momentary, core::K8
 
 void CentralWidget::onJumperStatus(bool on)
 {
-    jumper_status_light->setState(on);
+    jumper_status_light_->setState(on);
 }
 
 
@@ -412,31 +412,31 @@ void CentralWidget::constructGui()
 void CentralWidget::createUiElements()
 {
     // COM port
-    connect_button_ = new IndicatorButton{tr("Connect"), this};
-    refresh_ports_button_ = new QPushButton{tr("Refresh Ports"), this};
-    ports_combo_box_ = new QComboBox(this);
+    connect_button_.reset(new IndicatorButton{tr("Connect"), this});
+    refresh_ports_button_.reset(new QPushButton{tr("Refresh Ports"), this});
+    ports_combo_box_.reset(new QComboBox(this));
     initializePortsCombobox();
 
     // relays
     // globals
-    refresh_relays_button_ = new QPushButton{tr("Refresh"), this};
-    reset_factory_defaults_button_ = new QPushButton{tr("Factory Reset"), this};
+    refresh_relays_button_.reset(new QPushButton{tr("Refresh"), this});
+    reset_factory_defaults_button_.reset(new QPushButton{tr("Factory Reset"), this});
     // TODO(lumik): version label causes the gui width change. Consider setting reasonable minimal width.
-    firmware_version_label_ = new QLabel{tr("Firmware version: 1.0.0"), this};
-    jumper_status_light = new IndicatorLight{this};
+    firmware_version_label_.reset(new QLabel{tr("Firmware version: 1.0.0"), this});
+    jumper_status_light_.reset(new IndicatorLight{this});
     for (int i = 0; i < kNRelays; ++i) {
-        pushed_indicators_arr_[i] = std::unique_ptr<IndicatorLight>{new IndicatorLight{this}};
-        relay_on_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
-        relay_off_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
-        toggle_relay_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
-        momentary_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
-        toggle_mode_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
-        timed_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
-        default_timer_labels_arr_[i] = std::unique_ptr<QLabel>{new QLabel{"0", this}};
-        remaining_time_labels_arr_[i] = std::unique_ptr<QLabel>{new QLabel{"0", this}};
-        set_default_timer_buttons_arr_[i] = std::unique_ptr<QPushButton>{new QPushButton{this}};
-        start_timer_buttons_arr_[i] = std::unique_ptr<IndicatorButton>{new IndicatorButton{this}};
-        timer_spin_box_arr_[i] = std::unique_ptr<QSpinBox>{new QSpinBox{this}};
+        pushed_indicators_arr_[i].reset(new IndicatorLight{this});
+        relay_on_buttons_arr_[i].reset(new IndicatorButton{this});
+        relay_off_buttons_arr_[i].reset(new QPushButton{this});
+        toggle_relay_buttons_arr_[i].reset(new QPushButton{this});
+        momentary_buttons_arr_[i].reset(new IndicatorButton{this});
+        toggle_mode_buttons_arr_[i].reset(new IndicatorButton{this});
+        timed_buttons_arr_[i].reset(new IndicatorButton{this});
+        default_timer_labels_arr_[i].reset(new QLabel{"0", this});
+        remaining_time_labels_arr_[i].reset(new QLabel{"0", this});
+        set_default_timer_buttons_arr_[i].reset(new QPushButton{this});
+        start_timer_buttons_arr_[i].reset(new IndicatorButton{this});
+        timer_spin_box_arr_[i].reset(new QSpinBox{this});
         timer_spin_box_arr_[i]->setMinimum(0);
         timer_spin_box_arr_[i]->setMaximum(std::numeric_limits<std::uint16_t>::max());
     }
@@ -475,13 +475,13 @@ void CentralWidget::initializePortsCombobox()
 void CentralWidget::connectGui()
 {
     // reactions on user interaction with gui
-    connect(connect_button_, &QPushButton::clicked, this, &CentralWidget::onConnectButtonClicked);
-    connect(refresh_ports_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshPortsButtonClicked);
-    connect(ports_combo_box_, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+    connect(connect_button_.get(), &QPushButton::clicked, this, &CentralWidget::onConnectButtonClicked);
+    connect(refresh_ports_button_.get(), &QPushButton::clicked, this, &CentralWidget::onRefreshPortsButtonClicked);
+    connect(ports_combo_box_.get(), static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &CentralWidget::onPortsComboBoxCurrentIndexChanged);
 
-    connect(refresh_relays_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshRelaysButtonClicked);
-    connect(reset_factory_defaults_button_, &QPushButton::clicked,
+    connect(refresh_relays_button_.get(), &QPushButton::clicked, this, &CentralWidget::onRefreshRelaysButtonClicked);
+    connect(reset_factory_defaults_button_.get(), &QPushButton::clicked,
             this, &CentralWidget::resetFactoryDefaultsButtonClicked);
 
     relay_on_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
@@ -565,25 +565,25 @@ void CentralWidget::makeLayout()
     // COM port settings
     QVBoxLayout *port_v_layout = new QVBoxLayout;
     main_layout->addLayout(port_v_layout, 0);
-    port_v_layout->addWidget(connect_button_);
+    port_v_layout->addWidget(connect_button_.get());
     QLabel *ports_label = new QLabel(tr("Select port:"), this);
-    ports_label->setBuddy(ports_combo_box_);  // buddy accepts focus instead of label (for editing)
+    ports_label->setBuddy(ports_combo_box_.get());  // buddy accepts focus instead of label (for editing)
     port_v_layout->addWidget(ports_label);
-    port_v_layout->addWidget(ports_combo_box_);
-    port_v_layout->addWidget(refresh_ports_button_);
+    port_v_layout->addWidget(ports_combo_box_.get());
+    port_v_layout->addWidget(refresh_ports_button_.get());
 
     // Relays globals
     QGroupBox *relays_globals_box = new QGroupBox{tr("Relays globals")};
     port_v_layout->addWidget(relays_globals_box);
     QVBoxLayout *relays_globals_layout = new QVBoxLayout;
     relays_globals_box->setLayout(relays_globals_layout);
-    relays_globals_layout->addWidget(refresh_relays_button_);
-    relays_globals_layout->addWidget(firmware_version_label_);
+    relays_globals_layout->addWidget(refresh_relays_button_.get());
+    relays_globals_layout->addWidget(firmware_version_label_.get());
     QHBoxLayout *jumper_status_layout = new QHBoxLayout;
     relays_globals_layout->addLayout(jumper_status_layout);
     jumper_status_layout->addWidget(new QLabel{tr("Jumper Status:"), this});
-    jumper_status_layout->addWidget(jumper_status_light);
-    relays_globals_layout->addWidget(reset_factory_defaults_button_);
+    jumper_status_layout->addWidget(jumper_status_light_.get());
+    relays_globals_layout->addWidget(reset_factory_defaults_button_.get());
 
     port_v_layout->addStretch();
 
