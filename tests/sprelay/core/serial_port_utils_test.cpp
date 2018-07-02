@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "serial_port_utils.h"
+#include "sprelay/core/serial_port_utils.h"
 
 namespace sprelay {
 namespace core {

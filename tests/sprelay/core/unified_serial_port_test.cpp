@@ -36,9 +36,9 @@
 #include <utility>
 
 #include "core_test_utils.h"
-#include "k8090.h"
-#include "serial_port_utils.h"
-#include "unified_serial_port.h"
+#include "sprelay/core/k8090.h"
+#include "sprelay/core/serial_port_utils.h"
+#include "sprelay/core/unified_serial_port.h"
 
 namespace sprelay {
 namespace core {

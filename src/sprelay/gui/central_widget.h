@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "k8090.h"
+#include "sprelay/core/k8090.h"
 
 // forward declarations
 class QComboBox;

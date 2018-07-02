@@ -32,4 +32,4 @@ HEADERS  += \
 
 DESTDIR = $$PWD/../../../bin
 
-INCLUDEPATH += $$PWD/../../../src/sprelay/core
+INCLUDEPATH += $$PWD/../../../src

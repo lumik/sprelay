@@ -1,5 +1,7 @@
 QT       += core gui widgets serialport
 
+CONFIG += no_include_pwd
+
 TARGET = sprelay
 TEMPLATE = app
 
@@ -12,6 +14,4 @@ SOURCES += main.cpp
 DESTDIR = $$PWD/../../bin
 
 INCLUDEPATH += \
-    $$PWD \
-    gui \
-    core
+    $$PWD/..

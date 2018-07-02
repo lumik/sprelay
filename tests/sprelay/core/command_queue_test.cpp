@@ -24,8 +24,8 @@
 
 #include <QtTest>
 
-#include "command_queue.h"
-#include "k8090.h"
+#include "sprelay/core/command_queue.h"
+#include "sprelay/core/k8090.h"
 
 namespace sprelay {
 namespace core {

@@ -27,8 +27,8 @@
 #include <QtTest>
 #include <QVariant>
 
-#include "serial_port_utils.h"
-#include "unified_serial_port.h"
+#include "sprelay/core/serial_port_utils.h"
+#include "sprelay/core/unified_serial_port.h"
 
 // dirty trick which enables us to test private methods. Think of something
 // else.

@@ -36,7 +36,7 @@
 #include <utility>
 
 #include "core_test_utils.h"
-#include "k8090.h"
+#include "sprelay/core/k8090.h"
 
 
 namespace sprelay {

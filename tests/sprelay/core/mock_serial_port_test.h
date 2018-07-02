@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "mock_serial_port.h"
+#include "sprelay/core/mock_serial_port.h"
 
 
 namespace sprelay {
