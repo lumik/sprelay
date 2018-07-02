@@ -32,6 +32,7 @@
 
 // forward declarations
 class QComboBox;
+class QGroupBox;
 class QLabel;
 class QPushButton;
 class QSignalMapper;
@@ -109,6 +110,7 @@ private:  // NOLINT(whitespace/indent)
     void initializePortsCombobox();
     void connectGui();
     void makeLayout();
+    void connectionStatusChanged();
 
     core::K8090 *k8090_;
     QString com_port_name_;
@@ -122,21 +124,26 @@ private:  // NOLINT(whitespace/indent)
 
     // relays
     // relays globals
+    std::unique_ptr<QGroupBox> relays_globals_box_;
     std::unique_ptr<QPushButton> refresh_relays_button_;
     std::unique_ptr<QPushButton> reset_factory_defaults_button_;
     std::unique_ptr<QLabel> firmware_version_label_;
     std::unique_ptr<IndicatorLight> jumper_status_light_;
     // relay button status
+    std::unique_ptr<QGroupBox> relay_button_status_settings_box_;
     std::unique_ptr<IndicatorLight> pushed_indicators_arr_[kNRelays];
     // power settings
+    std::unique_ptr<QGroupBox> relay_power_settings_box_;
     std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[kNRelays];
     std::unique_ptr<QPushButton> relay_off_buttons_arr_[kNRelays];
     std::unique_ptr<QPushButton> toggle_relay_buttons_arr_[kNRelays];
     // mode settings
+    std::unique_ptr<QGroupBox> relay_mode_settings_box_;
     std::unique_ptr<IndicatorButton> momentary_buttons_arr_[kNRelays];
     std::unique_ptr<IndicatorButton> toggle_mode_buttons_arr_[kNRelays];
     std::unique_ptr<IndicatorButton> timed_buttons_arr_[kNRelays];
     // timer settings
+    std::unique_ptr<QGroupBox> relay_timers_settings_box_;
     std::unique_ptr<QLabel> default_timer_labels_arr_[kNRelays];
     std::unique_ptr<QLabel> remaining_time_labels_arr_[kNRelays];
     std::unique_ptr<QPushButton> set_default_timer_buttons_arr_[kNRelays];

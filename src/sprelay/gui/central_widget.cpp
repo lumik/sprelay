@@ -55,8 +55,13 @@ CentralWidget::CentralWidget(core::K8090 *k8090, const QString &com_port_name, Q
     }
     refresh_delay_timer_->setSingleShot(true);
     connect(refresh_delay_timer_.get(), &QTimer::timeout, this, &CentralWidget::onRefreshTimersDelay);
+    connected_ = k8090_->isConnected();
 
     constructGui();
+    connectionStatusChanged();
+    if (k8090_->isConnected()) {
+        onRefreshRelaysButtonClicked();
+    }
 }
 
 
@@ -358,14 +363,17 @@ void CentralWidget::onFirmwareVersion(int year, int week)
 
 void CentralWidget::onConnected()
 {
-    connected_ = true;
-    connect_button_->setState(true);
+    if (!connected_) {
+        connected_ = true;
+        connectionStatusChanged();
+    }
 }
 
 
 void CentralWidget::onConnectionFailed()
 {
     connected_ = false;
+    connectionStatusChanged();
     QMessageBox::critical(this, tr("Communication failed!"), tr("The communication with the relay failed."));
 }
 
@@ -374,15 +382,18 @@ void CentralWidget::onNotConnected()
 {
     connected_ = false;
     QMessageBox msgBox;
-    msgBox.setText("Connect the relay before you use it.");
+    msgBox.setText(tr("Connect the relay before you use it."));
     msgBox.exec();
 }
 
 
 void CentralWidget::onDisconnected()
 {
-    connected_ = false;
-    connect_button_->setState(false);
+    if (connected_) {
+        connected_ = false;
+        connect_button_->setState(false);
+        connectionStatusChanged();
+    }
 }
 
 
@@ -573,10 +584,10 @@ void CentralWidget::makeLayout()
     port_v_layout->addWidget(refresh_ports_button_.get());
 
     // Relays globals
-    QGroupBox *relays_globals_box = new QGroupBox{tr("Relays globals")};
-    port_v_layout->addWidget(relays_globals_box);
+    relays_globals_box_.reset(new QGroupBox{tr("Relays globals")});
+    port_v_layout->addWidget(relays_globals_box_.get());
     QVBoxLayout *relays_globals_layout = new QVBoxLayout;
-    relays_globals_box->setLayout(relays_globals_layout);
+    relays_globals_box_->setLayout(relays_globals_layout);
     relays_globals_layout->addWidget(refresh_relays_button_.get());
     relays_globals_layout->addWidget(firmware_version_label_.get());
     QHBoxLayout *jumper_status_layout = new QHBoxLayout;
@@ -602,20 +613,20 @@ void CentralWidget::makeLayout()
     }
 
     // relays button status settings
-    QGroupBox *relay_button_status_settings_box = new QGroupBox{tr("Relay button status")};
-    relays_grid_v_layout->addWidget(relay_button_status_settings_box);
+    relay_button_status_settings_box_.reset(new QGroupBox{tr("Relay button status")});
+    relays_grid_v_layout->addWidget(relay_button_status_settings_box_.get());
     QGridLayout *button_status_grid_layout = new QGridLayout;
-    relay_button_status_settings_box->setLayout(button_status_grid_layout);
+    relay_button_status_settings_box_->setLayout(button_status_grid_layout);
     button_status_grid_layout->addWidget(new QLabel{tr("pushed:"), this}, 0, 0);
     for (int i = 0; i < kNRelays; ++i) {
         button_status_grid_layout->addWidget(pushed_indicators_arr_[i].get(), 0, i + 1, Qt::AlignHCenter);
     }
 
     // relays power settings
-    QGroupBox *relay_power_settings_box = new QGroupBox{tr("Relays power settings")};
-    relays_grid_v_layout->addWidget(relay_power_settings_box);
+    relay_power_settings_box_.reset(new QGroupBox{tr("Relays power settings")});
+    relays_grid_v_layout->addWidget(relay_power_settings_box_.get());
     QGridLayout *power_grid_layout = new QGridLayout;
-    relay_power_settings_box->setLayout(power_grid_layout);
+    relay_power_settings_box_->setLayout(power_grid_layout);
     power_grid_layout->addWidget(new QLabel{tr("Switch on:"), this}, 0, 0);
     power_grid_layout->addWidget(new QLabel{tr("Switch off:"), this}, 1, 0);
     power_grid_layout->addWidget(new QLabel{tr("Toggle:"), this}, 2, 0);
@@ -626,10 +637,10 @@ void CentralWidget::makeLayout()
     }
 
     // relays mode settings
-    QGroupBox *relay_mode_settings_box = new QGroupBox{tr("Relays mode settings")};
-    relays_grid_v_layout->addWidget(relay_mode_settings_box);
+    relay_mode_settings_box_.reset(new QGroupBox{tr("Relays mode settings")});
+    relays_grid_v_layout->addWidget(relay_mode_settings_box_.get());
     QGridLayout *mode_grid_layout = new QGridLayout;
-    relay_mode_settings_box->setLayout(mode_grid_layout);
+    relay_mode_settings_box_->setLayout(mode_grid_layout);
     mode_grid_layout->addWidget(new QLabel(tr("Momentary:"), this), 0, 0);
     mode_grid_layout->addWidget(new QLabel(tr("Toggle:"), this), 1, 0);
     mode_grid_layout->addWidget(new QLabel(tr("Timed:"), this), 2, 0);
@@ -640,10 +651,10 @@ void CentralWidget::makeLayout()
     }
 
     // relay timers settings
-    QGroupBox *relay_timers_settings_box = new QGroupBox{tr("Relay timers settings")};
-    relays_grid_v_layout->addWidget(relay_timers_settings_box);
+    relay_timers_settings_box_.reset(new QGroupBox{tr("Relay timers settings")});
+    relays_grid_v_layout->addWidget(relay_timers_settings_box_.get());
     QGridLayout *timer_grid_layout = new QGridLayout;
-    relay_timers_settings_box->setLayout(timer_grid_layout);
+    relay_timers_settings_box_->setLayout(timer_grid_layout);
     timer_grid_layout->addWidget(new QLabel(tr("Default timer (s):"), this), 0, 0);
     timer_grid_layout->addWidget(new QLabel(tr("Remaining time (s):"), this), 1, 0);
     timer_grid_layout->addWidget(new QLabel(tr("Default:"), this), 2, 0);
@@ -677,6 +688,19 @@ void CentralWidget::makeLayout()
     relays_grid_v_layout->addStretch();
     main_layout->addStretch();
 }
+
+
+void CentralWidget::connectionStatusChanged()
+{
+    connect_button_->setState(connected_);
+
+    relays_globals_box_->setEnabled(connected_);
+    relay_button_status_settings_box_->setEnabled(connected_);
+    relay_power_settings_box_->setEnabled(connected_);
+    relay_mode_settings_box_->setEnabled(connected_);
+    relay_timers_settings_box_->setEnabled(connected_);
+}
+
 
 }  // namespace gui
 }  // namespace sprelay
