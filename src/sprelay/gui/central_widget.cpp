@@ -92,11 +92,17 @@ void CentralWidget::onRefreshPortsButtonClicked()
         QStringList comPortNames;
         foreach (const core::serial_utils::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
                  core::K8090::availablePorts()) {
-            msg.append("Port name: " % comPortParams.port_name % "\n" %
-                       "Description: " % comPortParams.description % "\n" %
-                       "Manufacturer: " % comPortParams.manufacturer % "\n" %
-                       "Product Identifier: " % QString::number(comPortParams.product_identifier) % "\n" %
-                       "Vendor Identifier: " % QString::number(comPortParams.vendor_identifier) % "\n");
+            msg.append(tr(
+                "Port name: %1\n"
+                "Description: %2\n"
+                "Manufacturer: %3\n"
+                "Product Identifier: %4\n"
+                "Vendor Identifier: %5\n")
+                .arg(comPortParams.port_name)
+                .arg(comPortParams.description)
+                .arg(comPortParams.manufacturer)
+                .arg(comPortParams.product_identifier)
+                .arg(comPortParams.vendor_identifier));
             comPortNames.append(comPortParams.port_name);
         }
         QMessageBox::information(this, tr("Serial ports information:"), msg, QMessageBox::Ok);
