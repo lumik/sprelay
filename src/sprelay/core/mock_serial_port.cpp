@@ -955,12 +955,23 @@ void MockSerialPort::queryRelay()
 // resets to factory defaults
 void MockSerialPort::factoryDefaults()
 {
-    on_ = as_number(K8090Traits::RelayID::NONE);
     momentary_ = as_number(K8090Traits::RelayID::NONE);
     toggle_ = as_number(K8090Traits::RelayID::ALL);
     timed_ = as_number(K8090Traits::RelayID::NONE);
     for (int i = 0; i < 8; ++i) {
         default_delays_[i] = 5;
+    }
+    if (on_ != K8090Traits::as_number(K8090Traits::RelayID::NONE)) {
+        unsigned char off_command[7] {
+                kStxByte_,
+                kResponses_[as_number(K8090Traits::CommandID::RELAY_OFF)],
+                on_,
+                0,
+                0,
+                0,
+                kEtxByte_};
+        off_command[5] = checkSum(off_command, 5);
+        relayOff(off_command);
     }
 }
 
