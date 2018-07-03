@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "sprelay/sprelay_global.h"
 #include "sprelay/core/k8090.h"
 
 // forward declarations
@@ -50,7 +51,7 @@ namespace gui {
 class IndicatorButton;
 class IndicatorLight;
 
-class CentralWidget : public QWidget
+class SPRELAY_EXPORT CentralWidget : public QWidget
 {
     Q_OBJECT
 public:  // NOLINT(whitespace/indent)

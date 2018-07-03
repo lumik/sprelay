@@ -22,7 +22,8 @@
 
 #include <QApplication>
 
-#include "gui/main_window.h"
+#include "sprelay_global.h"
+#include "sprelay/gui/main_window.h"
 
 int main(int argc, char *argv[])
 {

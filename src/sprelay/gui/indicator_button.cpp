@@ -22,7 +22,7 @@
 **                                                                        **
 ****************************************************************************/
 
-/**
+/*!
  * \file      indicator_button.cpp
  * \brief     Indicator button and indicator light widgets which indicates their state by their color.
 

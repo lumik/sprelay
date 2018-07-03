@@ -37,7 +37,6 @@
 #include <cstdint>
 
 #include "indicator_button.h"
-#include "sprelay/core/k8090.h"
 
 
 namespace sprelay {

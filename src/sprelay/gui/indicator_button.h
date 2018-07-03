@@ -22,7 +22,7 @@
 **                                                                        **
 ****************************************************************************/
 
-/**
+/*!
  * \file      indicator_button.h
  * \brief     Indicator button and indicator light widgets which indicates their state by their color.
 

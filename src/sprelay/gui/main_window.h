@@ -42,6 +42,7 @@ public:  // NOLINT(whitespace/indent)
     MainWindow();
     ~MainWindow() override;
 
+private:  // NOLINT(whitespace/indent)
     CentralWidget *central_widget_;
 };
 

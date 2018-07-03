@@ -33,6 +33,8 @@
 #include "enum_flags.h"
 #include "serial_port_utils.h"
 
+#include "sprelay/sprelay_global.h"
+
 // forward declarations
 class QTimer;
 
@@ -157,7 +159,7 @@ struct Command
 }  // namespace K8090Traits
 
 
-class K8090 : public QObject
+class SPRELAY_EXPORT K8090 : public QObject
 {
     Q_OBJECT
 
