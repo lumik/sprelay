@@ -42,5 +42,8 @@ CMakeLists.txt.user*
 # binaries
 /bin
 
+# includes
+/include
+
 # build temporary files
 /build

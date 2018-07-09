@@ -6,7 +6,7 @@ test {
     # build only tests
     SUBDIRS += tests
 } else {
-    SUBDIRS = \
+    SUBDIRS += \
         src \
         tests
 
@@ -22,5 +22,14 @@ test {
         doxygen Doxyfile
     dox.depends =
 
+    !equals(qmake_install_prefix, $$sprelay_source_dir) {
+        dox.files = doc/*
+        dox.path = $$qmake_install_prefix/doc
+        INSTALLS += dox
+    }
+
     QMAKE_EXTRA_TARGETS += dox
 }
+
+OTHER_FILES += \
+    .qmake.conf
