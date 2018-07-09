@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "serial_port_defines.h"
 #include "serial_port_utils.h"
 
 namespace sprelay {

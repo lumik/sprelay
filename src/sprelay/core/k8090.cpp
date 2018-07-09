@@ -30,6 +30,7 @@
 #include <QTimer>
 
 #include "command_queue.h"
+#include "serial_port_utils.h"
 #include "unified_serial_port.h"
 
 /*!

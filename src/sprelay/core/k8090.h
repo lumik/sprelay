@@ -32,7 +32,7 @@
 
 #include "enum_flags/enum_flags.h"
 
-#include "serial_port_utils.h"
+#include "serial_port_defines.h"
 
 #include "sprelay/sprelay_global.h"
 

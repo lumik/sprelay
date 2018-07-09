@@ -9,4 +9,5 @@ HEADERS  += \
     $$PWD/command_queue.tpp \
     $$PWD/unified_serial_port.h \
     $$PWD/mock_serial_port.h \
-    $$PWD/serial_port_utils.h
+    $$PWD/serial_port_utils.h \
+    $$PWD/serial_port_defines.h
