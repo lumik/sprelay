@@ -40,6 +40,24 @@
 
 #include <QtCore/QtGlobal>
 
+/*!
+ * \def SPRELAY_EXPORT
+ * \brief This macro is used to export symbols from shared library
+ *
+ * Every declaration of symbol, which should be exported from the shared library should also contain this macro.
+ *
+ * Typically, clients will include only the public header files of shared libraries. These libraries might be installed
+ * in a different location, when deployed. Therefore, it is important to exclude other internal header files that were
+ * used when building the shared library. This can be avoided by making use of the Pointer to implementation idiom
+ * described in various C++ programming books.
+ *
+ * Example usage:
+ *
+ * \code
+ * SPRELAY_EXPORT void foo();
+ * class SPRELAY_EXPORT MyClass {};
+ * \endcode
+ */
 #if defined(SPRELAY_STANDALONE)
     #define SPRELAY_EXPORT
 #else  // if defined(SPRELAY_STANDALONE)
