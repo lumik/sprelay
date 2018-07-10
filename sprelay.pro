@@ -1,16 +1,15 @@
 TEMPLATE = subdirs
 
-CONFIG += ordered
-
 test {
     # build only tests
-    SUBDIRS += tests
+    SUBDIRS += \
+        tests
 } else {
     SUBDIRS += \
         src \
         tests
 
-    OTHER_FILES += Doxyfile
+    tests.depends = src
 
     # Add custom "doc" target
     _CMD_SEP = ;
@@ -22,14 +21,17 @@ test {
         doxygen Doxyfile
     dox.depends =
 
-    !equals(qmake_install_prefix, $$sprelay_source_dir) {
-        dox.files = doc/*
-        dox.path = $$qmake_install_prefix/doc
-        INSTALLS += dox
+    !equals(sprelay_install_prefix, $$sprelay_source_dir) {
+        documentation.files = doc/*
+        documentation.path = $$sprelay_install_prefix/doc
+        INSTALLS += documentation
     }
 
     QMAKE_EXTRA_TARGETS += dox
 }
 
 OTHER_FILES += \
+    Doxyfile
+
+DISTFILES += \
     .qmake.conf

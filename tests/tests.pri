@@ -8,4 +8,4 @@ DEFINES += SPRELAY_STANDALONE
 COFIG += console
 COFIG -= app_bundle
 
-include(../sprelay.pri)
+include($$sprelay_source_dir/sprelay.pri)

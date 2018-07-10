@@ -39,7 +39,7 @@ git clone --depth=1 https://github.com/biomolecules/sprelay.git
 
 The `depth=1` tells git to only pull down one commit worth of historical data.
 
-Download submodules:
+Then go to project folder (`cd sprelay`) and download submodules:
 ```
 git submodule update --init --recursive
 ```
@@ -53,31 +53,37 @@ the project directory and run
 ```
 mkdir build
 cd build
-qmake.exe "CONFIG+=release" ../sprelay.pro -r -spec win32-g++
+qmake.exe "CONFIG+=release sprelay_build_standalone" sprelay_install_prefix="C:\path\where\you\want\the\application\installed" ../sprelay.pro -r -spec win32-g++
 ```
+
+You can skip sprelay_install_prefix. Application can't be installed then but it is compiled to the `bin` folder under the project folder.
+When CONFIG+=sprelay_build_standalone is omited, the application is built as shared library into `lib` folder and library includes are placed inside
+`include` folder.
 
 Then run your `make` command, for example (`-j` flag enables compilation paralelization)
 ```
 mingw32-make -j2
-mingw32-make doc
+mingw32-make doc      # optional if you want to make documentation
+mingw32-make install  # optional if you want to install the application, see above
 ```
 
 After make process finishes, go to the bin directory and try to run tests and the program
 ```
-cd ../bin
+cd C:\path\where\you\want\the\application\installed\bin
 sprelayunittests.exe
 sprelay.exe
 ```
 
 #### Compilation using Qt Creator
-Open the sprelay.pro project file in the top directory, cofigure it for appropriate compiler and run both, tests and
-src subprojects.
+Open the sprelay.pro project file in the top directory and cofigure it for appropriate compiler. Setup on the `Projects` tab the right qmake flags in the
+`Build Steps` section `Additional arguments`: `CONFIG+=sprelay_build_standalone` (see above the *Command line compilation* section for more details) Then run
+either `core` (for tests) or `sprelay` (for the application) subprojects.
 
 Then compile the documentation by executing
 ```
 doxygen Doxyfile
 ```
-from `sprelay` directory.
+from command line from the project folder.
 
 [git]: https://git-scm.com/
 [qt]: https://www.qt.io/
