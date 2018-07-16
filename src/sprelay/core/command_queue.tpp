@@ -39,10 +39,21 @@ namespace sprelay {
 namespace core {
 
 /*!
+    \defgroup command_queue CommandQueue module
+    \ingroup Core
+    \brief CommandQueue class and related data structures.
+*/
+
+/*! \addtogroup command_queue
+    @{
+*/
+
+/*!
     \brief Namespace containing CommmandQueue.
 */
 namespace command_queue {
 /*! \addtogroup CommandQueue_implementation CommandQueue implementation
+    \ingroup command_queue
     \brief Implementation helpers not intended for public use.
     @{
 */
@@ -385,6 +396,11 @@ void CommandQueue<TCommand, tSize>::updatePriorities(typename TCommand::NumberTy
 }
 
 }  // namespace command_queue
+/*!
+    @}
+*/
+
+
 }  // namespace core
 /*!
     @}

@@ -42,7 +42,7 @@
 namespace sprelay {
 namespace gui {
 
-CentralWidget::CentralWidget(core::K8090 *k8090, const QString &com_port_name, QWidget *parent)
+CentralWidget::CentralWidget(core::k8090::K8090 *k8090, const QString &com_port_name, QWidget *parent)
     : QWidget{parent},
       com_port_name_{com_port_name},
       refresh_delay_timer_{new QTimer}
@@ -50,7 +50,7 @@ CentralWidget::CentralWidget(core::K8090 *k8090, const QString &com_port_name, Q
     if (k8090) {
         k8090_ = k8090;
     } else {
-        k8090_ = new core::K8090(this);
+        k8090_ = new core::k8090::K8090{this};
     }
     refresh_delay_timer_->setSingleShot(true);
     connect(refresh_delay_timer_.get(), &QTimer::timeout, this, &CentralWidget::onRefreshTimersDelay);
@@ -90,7 +90,7 @@ void CentralWidget::onRefreshPortsButtonClicked()
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
         foreach (const core::serial_utils::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
-                 core::K8090::availablePorts()) {
+                 core::k8090::K8090::availablePorts()) {
             msg.append(tr(
                 "Port name: %1\n"
                 "Description: %2\n"
@@ -148,19 +148,19 @@ void CentralWidget::resetFactoryDefaultsButtonClicked()
 
 void CentralWidget::onRelayOnButtonClicked(int relay)
 {
-    k8090_->switchRelayOn(core::K8090Traits::from_number(relay));
+    k8090_->switchRelayOn(core::k8090::from_number(relay));
 }
 
 
 void CentralWidget::onRelayOffButtonClicked(int relay)
 {
-    k8090_->switchRelayOff(core::K8090Traits::from_number(relay));
+    k8090_->switchRelayOff(core::k8090::from_number(relay));
 }
 
 
 void CentralWidget::onToggleRelayButtonClicked(int relay)
 {
-    k8090_->toggleRelay(core::K8090Traits::from_number(relay));
+    k8090_->toggleRelay(core::k8090::from_number(relay));
 }
 
 
@@ -169,25 +169,25 @@ void CentralWidget::onMomentaryButtonClicked(int relay)
     // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
     // mechanism of their synchronisation with states saved in indicator buttons.
     // get current button modes
-    core::K8090Traits::RelayID momentary = core::K8090Traits::RelayID::NONE;
-    core::K8090Traits::RelayID toggle = core::K8090Traits::RelayID::NONE;
-    core::K8090Traits::RelayID timed = core::K8090Traits::RelayID::NONE;
+    core::k8090::RelayID momentary = core::k8090::RelayID::NONE;
+    core::k8090::RelayID toggle = core::k8090::RelayID::NONE;
+    core::k8090::RelayID timed = core::k8090::RelayID::NONE;
     for (int i = 0; i < kNRelays; ++i) {
         if (momentary_buttons_arr_[i]->state()) {
-            momentary |= core::K8090Traits::from_number(i);
+            momentary |= core::k8090::from_number(i);
         }
         if (toggle_mode_buttons_arr_[i]->state()) {
-            toggle |= core::K8090Traits::from_number(i);
+            toggle |= core::k8090::from_number(i);
         }
         if (timed_buttons_arr_[i]->state()) {
-            timed |= core::K8090Traits::from_number(i);
+            timed |= core::k8090::from_number(i);
         }
     }
 
     // set the required mode
-    momentary |= core::K8090Traits::from_number(relay);
-    toggle &= ~core::K8090Traits::from_number(relay);
-    timed &= ~core::K8090Traits::from_number(relay);
+    momentary |= core::k8090::from_number(relay);
+    toggle &= ~core::k8090::from_number(relay);
+    timed &= ~core::k8090::from_number(relay);
     k8090_->setButtonMode(momentary, toggle, timed);
 }
 
@@ -197,25 +197,25 @@ void CentralWidget::onToggleModeButtonClicked(int relay)
     // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
     // mechanism of their synchronisation with states saved in indicator buttons.
     // get current button modes
-    core::K8090Traits::RelayID momentary = core::K8090Traits::RelayID::NONE;
-    core::K8090Traits::RelayID toggle = core::K8090Traits::RelayID::NONE;
-    core::K8090Traits::RelayID timed = core::K8090Traits::RelayID::NONE;
+    core::k8090::RelayID momentary = core::k8090::RelayID::NONE;
+    core::k8090::RelayID toggle = core::k8090::RelayID::NONE;
+    core::k8090::RelayID timed = core::k8090::RelayID::NONE;
     for (int i = 0; i < kNRelays; ++i) {
         if (momentary_buttons_arr_[i]->state()) {
-            momentary |= core::K8090Traits::from_number(i);
+            momentary |= core::k8090::from_number(i);
         }
         if (toggle_mode_buttons_arr_[i]->state()) {
-            toggle |= core::K8090Traits::from_number(i);
+            toggle |= core::k8090::from_number(i);
         }
         if (timed_buttons_arr_[i]->state()) {
-            timed |= core::K8090Traits::from_number(i);
+            timed |= core::k8090::from_number(i);
         }
     }
 
     // set the required mode
-    momentary &= ~core::K8090Traits::from_number(relay);
-    toggle |= core::K8090Traits::from_number(relay);
-    timed &= ~core::K8090Traits::from_number(relay);
+    momentary &= ~core::k8090::from_number(relay);
+    toggle |= core::k8090::from_number(relay);
+    timed &= ~core::k8090::from_number(relay);
     k8090_->setButtonMode(momentary, toggle, timed);
 }
 
@@ -225,38 +225,38 @@ void CentralWidget::onTimedButtonClicked(int relay)
     // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
     // mechanism of their synchronisation with states saved in indicator buttons.
     // get current button modes
-    core::K8090Traits::RelayID momentary = core::K8090Traits::RelayID::NONE;
-    core::K8090Traits::RelayID toggle = core::K8090Traits::RelayID::NONE;
-    core::K8090Traits::RelayID timed = core::K8090Traits::RelayID::NONE;
+    core::k8090::RelayID momentary = core::k8090::RelayID::NONE;
+    core::k8090::RelayID toggle = core::k8090::RelayID::NONE;
+    core::k8090::RelayID timed = core::k8090::RelayID::NONE;
     for (int i = 0; i < kNRelays; ++i) {
         if (momentary_buttons_arr_[i]->state()) {
-            momentary |= core::K8090Traits::from_number(i);
+            momentary |= core::k8090::from_number(i);
         }
         if (toggle_mode_buttons_arr_[i]->state()) {
-            toggle |= core::K8090Traits::from_number(i);
+            toggle |= core::k8090::from_number(i);
         }
         if (timed_buttons_arr_[i]->state()) {
-            timed |= core::K8090Traits::from_number(i);
+            timed |= core::k8090::from_number(i);
         }
     }
 
     // set the required mode
-    momentary &= ~core::K8090Traits::from_number(relay);
-    toggle &= ~core::K8090Traits::from_number(relay);
-    timed |= core::K8090Traits::from_number(relay);
+    momentary &= ~core::k8090::from_number(relay);
+    toggle &= ~core::k8090::from_number(relay);
+    timed |= core::k8090::from_number(relay);
     k8090_->setButtonMode(momentary, toggle, timed);
 }
 
 
 void CentralWidget::onSetDefaultTimerButtonClicked(int relay)
 {
-    k8090_->setRelayTimerDelay(core::K8090Traits::from_number(relay), timer_spin_box_arr_[relay]->value());
+    k8090_->setRelayTimerDelay(core::k8090::from_number(relay), timer_spin_box_arr_[relay]->value());
 }
 
 
 void CentralWidget::onStartTimerButtonClicked(int relay)
 {
-    k8090_->startRelayTimer(core::K8090Traits::from_number(relay), timer_spin_box_arr_[relay]->value());
+    k8090_->startRelayTimer(core::k8090::from_number(relay), timer_spin_box_arr_[relay]->value());
 }
 
 
@@ -267,19 +267,19 @@ void CentralWidget::onTimerSpinBoxValueChanged(int relay)
 }
 
 
-void CentralWidget::onRelayStatus(core::K8090Traits::RelayID previous, core::K8090Traits::RelayID current,
-    core::K8090Traits::RelayID timed)
+void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::RelayID current,
+    core::k8090::RelayID timed)
 {
     Q_UNUSED(previous)
     bool is_timed = false;
     for (int i = 0; i < kNRelays; ++i) {
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & current)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & current)) {
             relay_on_buttons_arr_[i]->setState(true);
         } else {
             relay_on_buttons_arr_[i]->setState(false);
-            onRemainingTimerDelay(core::K8090Traits::from_number(i), 0);
+            onRemainingTimerDelay(core::k8090::from_number(i), 0);
         }
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & timed)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & timed)) {
             is_timed = true;
             start_timer_buttons_arr_[i]->setState(true);
         } else {
@@ -292,13 +292,13 @@ void CentralWidget::onRelayStatus(core::K8090Traits::RelayID previous, core::K80
 }
 
 
-void CentralWidget::onButtonStatus(core::K8090Traits::RelayID state, core::K8090Traits::RelayID pressed,
-    core::K8090Traits::RelayID released)
+void CentralWidget::onButtonStatus(core::k8090::RelayID state, core::k8090::RelayID pressed,
+    core::k8090::RelayID released)
 {
     Q_UNUSED(pressed)
     Q_UNUSED(released)
     for (int i = 0; i < kNRelays; ++i) {
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & state)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & state)) {
             pushed_indicators_arr_[i]->setState(true);
         } else {
             pushed_indicators_arr_[i]->setState(false);
@@ -307,20 +307,20 @@ void CentralWidget::onButtonStatus(core::K8090Traits::RelayID state, core::K8090
 }
 
 
-void CentralWidget::onTotalTimerDelay(core::K8090Traits::RelayID relay, quint16 delay)
+void CentralWidget::onTotalTimerDelay(core::k8090::RelayID relay, quint16 delay)
 {
     for (int i = 0; i < kNRelays; ++i) {
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & relay)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & relay)) {
             default_timer_labels_arr_[i]->setText(tr("%1").arg(delay));
         }
     }
 }
 
 
-void CentralWidget::onRemainingTimerDelay(core::K8090Traits::RelayID relay, quint16 delay)
+void CentralWidget::onRemainingTimerDelay(core::k8090::RelayID relay, quint16 delay)
 {
     for (int i = 0; i < kNRelays; ++i) {
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & relay)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & relay)) {
             if (start_timer_buttons_arr_[i]->state()) {
                 remaining_time_labels_arr_[i]->setText(tr("%1").arg(delay));
             } else {
@@ -331,21 +331,21 @@ void CentralWidget::onRemainingTimerDelay(core::K8090Traits::RelayID relay, quin
 }
 
 
-void CentralWidget::onButtonModes(core::K8090Traits::RelayID momentary, core::K8090Traits::RelayID toggle,
-    core::K8090Traits::RelayID timed)
+void CentralWidget::onButtonModes(core::k8090::RelayID momentary, core::k8090::RelayID toggle,
+    core::k8090::RelayID timed)
 {
     for (int i = 0; i < kNRelays; ++i) {
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & momentary)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & momentary)) {
             momentary_buttons_arr_[i]->setState(true);
         } else {
             momentary_buttons_arr_[i]->setState(false);
         }
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & toggle)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & toggle)) {
             toggle_mode_buttons_arr_[i]->setState(true);
         } else {
             toggle_mode_buttons_arr_[i]->setState(false);
         }
-        if (static_cast<bool>(core::K8090Traits::from_number(i) & timed)) {
+        if (static_cast<bool>(core::k8090::from_number(i) & timed)) {
             timed_buttons_arr_[i]->setState(true);
         } else {
             timed_buttons_arr_[i]->setState(false);
@@ -408,7 +408,7 @@ void CentralWidget::onRefreshTimersDelay()
     for (int i = 0; i < kNRelays; ++i) {
         if (start_timer_buttons_arr_[i]->state()) {
             is_timed = true;
-            k8090_->queryRemainingTimerDelay(core::K8090Traits::from_number(i));
+            k8090_->queryRemainingTimerDelay(core::k8090::from_number(i));
         }
     }
     if (is_timed & !refresh_delay_timer_->isActive()) {
@@ -462,7 +462,7 @@ void CentralWidget::createUiElements()
 void CentralWidget::initializePortsCombobox()
 {
     int index = 0;
-    QList<core::serial_utils::ComPortParams> com_port_params_list = core::K8090::availablePorts();
+    QList<core::serial_utils::ComPortParams> com_port_params_list = core::k8090::K8090::availablePorts();
     bool current_port_found = false;
     // fill combo box
     for (const core::serial_utils::ComPortParams &com_port_params : com_port_params_list) {
@@ -475,8 +475,8 @@ void CentralWidget::initializePortsCombobox()
     // if com_port_name_ doesn't match any port, try to find card.
     if (!current_port_found) {
         for (const core::serial_utils::ComPortParams &com_port_params : com_port_params_list) {
-            if (com_port_params.product_identifier == core::K8090::kProductID
-                    && com_port_params.vendor_identifier == core::K8090::kVendorID) {
+            if (com_port_params.product_identifier == core::k8090::K8090::kProductID
+                    && com_port_params.vendor_identifier == core::k8090::K8090::kVendorID) {
                 com_port_name_ = com_port_params.port_name;
                 break;
             }
@@ -558,17 +558,17 @@ void CentralWidget::connectGui()
             this, &CentralWidget::onTimerSpinBoxValueChanged);
 
     // reactions to signals from the relay
-    connect(k8090_, &core::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
-    connect(k8090_, &core::K8090::buttonStatus, this, &CentralWidget::onButtonStatus);
-    connect(k8090_, &core::K8090::totalTimerDelay, this, &CentralWidget::onTotalTimerDelay);
-    connect(k8090_, &core::K8090::remainingTimerDelay, this, &CentralWidget::onRemainingTimerDelay);
-    connect(k8090_, &core::K8090::buttonModes, this, &CentralWidget::onButtonModes);
-    connect(k8090_, &core::K8090::jumperStatus, this, &CentralWidget::onJumperStatus);
-    connect(k8090_, &core::K8090::firmwareVersion, this, &CentralWidget::onFirmwareVersion);
-    connect(k8090_, &core::K8090::connected, this, &CentralWidget::onConnected);
-    connect(k8090_, &core::K8090::connectionFailed, this, &CentralWidget::onConnectionFailed);
-    connect(k8090_, &core::K8090::notConnected, this, &CentralWidget::onNotConnected);
-    connect(k8090_, &core::K8090::disconnected, this, &CentralWidget::onDisconnected);
+    connect(k8090_, &core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
+    connect(k8090_, &core::k8090::K8090::buttonStatus, this, &CentralWidget::onButtonStatus);
+    connect(k8090_, &core::k8090::K8090::totalTimerDelay, this, &CentralWidget::onTotalTimerDelay);
+    connect(k8090_, &core::k8090::K8090::remainingTimerDelay, this, &CentralWidget::onRemainingTimerDelay);
+    connect(k8090_, &core::k8090::K8090::buttonModes, this, &CentralWidget::onButtonModes);
+    connect(k8090_, &core::k8090::K8090::jumperStatus, this, &CentralWidget::onJumperStatus);
+    connect(k8090_, &core::k8090::K8090::firmwareVersion, this, &CentralWidget::onFirmwareVersion);
+    connect(k8090_, &core::k8090::K8090::connected, this, &CentralWidget::onConnected);
+    connect(k8090_, &core::k8090::K8090::connectionFailed, this, &CentralWidget::onConnectionFailed);
+    connect(k8090_, &core::k8090::K8090::notConnected, this, &CentralWidget::onNotConnected);
+    connect(k8090_, &core::k8090::K8090::disconnected, this, &CentralWidget::onDisconnected);
 }
 
 

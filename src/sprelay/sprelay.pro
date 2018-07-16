@@ -20,6 +20,7 @@ sprelay_build_standalone {
     # copy library headers
     sprelay_library_header_files_relative += \
         sprelay/core/k8090.h \
+        sprelay/core/k8090_defines.h \
         sprelay/core/serial_port_defines.h \
         sprelay/gui/central_widget.h \
         sprelay/sprelay_global.h

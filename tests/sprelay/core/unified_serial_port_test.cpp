@@ -53,7 +53,8 @@ void UnifiedSerialPortTest::initTestCase()
     real_card_present_ = false;
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
             UnifiedSerialPort::availablePorts()) {
-        if (params.product_identifier == K8090::kProductID && params.vendor_identifier == K8090::kVendorID) {
+        if (params.product_identifier == k8090::K8090::kProductID
+                && params.vendor_identifier == k8090::K8090::kVendorID) {
             if (params.port_name != UnifiedSerialPort::kMockPortName) {
                 real_card_port_name_ = params.port_name;
                 real_card_present_ = true;
@@ -71,8 +72,8 @@ void UnifiedSerialPortTest::availablePorts()
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
             UnifiedSerialPort::availablePorts()) {
         if (params.port_name == UnifiedSerialPort::kMockPortName
-                && params.product_identifier == K8090::kProductID
-                && params.vendor_identifier == K8090::kVendorID) {
+                && params.product_identifier == k8090::K8090::kProductID
+                && params.vendor_identifier == k8090::K8090::kVendorID) {
             mock_found = true;
         }
     }

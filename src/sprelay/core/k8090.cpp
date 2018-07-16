@@ -30,6 +30,7 @@
 #include <QTimer>
 
 #include "command_queue.h"
+#include "k8090_utils.h"
 #include "serial_port_utils.h"
 #include "unified_serial_port.h"
 
@@ -50,394 +51,17 @@ namespace sprelay {
 namespace core {
 
 /*!
-    \defgroup K8090_traits K8090Traits
+    \defgroup k8090 K8090 module
     \ingroup Core
-    \brief Helper classes for K8090 class.
+    \brief K8090 class and related data structures.
 */
 
 /*!
-    \namespace sprelay::core::K8090Traits
-    \ingroup K8090_traits
-    \brief Contains traits for K8090 class.
+    \namespace sprelay::core::k8090
+    \ingroup k8090
+    \brief Contains K8090 class and related data structures.
 */
-using namespace K8090Traits;  // NOLINT(build/namespaces)
-
-/*!
-    \enum sprelay::core::K8090Traits::CommandID
-    \ingroup K8090_traits
-    \brief Scoped enumeration listing all commands.
-
-    See the Velleman %K8090 card manual.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::RELAY_ON
-    \brief Switch realy on command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::RELAY_OFF
-    \brief Switch realy off command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::TOGGLE_RELAY
-    \brief Toggle realy command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::QUERY_RELAY
-    \brief Query relay status command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::SET_BUTTON_MODE
-    \brief Set button mode command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::BUTTON_MODE
-    \brief Query button mode command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::START_TIMER
-    \brief Start relay timer command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::SET_TIMER
-    \brief Set relay timer delay command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::TIMER
-    \brief Query timer delay command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::RESET_FACTORY_DEFAULTS
-    \brief Reset factory defaults command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::JUMPER_STATUS
-    \brief Jumper status command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::FIRMWARE_VERSION
-    \brief Firmware version command.
-*/
-/*!
-    \var sprelay::core::K8090Traits::CommandID::NONE
-    \brief The number of all commands represents also none command.
-*/
-
-/*!
-    \enum sprelay::core::K8090Traits::ResponseID
-    \ingroup K8090_traits
-    \brief Scoped enumeration listing all responses.
-
-    See the Velleman %K8090 card manual.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::BUTTON_MODE
-    \brief Response with button mode.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::TIMER
-    \brief Response with timer delay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::RELAY_STATUS
-    \brief Relay status event.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::BUTTON_STATUS
-    \brief Button status event.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::JUMPER_STATUS
-    \brief Response with jumper status.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::FIRMWARE_VERSION
-    \brief Response with firmware version.
-*/
-/*!
-    \var sprelay::core::K8090Traits::ResponseID::NONE
-    \brief The number of all responses represents also none response.
-*/
-
-/*!
-    \enum sprelay::core::K8090Traits::RelayID
-    \ingroup K8090_traits
-    \brief Scoped enumeration listing all 8 relays.
-
-    Bitwise operators are enabled for this enum by overloading K8090Traits::enable_bitmask_operators(RelayID) function
-    (see enum_flags.h for more details) and so the value of K8090Traits::RelayID type can be also a combination of
-    particular relays.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::NONE
-    \brief None relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::ONE
-    \brief First relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::TWO
-    \brief Second relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::THREE
-    \brief Third relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::FOUR
-    \brief Fourth relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::FIVE
-    \brief Fifth relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::SIX
-    \brief Sixth relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::SEVEN
-    \brief Seventh relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::EIGHT
-    \brief Eigth relay.
-*/
-/*!
-    \var sprelay::core::K8090Traits::RelayID::ALL
-    \brief All relays.
-*/
-
-/*!
-    \fn constexpr bool sprelay::core::K8090Traits::enable_bitmask_operators(RelayID)
-    \ingroup K8090_traits
-    \brief Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more
-    details.
-
-    \return True to enable bitmask operators.
-*/
-
-/*!
-    \fn constexpr RelayID sprelay::core::K8090Traits::from_number(unsigned int number)
-    \ingroup K8090_traits
-    \brief Converts number to RelayID scoped enumeration.
-
-    \param number The number.
-    \return The RelayID enumerator.
-*/
-
-/*!
-    \enum sprelay::core::K8090Traits::TimerDelayType
-    \ingroup K8090_traits
-    \brief Scoped enumeration listing timer delay types.
-
-    See the Velleman %K8090 card manual for more info about timer delay types.
-*/
-/*!
-    \var sprelay::core::K8090Traits::TimerDelayType::TOTAL
-    \brief Total timer time.
-*/
-/*!
-    \var sprelay::core::K8090Traits::TimerDelayType::REMAINING
-    \brief Currently remaining timer time.
-*/
-/*!
-    \var sprelay::core::K8090Traits::TimerDelayType::ALL
-    \brief Determines the highest element.
-*/
-
-/*!
-    \fn constexpr std::underlying_type<E> sprelay::core::K8090Traits::as_number(const E e)
-    \ingroup K8090_traits
-    \brief Converts enumeration to its underlying type.
-
-    \param e Enumerator to be converted.
-    \return The enum value as underlying type.
-*/
-
-/*!
-    \struct sprelay::core::K8090Traits::Command
-    \ingroup K8090_traits
-    \brief Command representation.
-
-    It is used for command comparisons and in command_queue::CommandQueue.
-*/
-
-/*!
-    \typedef Command::IdType
-    \brief Typename of id
-
-    Required by command_queue::CommandQueue API.
-*/
-
-/*!
-    \typedef Command::NumberType
-    \brief Underlying typename of id
-
-    Required by command_queue::CommandQueue API.
-*/
-
-/*!
-    \fn Command::Command()
-    \brief Default constructor.
-
-    Initializes its id member to CommandID::NONE so the Command can be used as return value indicating failure.
-*/
-
-/*!
-    \fn explicit Command::Command(IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0,
-    unsigned char param2 = 0)
-    \brief Initializes Command.
-*/
-
-/*!
-    \fn static NumberType Command::idAsNumber(IdType id)
-    \brief Converts id to its underlying type.
-
-    Required by command_queue::CommandQueue API.
-
-    \param id Command id.
-    \return Underlying type representation of the id.
-*/
-
-/*!
-    \var Command::id
-    \brief Command id.
-
-    Required by command_queue::CommandQueue API.
-*/
-
-/*!
-    \var Command::priority
-    \brief Command priority.
-
-    Required by command_queue::CommandQueue API.
-*/
-
-/*!
-    \var Command::params
-    \brief Stores command parameters.
-*/
-
-
-/*!
-    \brief Merges the other Command.
-
-    If the other command is CommandID::RELAY_ON and is merged to CommandID::RELAY_OFF or the oposite, the negation is
-    merged. XOR is applied to CommandID::TOGGLE_RELAY and for CommandID::SET_BUTTON_MODE and duplicate assignments, the
-    command is merged according to precedence stated in Velleman %K8090 card manual (momentary mode, toggle mode, timed
-    mode from most important to less).
-
-    The other commands are merged naturally as _or assignment_ operator to their members.
-
-    \param other The other command.
-    \return Merged command.
-*/
-Command & Command::operator|=(const Command &other) {
-    switch (id) {
-        // commands with special treatment
-        case CommandID::RELAY_ON :
-            if (other.id == CommandID::RELAY_OFF) {
-                params[0] &= ~other.params[0];
-            } else {
-                params[0] |= other.params[0];
-            }
-            break;
-        case CommandID::RELAY_OFF :
-            if (other.id == CommandID::RELAY_ON) {
-                params[0] &= ~other.params[0];
-            } else {
-                params[0] |= other.params[0];
-            }
-            break;
-        case CommandID::TOGGLE_RELAY :
-            params[0] ^= other.params[0];
-            break;
-        case CommandID::SET_BUTTON_MODE :
-            params[0] |= other.params[0];
-            params[1] |= other.params[1] & ~params[0];
-            params[2] |= other.params[2] & ~params[1] & ~params[2];
-            break;
-        // commands with one relevant parameter mask
-        case CommandID::START_TIMER :
-        case CommandID::SET_TIMER :
-        case CommandID::TIMER :
-            params[0] |= other.params[0];
-            break;
-        // commands with no parameters
-        //     case CommandID::QUERY_RELAY :
-        //     case CommandID::BUTTON_MODE :
-        //     case CommandID::RESET_FACTORY_DEFAULTS :
-        //     case CommandID::JUMPER_STATUS :
-        //     case CommandID::FIRMWARE_VERSION :
-        default :
-            break;
-    }
-    return *this;
-}
-
-/*!
-    \fn bool Command::operator==(const Command &other) const
-    \brief Compares two commands for equality.
-
-    \param other The command to be compared.
-    \return True if the commands are the same.
-*/
-
-/*!
-    \fn bool Command::operator!=(const Command &other) const
-    \brief Compares two commands for non-equality.
-
-    \param other The command to be compared.
-    \return True if the commands are different.
-*/
-
-
-/*!
-    \brief Tests, if commands are compatible.
-
-    Compatible commands can be merget by the Command::operator|=() operator.
-
-    \param other The command to be stested.
-    \return True if the commands are compatible.
-*/
-bool Command::isCompatible(const Command &other) const
-{
-    if (id != other.id) {
-        switch (id) {
-            case CommandID::RELAY_ON :
-                if (other.id == CommandID::RELAY_OFF) {
-                    return true;
-                }
-                return false;
-            case CommandID::RELAY_OFF :
-                if (other.id == CommandID::RELAY_ON) {
-                    return true;
-                }
-                return false;
-            default :
-                return false;
-        }
-    }
-    switch (id) {
-        case CommandID::START_TIMER :
-        case CommandID::SET_TIMER :
-            for (int i = 1; i < 3; ++i) {
-                if (params[i] != other.params[i]) {
-                    return false;
-                }
-            }
-            return true;
-        case CommandID::TIMER :
-            // compare only first bits
-            if ((params[1] & 1) != (other.params[1] & 1)) {
-                return false;
-            }
-            return true;
-        default :
-            return true;
-    }
-}
+namespace k8090 {
 
 // generate static arrays containing commands, command priorities and responses at compile time
 namespace {  // unnamed namespace
@@ -582,7 +206,7 @@ struct CommandArrayGenerator_<1u, Args...>
 };
 
 // CommandArray generates recursively kCommands nad kPriorities types, which contains static constant array kValues.
-// Usage: unsigned char *arr = CommandArray<K8090Traits::Comand::None>::kCommands::kValues
+// Usage: unsigned char *arr = CommandArray<k8090::Comand::None>::kCommands::kValues
 template<unsigned char N>
 struct CommandArray
 {
@@ -605,7 +229,7 @@ struct ResponseArrayGenerator_<1u, Args...>
 };
 
 // ResponseArray generates recursively kResponses type, which contains static constant array kValues.
-// Usage: unsigned char *arr = ResponseArray<K8090Traits::Comand::None>::kCommands::kValues
+// Usage: unsigned char *arr = ResponseArray<k8090::Comand::None>::kCommands::kValues
 template<unsigned char N>
 struct ResponseArray
 {
@@ -670,7 +294,8 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
 K8090::K8090(QObject *parent) :
     QObject{parent},
     serial_port_{new UnifiedSerialPort},
-    pending_commands_{new command_queue::CommandQueue<Command, as_number(CommandID::NONE)>},
+    pending_commands_{new command_queue::CommandQueue<impl_::Command, as_number(CommandID::NONE)>},
+    current_command_{new impl_::Command},
     command_timer_{new QTimer},
     failure_timer_{new QTimer},
     failure_counter_{0},
@@ -794,8 +419,8 @@ int K8090::pendingCommandCount(CommandID id)
 
 // public signals
 /*!
-    \fn void K8090::relayStatus(K8090Traits::RelayID previous, K8090Traits::RelayID current,
-            K8090Traits::RelayID timed)
+    \fn void K8090::relayStatus(k8090::RelayID previous, k8090::RelayID current,
+            k8090::RelayID timed)
     \brief Emited when the Relay status event comes from the card.
 
     The Relay status event can come when the status of one or more ralays changes. The status can change because of
@@ -804,8 +429,8 @@ int K8090::pendingCommandCount(CommandID id)
 
     You can get currently switched on or off relays for example by issuing these expressions:
     \code
-    K8090Traits::RelayID switched_on = (previous ^ current) & current;
-    K8090Traits::RelayID switched_off = (previous ^ current) & previous;
+    k8090::RelayID switched_on = (previous ^ current) & current;
+    k8090::RelayID switched_off = (previous ^ current) & previous;
     \endcode
 
     See the Velleman %K8090 card manual for more details.
@@ -815,8 +440,8 @@ int K8090::pendingCommandCount(CommandID id)
     \param timed Timed relays.
 */
 /*!
-    \fn void K8090::buttonStatus(K8090Traits::RelayID state, K8090Traits::RelayID pressed,
-            K8090Traits::RelayID released)
+    \fn void K8090::buttonStatus(k8090::RelayID state, k8090::RelayID pressed,
+            k8090::RelayID released)
     \brief Emited when the button is physically pressed or released.
 
     See the Velleman %K8090 card manual for more details.
@@ -826,7 +451,7 @@ int K8090::pendingCommandCount(CommandID id)
     \param released Buttons currently released.
 */
 /*!
-    \fn void K8090::totalTimerDelay(K8090Traits::RelayID relay, quint16 delay)
+    \fn void K8090::totalTimerDelay(k8090::RelayID relay, quint16 delay)
     \brief Reports total timer delay.
 
     This signal is emited as the reaction to the K8090::queryTotalTimerDelay(). If more relays is queried, the signal
@@ -836,7 +461,7 @@ int K8090::pendingCommandCount(CommandID id)
     \param delay The delay.
 */
 /*!
-    \fn void K8090::remainingTimerDelay(K8090Traits::RelayID relay, quint16 delay)
+    \fn void K8090::remainingTimerDelay(k8090::RelayID relay, quint16 delay)
     \brief Reports current remaining timer delay.
 
     This signal is emited as the reaction to the K8090::queryRemainingTimerDelay(). If more relays is queried, the
@@ -846,8 +471,8 @@ int K8090::pendingCommandCount(CommandID id)
     \param delay The delay.
 */
 /*!
-    \fn void K8090::buttonModes(K8090Traits::RelayID momentary, K8090Traits::RelayID toggle,
-            K8090Traits::RelayID timed)
+    \fn void K8090::buttonModes(k8090::RelayID momentary, k8090::RelayID toggle,
+            k8090::RelayID timed)
     \brief Reports button modes.
 
     This signal is emited as the reaction to the K8090::queryButtonModes(). See the Velleman %K8090 card manual for
@@ -943,8 +568,8 @@ void K8090::connectK8090()
     connecting_ = true;
     enqueueCommand(CommandID::QUERY_RELAY);
     enqueueCommand(CommandID::BUTTON_MODE);
-    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
-    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::REMAINING));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(impl_::TimerDelayType::TOTAL));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(impl_::TimerDelayType::REMAINING));
     enqueueCommand(CommandID::JUMPER_STATUS);
     enqueueCommand(CommandID::FIRMWARE_VERSION);
 }
@@ -972,8 +597,8 @@ void K8090::refreshRelaysInfo()
 {
     enqueueCommand(CommandID::QUERY_RELAY);
     enqueueCommand(CommandID::BUTTON_MODE);
-    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::TOTAL));
-    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(TimerDelayType::REMAINING));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(impl_::TimerDelayType::TOTAL));
+    enqueueCommand(CommandID::TIMER, RelayID::ALL, as_number(impl_::TimerDelayType::REMAINING));
     enqueueCommand(CommandID::JUMPER_STATUS);
     enqueueCommand(CommandID::FIRMWARE_VERSION);
 }
@@ -983,7 +608,7 @@ void K8090::refreshRelaysInfo()
     \brief Switches specified relays on.
 
     If some button states is modified, the K8090::relayStatus() signal will be emited. If some
-    K8090Traits::CommandID::RELAY_OFF command is pending for execution, the relays required by this command are
+    k8090::CommandID::RELAY_OFF command is pending for execution, the relays required by this command are
     excluded from it.
 
     \param relays The relays.
@@ -999,7 +624,7 @@ void K8090::switchRelayOn(RelayID relays)
     \brief Switches specified relays off.
 
     If some button states is modified, the K8090::relayStatus() signal will be emited. If some
-    K8090Traits::CommandID::RELAY_ON command is pending for execution, the relays required by this command are
+    k8090::CommandID::RELAY_ON command is pending for execution, the relays required by this command are
     excluded from it.
 
     \param relays The relays.
@@ -1032,8 +657,8 @@ void K8090::toggleRelay(RelayID relays)
     momentary mode has priority over toggle mode, and toggle mode has priority over timed mode. See the Velleman %K8090
     card manual for more details. There is also feature which is not documented in Velleman %K8090 card manual. If you
     don't set any mode for the given button, the physical button is disabled. For example, if you set
-    `momentary = K8090Traits::RelayID::ONE`, `toggle = K8090Traits::RelayID::NONE` and
-    `timed = K8090Traits::RelayID::NONE`, the physical button one will be in momentary mode and all the other buttons
+    `momentary = k8090::RelayID::ONE`, `toggle = k8090::RelayID::NONE` and
+    `timed = k8090::RelayID::NONE`, the physical button one will be in momentary mode and all the other buttons
     will be disabled.
 
     \param momentary Relays to be set to momentary mode.
@@ -1105,7 +730,7 @@ void K8090::queryRelayStatus()
 */
 void K8090::queryTotalTimerDelay(RelayID relays)
 {
-    sendCommand(CommandID::TIMER, relays, as_number(TimerDelayType::TOTAL));
+    sendCommand(CommandID::TIMER, relays, as_number(impl_::TimerDelayType::TOTAL));
 }
 
 
@@ -1119,7 +744,7 @@ void K8090::queryTotalTimerDelay(RelayID relays)
 */
 void K8090::queryRemainingTimerDelay(RelayID relays)
 {
-    sendCommand(CommandID::TIMER, relays, as_number(TimerDelayType::REMAINING));
+    sendCommand(CommandID::TIMER, relays, as_number(impl_::TimerDelayType::REMAINING));
 }
 
 
@@ -1224,8 +849,8 @@ void K8090::onReadyData()
 void K8090::dequeueCommand()
 {
     // commands without response sends after delay the appropriate query command to test connection.
-    CommandID command_id = current_command_.id;
-    current_command_.id = CommandID::NONE;
+    CommandID command_id = current_command_->id;
+    current_command_->id = CommandID::NONE;
     switch (command_id) {
         case CommandID::RELAY_ON:
         case CommandID::RELAY_OFF:
@@ -1238,14 +863,14 @@ void K8090::dequeueCommand()
             sendCommandHelper(CommandID::BUTTON_MODE);
             return;
         case CommandID::SET_TIMER:
-            sendCommandHelper(CommandID::TIMER, static_cast<RelayID>(current_command_.params[0]), 0);
+            sendCommandHelper(CommandID::TIMER, static_cast<RelayID>(current_command_->params[0]), 0);
             return;
         default:
             break;
     }
 
     if (!pending_commands_->empty()) {
-        Command command = pending_commands_->pop();
+        impl_::Command command = pending_commands_->pop();
         sendCommandHelper(command.id, static_cast<RelayID>(command.params[0]), command.params[1], command.params[2]);
     }
 }
@@ -1282,13 +907,13 @@ void K8090::sendCommand(CommandID command_id, RelayID mask, unsigned char param1
 void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
     // Send command directly if it is sufficiently delayed from the previous one and there are no commands pending.
-    if (!command_timer_->isActive() && current_command_.id == CommandID::NONE && pending_commands_->empty()) {
+    if (!command_timer_->isActive() && current_command_->id == CommandID::NONE && pending_commands_->empty()) {
         sendCommandHelper(command_id, mask, param1, param2);
     } else {  // send command undirectly
         // TODO(lumik): don't insert query commands if set command with the same response is already inside
         // TODO(lumik): treat commands, which are directly sended better (avoid duplication)
-        Command command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
-        const QList<const Command *> & pending_command_list = pending_commands_->get(command_id);
+        impl_::Command command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
+        const QList<const impl_::Command *> & pending_command_list = pending_commands_->get(command_id);
         // if there is no command with the same id waiting
         if (pending_command_list.isEmpty()) {
             pending_commands_->push(command);
@@ -1302,12 +927,13 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
         // TODO(lumik): test if updated oposite command doesn't update any relay and if it does, remove it from the
         // queue
         if (command_id == CommandID::RELAY_ON) {
-            const QList<const Command *> & off_pending_command_list = pending_commands_->get(CommandID::RELAY_OFF);
+            const QList<const impl_::Command *> & off_pending_command_list
+                    = pending_commands_->get(CommandID::RELAY_OFF);
             if (!off_pending_command_list.isEmpty()) {
                 updateCommand(command, off_pending_command_list);
             }
         } else if (command_id == CommandID::RELAY_OFF) {
-            const QList<const Command *> & on_pending_command_list = pending_commands_->get(CommandID::RELAY_ON);
+            const QList<const impl_::Command *> & on_pending_command_list = pending_commands_->get(CommandID::RELAY_ON);
             if (!on_pending_command_list.isEmpty()) {
                 updateCommand(command, on_pending_command_list);
             }
@@ -1317,7 +943,7 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
 
 
 // helper method which updates already enqueued command
-bool K8090::updateCommand(const Command &command, const QList<const Command *> &pending_command_list)
+bool K8090::updateCommand(const impl_::Command &command, const QList<const impl_::Command *> &pending_command_list)
 {
     // check if equal command is in pending command list
     int compatible_idx = pending_command_list.size();
@@ -1328,7 +954,7 @@ bool K8090::updateCommand(const Command &command, const QList<const Command *> &
         }
     }
     if (compatible_idx != pending_command_list.size()) {
-        Command insert_command = *pending_command_list[compatible_idx];
+        impl_::Command insert_command = *pending_command_list[compatible_idx];
         insert_command |= command;
         if (insert_command.priority < command.priority) {
             insert_command.priority = command.priority;
@@ -1354,10 +980,10 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
     cmd[6] = kEtxByte_;
     // store current command for response testing. Commands with no response triggers query task after the command
     // timer elapses, see the dequeuCommand() method.
-    current_command_.id = command_id;
-    current_command_.params[0] = as_number(mask);
-    current_command_.params[1] = param1;
-    current_command_.params[2] = param2;
+    current_command_->id = command_id;
+    current_command_->params[0] = as_number(mask);
+    current_command_->params[1] = param1;
+    current_command_->params[2] = param2;
     // if command can be without response, do not start failure check, next command is sent when the responses for the
     // command is processed
     if (hasResponse(command_id)) {
@@ -1420,12 +1046,12 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 void K8090::buttonModeResponse(const unsigned char *buffer)
 {
     // button mode was not requested
-    if (current_command_.id != CommandID::BUTTON_MODE) {
+    if (current_command_->id != CommandID::BUTTON_MODE) {
         onCommandFailed();
         return;
     }
     // query button mode has no parameters. It is satisfactory only to remove one button mode request from the list
-    current_command_.id = CommandID::NONE;
+    current_command_->id = CommandID::NONE;
     failure_timer_->stop();
     if (connected_) {
         emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
@@ -1450,19 +1076,19 @@ void K8090::buttonModeResponse(const unsigned char *buffer)
 void K8090::timerResponse(const unsigned char *buffer)
 {
     // timer was not requested
-    if (current_command_.id != CommandID::TIMER) {
+    if (current_command_->id != CommandID::TIMER) {
         onCommandFailed();
         return;
     }
     bool is_total;
     bool should_dequeue_next = false;
     // total timer
-    if (~(current_command_.params[1]) & (1 << 0)) {
+    if (~(current_command_->params[1]) & (1 << 0)) {
         // remove current response from the list of waiting to response commands.
         is_total = true;
-        current_command_.params[0] &= ~buffer[2];
-        if (!current_command_.params[0]) {
-            current_command_.id = CommandID::NONE;
+        current_command_->params[0] &= ~buffer[2];
+        if (!current_command_->params[0]) {
+            current_command_->id = CommandID::NONE;
             failure_timer_->stop();
             should_dequeue_next = true;
         } else {
@@ -1470,9 +1096,9 @@ void K8090::timerResponse(const unsigned char *buffer)
         }
     } else {
         is_total = false;
-        current_command_.params[0] &= ~buffer[2];
-        if (!current_command_.params[0]) {
-            current_command_.id = CommandID::NONE;
+        current_command_->params[0] &= ~buffer[2];
+        if (!current_command_->params[0]) {
+            current_command_->id = CommandID::NONE;
             failure_timer_->stop();
             should_dequeue_next = true;
         } else {
@@ -1513,65 +1139,65 @@ void K8090::buttonStatusResponse(const unsigned char *buffer)
 void K8090::relayStatusResponse(const unsigned char *buffer)
 {
     // relay status can be a response to many commands. If status changes by the command, it is not necessary to query
-    if (current_command_.id == CommandID::QUERY_RELAY) {
-        current_command_.id = CommandID::NONE;
+    if (current_command_->id == CommandID::QUERY_RELAY) {
+        current_command_->id = CommandID::NONE;
         failure_timer_->stop();
     // switch relay on
-    } else if (current_command_.id == CommandID::RELAY_ON) {
+    } else if (current_command_->id == CommandID::RELAY_ON) {
         // test if all required relays are on:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
-            if (current_command_.params[0] & (1 << i) & ~buffer[3]) {
+            if (current_command_->params[0] & (1 << i) & ~buffer[3]) {
                 match = false;
             }
         }
         if (match) {
-            current_command_.id = CommandID::NONE;
+            current_command_->id = CommandID::NONE;
         }
         // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
         // or user interaction directly with the card
         failure_timer_->stop();
     // switch relay off
-    } else if (current_command_.id == CommandID::RELAY_OFF) {
+    } else if (current_command_->id == CommandID::RELAY_OFF) {
         // test if all required relays are off:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
-            if (current_command_.params[0] & (1 << i) & buffer[3]) {
+            if (current_command_->params[0] & (1 << i) & buffer[3]) {
                 match = false;
             }
         }
         if (match) {
-            current_command_.id = CommandID::NONE;
+            current_command_->id = CommandID::NONE;
         }
         // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
         // or user interaction directly with the card
         failure_timer_->stop();
-    } else if (current_command_.id == CommandID::TOGGLE_RELAY) {
+    } else if (current_command_->id == CommandID::TOGGLE_RELAY) {
         // TODO(lumik): consider the toggle relay testing
-        current_command_.id = CommandID::NONE;
+        current_command_->id = CommandID::NONE;
         failure_timer_->stop();
-    } else if (current_command_.id == CommandID::START_TIMER) {
+    } else if (current_command_->id == CommandID::START_TIMER) {
         // test if all required relays are on:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
-            if (current_command_.params[0] & (1 << i) & ~buffer[3]) {
+            if (current_command_->params[0] & (1 << i) & ~buffer[3]) {
                 match = false;
             }
         }
         if (match) {
-            current_command_.id = CommandID::NONE;
+            current_command_->id = CommandID::NONE;
         }
         // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
         // or user interaction directly with the card
         failure_timer_->stop();
-    } else if (current_command_.id == CommandID::RESET_FACTORY_DEFAULTS) {
+    } else if (current_command_->id == CommandID::RESET_FACTORY_DEFAULTS) {
         // test if all required relays are off:
         bool match = true;
         if (buffer[3]) {
             match = false;
         }
         if (match) {
-            current_command_.id = CommandID::NONE;
+            current_command_->id = CommandID::NONE;
         }
         // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
         // or user interaction directly with the card
@@ -1598,11 +1224,11 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
 // processes jumper status response
 void K8090::jumperStatusResponse(const unsigned char *buffer)
 {
-    if (current_command_.id != CommandID::JUMPER_STATUS) {
+    if (current_command_->id != CommandID::JUMPER_STATUS) {
         onCommandFailed();
         return;
     }
-    current_command_.id = CommandID::NONE;
+    current_command_->id = CommandID::NONE;
     failure_timer_->stop();
     if (connected_) {
         emit jumperStatus(static_cast<bool>(buffer[3]));
@@ -1624,11 +1250,11 @@ void K8090::jumperStatusResponse(const unsigned char *buffer)
 // processes firmware version response
 void K8090::firmwareVersionResponse(const unsigned char *buffer)
 {
-    if (current_command_.id != CommandID::FIRMWARE_VERSION) {
+    if (current_command_->id != CommandID::FIRMWARE_VERSION) {
         onCommandFailed();
         return;
     }
-    current_command_.id = CommandID::NONE;
+    current_command_->id = CommandID::NONE;
     failure_timer_->stop();
     if (connected_) {
         emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
@@ -1662,7 +1288,7 @@ void K8090::doDisconnect()
 {
     serial_port_->close();
     // erase all pending commands
-    pending_commands_.reset(new command_queue::CommandQueue<Command, as_number(CommandID::NONE)>);
+    pending_commands_.reset(new command_queue::CommandQueue<impl_::Command, as_number(CommandID::NONE)>);
     // stop failure timers and erase failure counter
     command_timer_->stop();
     failure_timer_->stop();
@@ -1701,5 +1327,6 @@ bool K8090::validateResponse(const unsigned char *msg)
     return true;
 }
 
+}  // namespace k8090
 }  // namespace core
 }  // namespace sprelay

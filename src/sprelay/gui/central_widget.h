@@ -56,7 +56,7 @@ class SPRELAY_EXPORT CentralWidget : public QWidget
     Q_OBJECT
 public:  // NOLINT(whitespace/indent)
     explicit CentralWidget(
-            core::K8090 *k8090 = nullptr,
+            core::k8090::K8090 *k8090 = nullptr,
             const QString &com_port_name = QString(),
             QWidget *parent = 0);
     ~CentralWidget() override;
@@ -84,14 +84,14 @@ private slots:  // NOLINT(whitespace/indent)
 
 private slots:  // NOLINT(whitespace/indent)
     // reactions to signals from the relay
-    void onRelayStatus(sprelay::core::K8090Traits::RelayID previous, sprelay::core::K8090Traits::RelayID current,
-        sprelay::core::K8090Traits::RelayID timed);
-    void onButtonStatus(sprelay::core::K8090Traits::RelayID state, sprelay::core::K8090Traits::RelayID pressed,
-        sprelay::core::K8090Traits::RelayID released);
-    void onTotalTimerDelay(sprelay::core::K8090Traits::RelayID relay, quint16 delay);
-    void onRemainingTimerDelay(sprelay::core::K8090Traits::RelayID relay, quint16 delay);
-    void onButtonModes(sprelay::core::K8090Traits::RelayID momentary, sprelay::core::K8090Traits::RelayID toggle,
-       sprelay::core::K8090Traits::RelayID timed);
+    void onRelayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
+        sprelay::core::k8090::RelayID timed);
+    void onButtonStatus(sprelay::core::k8090::RelayID state, sprelay::core::k8090::RelayID pressed,
+        sprelay::core::k8090::RelayID released);
+    void onTotalTimerDelay(sprelay::core::k8090::RelayID relay, quint16 delay);
+    void onRemainingTimerDelay(sprelay::core::k8090::RelayID relay, quint16 delay);
+    void onButtonModes(sprelay::core::k8090::RelayID momentary, sprelay::core::k8090::RelayID toggle,
+       sprelay::core::k8090::RelayID timed);
     void onJumperStatus(bool on);
     void onFirmwareVersion(int year, int week);
     void onConnected();
@@ -113,7 +113,7 @@ private:  // NOLINT(whitespace/indent)
     void makeLayout();
     void connectionStatusChanged();
 
-    core::K8090 *k8090_;
+    core::k8090::K8090 *k8090_;
     QString com_port_name_;
     bool connected_;
 
