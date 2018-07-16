@@ -29,6 +29,9 @@
 #include <QStringBuilder>
 #include <QTimer>
 
+#include <stdexcept>
+#include <utility>
+
 #include "command_queue.h"
 #include "k8090_commands.h"
 #include "k8090_utils.h"
@@ -613,38 +616,43 @@ void K8090::queryFirmwareVersion()
 // Reaction on received data from the card.
 void K8090::onReadyData()
 {
-    // converting the data to unsigned char
     QByteArray data = serial_port_->readAll();
     int n = data.size();
-    const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
-
     for (int i = 0; i < n; i += 7) {
         if (n - i < 7) {
             onCommandFailed();
             return;
         } else {
-            if (!validateResponse(buffer + i)) {
+            // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
+            std::unique_ptr<impl_::CardMessage> response;
+            try {
+                response.reset(new impl_::CardMessage{data.constBegin() + i, data.constBegin() + i + 7});
+            } catch (const std::out_of_range &) {
                 onCommandFailed();
                 return;
             }
-            switch (buffer[i + 1]) {
+            if (!response->isValid()) {
+                onCommandFailed();
+                return;
+            }
+            switch (response->commandByte()) {
                 case impl_::kResponses[as_number(ResponseID::BUTTON_MODE)] :
-                    buttonModeResponse(buffer + i);
+                    buttonModeResponse(std::move(response));
                     break;
                 case impl_::kResponses[as_number(ResponseID::TIMER)] :
-                    timerResponse(buffer + i);
+                    timerResponse(std::move(response));
                     break;
                 case impl_::kResponses[as_number(ResponseID::BUTTON_STATUS)] :
-                    buttonStatusResponse(buffer + i);
+                    buttonStatusResponse(std::move(response));
                     break;
                 case impl_::kResponses[as_number(ResponseID::RELAY_STATUS)] :
-                    relayStatusResponse(buffer + i);
+                    relayStatusResponse(std::move(response));
                     break;
                 case impl_::kResponses[as_number(ResponseID::JUMPER_STATUS)] :
-                    jumperStatusResponse(buffer + i);
+                    jumperStatusResponse(std::move(response));
                     break;
                 case impl_::kResponses[as_number(ResponseID::FIRMWARE_VERSION)] :
-                    firmwareVersionResponse(buffer + i);
+                    firmwareVersionResponse(std::move(response));
                     break;
                 default:
                     onCommandFailed();
@@ -787,7 +795,7 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
     cmd[2] = as_number(mask);
     cmd[3] = param1;
     cmd[4] = param2;
-    cmd[5] = checkSum(cmd.get(), 5);
+    cmd[5] = impl_::check_sum(cmd.get(), 5);
     cmd[6] = impl_::kEtxByte;
     // store current command for response testing. Commands with no response triggers query task after the command
     // timer elapses, see the dequeuCommand() method.
@@ -854,7 +862,7 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 
 
 // processes button mode response
-void K8090::buttonModeResponse(const unsigned char *buffer)
+void K8090::buttonModeResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     // button mode was not requested
     if (current_command_->id != CommandID::BUTTON_MODE) {
@@ -865,12 +873,12 @@ void K8090::buttonModeResponse(const unsigned char *buffer)
     current_command_->id = CommandID::NONE;
     failure_timer_->stop();
     if (connected_) {
-        emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-            static_cast<RelayID>(buffer[4]));
+        emit buttonModes(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
+            static_cast<RelayID>(response->data[4]));
         dequeueCommand();
     } else if (connecting_) {
-        emit buttonModes(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-            static_cast<RelayID>(buffer[4]));
+        emit buttonModes(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
+            static_cast<RelayID>(response->data[4]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
         } else {
@@ -884,7 +892,7 @@ void K8090::buttonModeResponse(const unsigned char *buffer)
 
 
 // processes timer response
-void K8090::timerResponse(const unsigned char *buffer)
+void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     // timer was not requested
     if (current_command_->id != CommandID::TIMER) {
@@ -897,7 +905,7 @@ void K8090::timerResponse(const unsigned char *buffer)
     if (~(current_command_->params[1]) & (1 << 0)) {
         // remove current response from the list of waiting to response commands.
         is_total = true;
-        current_command_->params[0] &= ~buffer[2];
+        current_command_->params[0] &= ~response->data[2];
         if (!current_command_->params[0]) {
             current_command_->id = CommandID::NONE;
             failure_timer_->stop();
@@ -907,7 +915,7 @@ void K8090::timerResponse(const unsigned char *buffer)
         }
     } else {
         is_total = false;
-        current_command_->params[0] &= ~buffer[2];
+        current_command_->params[0] &= ~response->data[2];
         if (!current_command_->params[0]) {
             current_command_->id = CommandID::NONE;
             failure_timer_->stop();
@@ -918,9 +926,10 @@ void K8090::timerResponse(const unsigned char *buffer)
     }
     if (connected_ | connecting_) {
         if (is_total) {
-            emit totalTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+            emit totalTimerDelay(static_cast<RelayID>(response->data[2]), response->data[3] << 8 | response->data[4]);
         } else {
-            emit remainingTimerDelay(static_cast<RelayID>(buffer[2]), buffer[3] << 8 | buffer[4]);
+            emit remainingTimerDelay(static_cast<RelayID>(response->data[2]),
+                    response->data[3] << 8 | response->data[4]);
         }
         if (connecting_ && pending_commands_->empty()) {
             connectionSuccessful();
@@ -935,11 +944,11 @@ void K8090::timerResponse(const unsigned char *buffer)
 
 
 // processes button status response
-void K8090::buttonStatusResponse(const unsigned char *buffer)
+void K8090::buttonStatusResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     if (connected_) {
-        emit buttonStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-                static_cast<RelayID>(buffer[4]));
+        emit buttonStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
+                static_cast<RelayID>(response->data[4]));
     }
     // button status is emited only after user interaction with physical buttons on the relay, no query command is
     // connected with it
@@ -947,7 +956,7 @@ void K8090::buttonStatusResponse(const unsigned char *buffer)
 
 
 // processes relay status response
-void K8090::relayStatusResponse(const unsigned char *buffer)
+void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     // relay status can be a response to many commands. If status changes by the command, it is not necessary to query
     if (current_command_->id == CommandID::QUERY_RELAY) {
@@ -958,7 +967,7 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
         // test if all required relays are on:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1 << i) & ~buffer[3]) {
+            if (current_command_->params[0] & (1 << i) & ~response->data[3]) {
                 match = false;
             }
         }
@@ -973,7 +982,7 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
         // test if all required relays are off:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1 << i) & buffer[3]) {
+            if (current_command_->params[0] & (1 << i) & response->data[3]) {
                 match = false;
             }
         }
@@ -991,7 +1000,7 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
         // test if all required relays are on:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1 << i) & ~buffer[3]) {
+            if (current_command_->params[0] & (1 << i) & ~response->data[3]) {
                 match = false;
             }
         }
@@ -1004,7 +1013,7 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
     } else if (current_command_->id == CommandID::RESET_FACTORY_DEFAULTS) {
         // test if all required relays are off:
         bool match = true;
-        if (buffer[3]) {
+        if (response->data[3]) {
             match = false;
         }
         if (match) {
@@ -1015,14 +1024,14 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
         failure_timer_->stop();
     }
     if (connected_) {
-        emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-                static_cast<RelayID>(buffer[4]));
+        emit relayStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
+                static_cast<RelayID>(response->data[4]));
     } else if (connecting_) {
         // Beware, if the relay status message is obtained from the card as the reaction to the user interaction with
         // physical buttons, the relay status signal can be emited 2 times because of the message obtained as the
         // reaction to query message.
-        emit relayStatus(static_cast<RelayID>(buffer[2]), static_cast<RelayID>(buffer[3]),
-                static_cast<RelayID>(buffer[4]));
+        emit relayStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
+                static_cast<RelayID>(response->data[4]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
         }
@@ -1033,7 +1042,7 @@ void K8090::relayStatusResponse(const unsigned char *buffer)
 
 
 // processes jumper status response
-void K8090::jumperStatusResponse(const unsigned char *buffer)
+void K8090::jumperStatusResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     if (current_command_->id != CommandID::JUMPER_STATUS) {
         onCommandFailed();
@@ -1042,10 +1051,10 @@ void K8090::jumperStatusResponse(const unsigned char *buffer)
     current_command_->id = CommandID::NONE;
     failure_timer_->stop();
     if (connected_) {
-        emit jumperStatus(static_cast<bool>(buffer[3]));
+        emit jumperStatus(static_cast<bool>(response->data[3]));
         dequeueCommand();
     } else if (connecting_) {
-        emit jumperStatus(static_cast<bool>(buffer[3]));
+        emit jumperStatus(static_cast<bool>(response->data[3]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
         } else {
@@ -1059,7 +1068,7 @@ void K8090::jumperStatusResponse(const unsigned char *buffer)
 
 
 // processes firmware version response
-void K8090::firmwareVersionResponse(const unsigned char *buffer)
+void K8090::firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     if (current_command_->id != CommandID::FIRMWARE_VERSION) {
         onCommandFailed();
@@ -1068,10 +1077,10 @@ void K8090::firmwareVersionResponse(const unsigned char *buffer)
     current_command_->id = CommandID::NONE;
     failure_timer_->stop();
     if (connected_) {
-        emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
+        emit firmwareVersion(2000 + static_cast<int>(response->data[3]), static_cast<int>(response->data[4]));
         dequeueCommand();
     } else if (connecting_) {
-        emit firmwareVersion(2000 + static_cast<int>(buffer[3]), static_cast<int>(buffer[4]));
+        emit firmwareVersion(2000 + static_cast<int>(response->data[3]), static_cast<int>(response->data[4]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
         } else {
@@ -1107,35 +1116,6 @@ void K8090::doDisconnect()
 
     connected_ = false;
     connecting_ = false;
-}
-
-
-// helper method which computes checksum from binary command representation
-unsigned char K8090::checkSum(const unsigned char *msg, int n)
-{
-    unsigned int sum = 0u;
-    for (int ii = 0; ii < n; ++ii) {
-        sum += (unsigned int)msg[ii];
-    }
-    unsigned char sum_byte = sum % 256;
-    sum = (unsigned int) (~sum_byte) + 1u;
-    sum_byte = (unsigned char) sum % 256;
-
-    return sum_byte;
-}
-
-
-// validates response from card in binary representation
-bool K8090::validateResponse(const unsigned char *msg)
-{
-    if (msg[0] != impl_::kStxByte)
-        return false;
-    unsigned char chk = checkSum(msg, 5);
-    if (chk != msg[5])
-        return false;
-    if (msg[6] != impl_::kEtxByte)
-        return false;
-    return true;
 }
 
 }  // namespace k8090

@@ -38,6 +38,8 @@
 #ifndef SPRELAY_CORE_K8090_UTILS_H_
 #define SPRELAY_CORE_K8090_UTILS_H_
 
+#include <QByteArray>
+
 #include "k8090_defines.h"
 
 namespace sprelay {
@@ -86,6 +88,23 @@ struct Command
     bool operator!=(const Command &other) const { return !(*this == other); }
 
     bool isCompatible(const Command &other) const;
+};
+
+
+unsigned char check_sum(const unsigned char *msg, int n);
+
+
+struct CardMessage
+{
+    CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1, unsigned char param2,
+        unsigned char chk, unsigned char etx);
+    CardMessage(QByteArray::const_iterator begin, QByteArray::const_iterator end);
+    CardMessage(const unsigned char *begin, const unsigned char *end);
+
+    void checksumMessage();
+    bool isValid() const;
+    unsigned char commandByte() const;
+    unsigned char data[7];
 };
 
 }  // namespace impl_

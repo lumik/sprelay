@@ -28,11 +28,13 @@
 
 #include <limits>
 #include <random>
+#include <utility>
 
 #ifdef __MINGW32__  // random device on MinGW does not work, a seed is always same so we need chrono for seed.
 #include <chrono>
 #endif
 
+#include "k8090_utils.h"
 #include "k8090_commands.h"
 
 namespace sprelay {
@@ -433,7 +435,7 @@ void MockSerialPort::delayTimeout(int i)
         0,
         k8090::impl_::kEtxByte
     }};
-    response[5] = checkSum(response.get(), 5);
+    response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
 
     // starts timer to delay response
@@ -458,77 +460,59 @@ bool MockSerialPort::verifyPortParameters()
 // this method is called from the write() method and decides which command is received
 void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
 {
-    if (max_size >= 7 && validateCommand(buffer)) {
-        switch (buffer[1]) {
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_ON)] :
-                relayOn(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_OFF)] :
-                relayOff(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::TOGGLE_RELAY)] :
-                toggleRelay(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_BUTTON_MODE)] :
-                setButtonMode(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::BUTTON_MODE)] :
-                queryButtonMode();
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::START_TIMER)] :
-                startTimer(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_TIMER)] :
-                setTimer(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::TIMER)] :
-                queryTimer(buffer);
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::QUERY_RELAY)] :
-                queryRelay();
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::RESET_FACTORY_DEFAULTS)] :
-                factoryDefaults();
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::JUMPER_STATUS)] :
-                jumperStatus();
-                break;
-            case k8090::impl_::kCommands[as_number(k8090::CommandID::FIRMWARE_VERSION)] :
-                firmwareVersion();
-                break;
-        }
+    if (max_size < 7) {
+        return;
     }
-}
-
-
-// static method for check sum computing
-// TODO(lumik): it duplicates K8090::checkSum(). It should be moved to some utility namespace
-unsigned char MockSerialPort::checkSum(const unsigned char *msg, int n)
-{
-    unsigned int sum = 0u;
-    for (int ii = 0; ii < n; ++ii) {
-        sum += (unsigned int)msg[ii];
+    // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
+    std::unique_ptr<k8090::impl_::CardMessage> command;
+    try {
+        command.reset(new k8090::impl_::CardMessage{buffer, buffer + 7});
+    } catch (const std::out_of_range &) {
+        return;
     }
-    unsigned char sum_byte = sum % 256;
-    sum = (unsigned int) (~sum_byte) + 1u;
-    sum_byte = (unsigned char) sum % 256;
 
-    return sum_byte;
-}
+    if (!command->isValid()) {
+        return;
+    }
 
-
-// static method for checking general command validity
-// TODO(lumik): it duplicates K8090::validateResponse(). It should be moved to some utility namespace
-bool MockSerialPort::validateCommand(const unsigned char *msg)
-{
-    if (msg[0] != k8090::impl_::kStxByte)
-        return false;
-    unsigned char chk = checkSum(msg, 5);
-    if (chk != msg[5])
-        return false;
-    if (msg[6] != k8090::impl_::kEtxByte)
-        return false;
-    return true;
+    switch (buffer[1]) {
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_ON)] :
+            relayOn(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_OFF)] :
+            relayOff(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::TOGGLE_RELAY)] :
+            toggleRelay(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_BUTTON_MODE)] :
+            setButtonMode(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::BUTTON_MODE)] :
+            queryButtonMode();
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::START_TIMER)] :
+            startTimer(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_TIMER)] :
+            setTimer(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::TIMER)] :
+            queryTimer(std::move(command));
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::QUERY_RELAY)] :
+            queryRelay();
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RESET_FACTORY_DEFAULTS)] :
+            factoryDefaults();
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::JUMPER_STATUS)] :
+            jumperStatus();
+            break;
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::FIRMWARE_VERSION)] :
+            firmwareVersion();
+            break;
+    }
 }
 
 
@@ -548,10 +532,10 @@ int MockSerialPort::getRandomDelay()
 // timers, which also start timers for corresponding relays. The timers triggers the delayTimeout() method.
 
 // switches specified realys on
-void MockSerialPort::relayOn(const unsigned char *command)
+void MockSerialPort::relayOn(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     unsigned char previous = on_;
-    on_ |= command[2];
+    on_ |= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
@@ -563,7 +547,7 @@ void MockSerialPort::relayOn(const unsigned char *command)
             0,
             k8090::impl_::kEtxByte
         }};
-        response[5] = checkSum(response.get(), 5);
+        response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
             response_timer_.start(getRandomDelay());
@@ -573,15 +557,15 @@ void MockSerialPort::relayOn(const unsigned char *command)
 
 
 // switches specified relays off, stops corresponding timers
-void MockSerialPort::relayOff(const unsigned char *command)
+void MockSerialPort::relayOff(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     unsigned char previous = on_;
-    on_ &= ~command[2];
+    on_ &= ~command->data[2];
     unsigned char current = on_;
     if (previous != current) {
         for (int i = 0; i < 8; ++i) {
             unsigned char relay = 1 << i;
-            if (relay & active_timers_ & command[2]) {
+            if (relay & active_timers_ & command->data[2]) {
                 delay_timers_[i].stop();
                 active_timers_ &= ~relay;
             }
@@ -595,7 +579,7 @@ void MockSerialPort::relayOff(const unsigned char *command)
             0,
             k8090::impl_::kEtxByte
         }};
-        response[5] = checkSum(response.get(), 5);
+        response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
             response_timer_.start(getRandomDelay());
@@ -605,15 +589,15 @@ void MockSerialPort::relayOff(const unsigned char *command)
 
 
 // toggles specified relays, stops corresponding timers
-void MockSerialPort::toggleRelay(const unsigned char *command)
+void MockSerialPort::toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     unsigned char previous = on_;
-    on_ ^= command[2];
+    on_ ^= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
         for (int i = 0; i < 8; ++i) {
             unsigned char relay = 1 << i;
-            if (relay & active_timers_ & previous & command[2]) {
+            if (relay & active_timers_ & previous & command->data[2]) {
                 delay_timers_[i].stop();
                 active_timers_ &= ~relay;
             }
@@ -627,7 +611,7 @@ void MockSerialPort::toggleRelay(const unsigned char *command)
             0,
             k8090::impl_::kEtxByte
         }};
-        response[5] = checkSum(response.get(), 5);
+        response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
             response_timer_.start(getRandomDelay());
@@ -637,11 +621,11 @@ void MockSerialPort::toggleRelay(const unsigned char *command)
 
 
 // sets button modes
-void MockSerialPort::setButtonMode(const unsigned char *command)
+void MockSerialPort::setButtonMode(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
-    momentary_ = command[2];
-    toggle_ = command[3] & ~momentary_;
-    timed_ = command[4] & ~(momentary_ | toggle_);
+    momentary_ = command->data[2];
+    toggle_ = command->data[3] & ~momentary_;
+    timed_ = command->data[4] & ~(momentary_ | toggle_);
 }
 
 
@@ -657,7 +641,7 @@ void MockSerialPort::queryButtonMode()
         0,
         k8090::impl_::kEtxByte
     }};
-    response[5] = checkSum(response.get(), 5);
+    response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
         response_timer_.start(getRandomDelay());
@@ -666,14 +650,14 @@ void MockSerialPort::queryButtonMode()
 
 
 // starts timers
-void MockSerialPort::startTimer(const unsigned char *command)
+void MockSerialPort::startTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
-    int delay_ms = (command[3] * 256 + command[4]) * 1000;
+    int delay_ms = (command->data[3] * 256 + command->data[4]) * 1000;
     int local_delay_ms;  // delay of each timer, changes inside the loop
     unsigned char relay;
     for (int i = 0; i < 8; ++i) {
         relay = 1 << i;
-        if (relay & command[2]) {
+        if (relay & command->data[2]) {
             if (delay_ms) {
                 local_delay_ms = delay_ms;
             } else {
@@ -685,7 +669,7 @@ void MockSerialPort::startTimer(const unsigned char *command)
         }
     }
     unsigned char previous = on_;
-    on_ ^= command[2];
+    on_ ^= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
@@ -697,7 +681,7 @@ void MockSerialPort::startTimer(const unsigned char *command)
             0,
             k8090::impl_::kEtxByte
         }};
-        response[5] = checkSum(response.get(), 5);
+        response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
             response_timer_.start(getRandomDelay());
@@ -707,10 +691,10 @@ void MockSerialPort::startTimer(const unsigned char *command)
 
 
 // sets default timer timeouts
-void MockSerialPort::setTimer(const unsigned char *command)
+void MockSerialPort::setTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
-    k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command[2])};
-    quint16 delay = 256 * command[3] + command[4];
+    k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command->data[2])};
+    quint16 delay = 256 * command->data[3] + command->data[4];
     for (unsigned int i = 0; i < 8; ++i) {
         if (as_number(k8090::from_number(i)) & as_number(relay_ids)) {
             default_delays_[i] = delay;
@@ -720,15 +704,15 @@ void MockSerialPort::setTimer(const unsigned char *command)
 
 
 // query actual or default timer timeouts
-void MockSerialPort::queryTimer(const unsigned char *command)
+void MockSerialPort::queryTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
-    k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command[2])};
+    k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command->data[2])};
     for (unsigned int i = 0; i < 8; ++i) {
         if (as_number(k8090::from_number(i)) & as_number(relay_ids)) {
             unsigned char high_byte;
             unsigned char low_byte;
             // total timer
-            if (!command[3]) {
+            if (!command->data[3]) {
                 high_byte = highByte(default_delays_[i]);
                 low_byte = lowByte(default_delays_[i]);
             } else {
@@ -750,7 +734,7 @@ void MockSerialPort::queryTimer(const unsigned char *command)
                 0,
                 k8090::impl_::kEtxByte
             }};
-            response[5] = checkSum(response.get(), 5);
+            response[5] = k8090::impl_::check_sum(response.get(), 5);
             stored_responses_.push(std::move(response));
             if (!response_timer_.isActive()) {
                 response_timer_.start(getRandomDelay());
@@ -772,7 +756,7 @@ void MockSerialPort::queryRelay()
         0,
         k8090::impl_::kEtxByte
     }};
-    response[5] = checkSum(response.get(), 5);
+    response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
         response_timer_.start(getRandomDelay());
@@ -790,7 +774,8 @@ void MockSerialPort::factoryDefaults()
         default_delays_[i] = 5;
     }
     if (on_ != k8090::as_number(k8090::RelayID::NONE)) {
-        unsigned char off_command[7] {
+        // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
+        std::unique_ptr<k8090::impl_::CardMessage> off_command{new k8090::impl_::CardMessage{
             k8090::impl_::kStxByte,
             k8090::impl_::kResponses[as_number(k8090::CommandID::RELAY_OFF)],
             on_,
@@ -798,9 +783,9 @@ void MockSerialPort::factoryDefaults()
             0,
             0,
             k8090::impl_::kEtxByte
-        };
-        off_command[5] = checkSum(off_command, 5);
-        relayOff(off_command);
+        }};
+        off_command->checksumMessage();
+        relayOff(std::move(off_command));
     }
 }
 
@@ -817,7 +802,7 @@ void MockSerialPort::jumperStatus()
         0,
         k8090::impl_::kEtxByte
     }};
-    response[5] = checkSum(response.get(), 5);
+    response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
         response_timer_.start(getRandomDelay());
@@ -837,7 +822,7 @@ void MockSerialPort::firmwareVersion()
         0,
         k8090::impl_::kEtxByte
     }};
-    response[5] = checkSum(response.get(), 5);
+    response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
         response_timer_.start(getRandomDelay());

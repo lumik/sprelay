@@ -59,8 +59,6 @@ private slots:  // NOLINT(whitespace/indent)
     // TODO(lumik): add test for factory defaults command
 
 private:  // NOLINT(whitespace/indent)
-    unsigned char checkSum(const unsigned char *bMsg, int n);
-
     bool compareResponse(const unsigned char *response, const unsigned char *expected);
     void sendCommand(MockSerialPort *serial_port, const unsigned char *command) const;
     bool measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);

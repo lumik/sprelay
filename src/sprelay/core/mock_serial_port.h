@@ -39,6 +39,13 @@
 namespace sprelay {
 namespace core {
 
+// forward declarations
+namespace k8090 {
+namespace impl_ {
+struct CardMessage;
+}  // namespace impl_
+}
+
 class MockSerialPort : public QObject
 {
     Q_OBJECT
@@ -88,20 +95,18 @@ private:  // NOLINT(whitespace/indent)
 
     bool verifyPortParameters();
     void sendData(const unsigned char *buffer, qint64 max_size);
-    static unsigned char checkSum(const unsigned char *msg, int n);
-    static bool validateCommand(const unsigned char *msg);
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
     static int getRandomDelay();
 
-    void relayOn(const unsigned char *command);
-    void relayOff(const unsigned char *command);
-    void toggleRelay(const unsigned char *command);
-    void setButtonMode(const unsigned char *command);
+    void relayOn(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void relayOff(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void setButtonMode(std::unique_ptr<k8090::impl_::CardMessage> command);
     void queryButtonMode();
-    void startTimer(const unsigned char *command);
-    void setTimer(const unsigned char *command);
-    void queryTimer(const unsigned char *command);
+    void startTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void setTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void queryTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
     void queryRelay();
     void factoryDefaults();
     void jumperStatus();

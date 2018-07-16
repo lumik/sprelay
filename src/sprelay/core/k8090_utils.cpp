@@ -36,6 +36,12 @@
 
 #include "k8090_utils.h"
 
+#include <iterator>
+#include <stdexcept>
+
+#include "k8090_commands.h"
+
+
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -258,6 +264,131 @@ bool Command::isCompatible(const Command &other) const
             return true;
     }
 }
+
+
+/*!
+    \ingroup k8090_impl
+    \brief Computes checksum of bytes in the msg.
+    \param msg C array of bytes.
+    \param n The number of the bytes.
+    \return The checksum.
+
+    The checksum is bit inversion of sum of all bytes plus 1.
+*/
+unsigned char check_sum(const unsigned char *msg, int n)
+{
+    unsigned int sum = 0u;
+    for (int ii = 0; ii < n; ++ii) {
+        sum += (unsigned int)msg[ii];
+    }
+    unsigned char sum_byte = sum % 256;
+    sum = (unsigned int) (~sum_byte) + 1u;
+    sum_byte = (unsigned char) sum % 256;
+
+    return sum_byte;
+}
+
+
+/*!
+    \struct sprelay::core::k8090::impl_::CardMessage
+    \ingroup k8090_impl
+    \brief Wraps message from or to the Velleman %K8090 relay card.
+*/
+
+
+/*!
+    \brief Constructor directly from data.
+    \param stx STX byte.
+    \param cmd Command byte.
+    \param mask Mask byte.
+    \param param1 1st parameter byte.
+    \param param2 2nd parameter byte.
+    \param chk Checksum byte.
+    \param etx ETX byte.
+*/
+CardMessage::CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1,
+    unsigned char param2, unsigned char chk, unsigned char etx)
+    : data{stx, cmd, mask, param1, param2, chk, etx}
+{
+}
+
+
+/*!
+    \brief The constructor from the response acquired from QSerialPort.
+    \param begin The begin iterator.
+    \param end The end iterator.
+    \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
+*/
+CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_iterator end)
+{
+    if (std::distance(begin, end) != 7) {
+        // TODO(lumik): all exceptions should derive from the project specific one. Refactor exceptions.
+        throw std::out_of_range{"The card response should have exactly 7 bytes."};
+    }
+    for (int i = 0; i < 7; ++i) {
+        data[i] = reinterpret_cast<const unsigned char &>(begin[i]);
+    }
+}
+
+
+/*!
+    \brief The constructor unsigned char message.
+    \param begin The pointer to the beginning of the message.
+    \param end The pointer to one after the end of the message.
+    \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
+*/
+CardMessage::CardMessage(const unsigned char *begin, const unsigned char *end)
+{
+    if (std::distance(begin, end) != 7) {
+        // TODO(lumik): all exceptions should derive from the project specific one. Refactor exceptions.
+        throw std::out_of_range{"The card response should have exactly 7 bytes."};
+    }
+    for (int i = 0; i < 7; ++i) {
+        data[i] = begin[i];
+    }
+}
+
+
+/*!
+    \brief Sets the checksum byte to the message checksum
+    \sa check_sum
+*/
+void CardMessage::checksumMessage()
+{
+    data[5] = check_sum(data, 5);
+}
+
+
+/*!
+    \brief Validates the response from card for formal requirements.
+    \return True if the response is valid.
+*/
+bool CardMessage::isValid() const
+{
+    if (data[0] != kStxByte)
+        return false;
+    unsigned char chk = check_sum(data, 5);
+    if (chk != data[5])
+        return false;
+    if (data[6] != kEtxByte)
+        return false;
+    return true;
+}
+
+/*!
+    \brief Returns the byte identifying the response type
+    \return The id byte.
+*/
+unsigned char CardMessage::commandByte() const
+{
+    return data[1];
+}
+
+
+/*!
+    \var CardMessage::data
+    \brief The message data.
+*/
 
 }  // namespace impl_
 }  // namespace k8090

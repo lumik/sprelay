@@ -54,6 +54,8 @@ namespace k8090 {
 namespace impl_ {
 // Command forward declaration
 struct Command;
+// CardMessage forward declaration
+struct CardMessage;
 }  // namespace impl_
 
 
@@ -133,17 +135,15 @@ private:  // NOLINT(whitespace/indent)
     bool hasResponse(k8090::CommandID command_id);
     void sendToSerial(std::unique_ptr<unsigned char []> buffer, int n);
 
-    void buttonModeResponse(const unsigned char *buffer);
-    void timerResponse(const unsigned char *buffer);
-    void buttonStatusResponse(const unsigned char *buffer);
-    void relayStatusResponse(const unsigned char *buffer);
-    void jumperStatusResponse(const unsigned char *buffer);
-    void firmwareVersionResponse(const unsigned char *buffer);
+    void buttonModeResponse(std::unique_ptr<impl_::CardMessage> response);
+    void timerResponse(std::unique_ptr<impl_::CardMessage> response);
+    void buttonStatusResponse(std::unique_ptr<impl_::CardMessage> response);
+    void relayStatusResponse(std::unique_ptr<impl_::CardMessage> response);
+    void jumperStatusResponse(std::unique_ptr<impl_::CardMessage> response);
+    void firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response);
     void connectionSuccessful();
     void doDisconnect();
 
-    static unsigned char checkSum(const unsigned char *msg, int n);
-    static bool validateResponse(const unsigned char *msg);
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
 

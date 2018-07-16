@@ -60,8 +60,6 @@ private slots:  // NOLINT(whitespace/indent)
     void cleanupTestCase();
 
 private:  // NOLINT(whitespace/indent)
-    unsigned char checkSum(const unsigned char *bMsg, int n);
-
     std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
     void resetRelays(UnifiedSerialPort *serial_port) const;
     bool compareResponse(const unsigned char *response, const unsigned char *expected);

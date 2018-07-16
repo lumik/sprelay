@@ -37,6 +37,7 @@
 
 #include "core_test_utils.h"
 #include "sprelay/core/k8090.h"
+#include "sprelay/core/k8090_utils.h"
 #include "sprelay/core/serial_port_utils.h"
 
 
@@ -884,23 +885,9 @@ void MockSerialPortTest::moreDefaultTimers()
 }
 
 
-unsigned char MockSerialPortTest::checkSum(const unsigned char *bMsg, int n)
-{
-    unsigned int iSum = 0u;
-    for (int ii = 0; ii < n; ++ii) {
-        iSum += (unsigned int)bMsg[ii];
-    }
-    unsigned char byteSum = iSum % 256;
-    iSum = (unsigned int) (~byteSum) + 1u;
-    byteSum = (unsigned char) iSum % 256;
-
-    return byteSum;
-}
-
-
 bool MockSerialPortTest::compareResponse(const unsigned char *response, const unsigned char *expected)
 {
-    unsigned char check_sum = checkSum(expected, 5);
+    unsigned char check_sum = k8090::impl_::check_sum(expected, 5);
     if (check_sum != expected[5]) {
         qDebug() << "Check sum should be:" << serial_utils::byte_to_hex(&check_sum, 1);
         return false;
