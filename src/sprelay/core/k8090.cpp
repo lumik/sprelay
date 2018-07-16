@@ -30,6 +30,7 @@
 #include <QTimer>
 
 #include "command_queue.h"
+#include "k8090_commands.h"
 #include "k8090_utils.h"
 #include "serial_port_utils.h"
 #include "unified_serial_port.h"
@@ -63,196 +64,6 @@ namespace core {
 */
 namespace k8090 {
 
-// generate static arrays containing commands, command priorities and responses at compile time
-namespace {  // unnamed namespace
-
-// template function to fill the array with appropriate commands and priorities
-template<unsigned int N>
-struct CommandDataValue;
-
-// specializations
-template<>
-struct CommandDataValue<as_number(CommandID::RELAY_ON)>
-{
-    static const unsigned char kCommand = 0x11;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::RELAY_OFF)>
-{
-    static const unsigned char kCommand = 0x12;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::TOGGLE_RELAY)>
-{
-    static const unsigned char kCommand = 0x14;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::QUERY_RELAY)>
-{
-    static const unsigned char kCommand = 0x18;
-    static const int kPriority = 2;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::SET_BUTTON_MODE)>
-{
-    static const unsigned char kCommand = 0x21;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::BUTTON_MODE)>
-{
-    static const unsigned char kCommand = 0x22;
-    static const int kPriority = 2;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::START_TIMER)>
-{
-    static const unsigned char kCommand = 0x41;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::SET_TIMER)>
-{
-    static const unsigned char kCommand = 0x42;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::TIMER)>
-{
-    static const unsigned char kCommand = 0x44;
-    static const int kPriority = 2;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::RESET_FACTORY_DEFAULTS)>
-{
-    static const unsigned char kCommand = 0x66;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::JUMPER_STATUS)>
-{
-    static const unsigned char kCommand = 0x70;
-    static const int kPriority = 1;
-};
-template<>
-struct CommandDataValue<as_number(CommandID::FIRMWARE_VERSION)>
-{
-    static const unsigned char kCommand = 0x71;
-    static const int kPriority = 1;
-};
-
-
-// template function to fill the array with appropriate responses
-template<unsigned int N>
-struct ResponseDataValue;
-
-// specializations
-template<>
-struct ResponseDataValue<as_number(ResponseID::BUTTON_MODE)>
-{
-    static const unsigned char kCommand = 0x22;
-};
-template<>
-struct ResponseDataValue<as_number(ResponseID::TIMER)>
-{
-    static const unsigned char kCommand = 0x44;
-};
-template<>
-struct ResponseDataValue<as_number(ResponseID::BUTTON_STATUS)>
-{
-    static const unsigned char kCommand = 0x50;
-};
-template<>
-struct ResponseDataValue<as_number(ResponseID::RELAY_STATUS)>
-{
-    static const unsigned char kCommand = 0x51;
-};
-template<>
-struct ResponseDataValue<as_number(ResponseID::JUMPER_STATUS)>
-{
-    static const unsigned char kCommand = 0x70;
-};
-template<>
-struct ResponseDataValue<as_number(ResponseID::FIRMWARE_VERSION)>
-{
-    static const unsigned char kCommand = 0x71;
-};
-
-// Template containing static array
-template<typename T, T ...Args>
-struct XArrayData
-{
-    // initializing declaration
-    static constexpr T kValues[sizeof...(Args)] = {Args...};
-};
-
-// recursively generates command typedefs
-template<unsigned int N, unsigned char ...Args>
-struct CommandArrayGenerator_
-{
-    using Commands = typename CommandArrayGenerator_<N - 1, CommandDataValue<N - 1>::kCommand, Args...>::Commands;
-    using Priorities = typename CommandArrayGenerator_<N - 1, CommandDataValue<N - 1>::kPriority, Args...>::Priorities;
-};
-
-// end case template partial specialization of command typedefs
-template<unsigned char ...Args>
-struct CommandArrayGenerator_<1u, Args...>
-{
-    using Commands = XArrayData<unsigned char, CommandDataValue<0u>::kCommand, Args...>;
-    using Priorities = XArrayData<int, CommandDataValue<0u>::kPriority, Args...>;
-};
-
-// CommandArray generates recursively kCommands nad kPriorities types, which contains static constant array kValues.
-// Usage: unsigned char *arr = CommandArray<k8090::Comand::None>::kCommands::kValues
-template<unsigned char N>
-struct CommandArray
-{
-    using Commands = typename CommandArrayGenerator_<N>::Commands;
-    using Priorities = typename CommandArrayGenerator_<N>::Priorities;
-};
-
-// recursively generates reponse typedefs
-template<unsigned int N, unsigned char ...Args>
-struct ResponseArrayGenerator_
-{
-    using Responses = typename ResponseArrayGenerator_<N - 1, ResponseDataValue<N - 1>::kCommand, Args...>::Responses;
-};
-
-// end case template partial specialization of response typedefs
-template<unsigned char ...Args>
-struct ResponseArrayGenerator_<1u, Args...>
-{
-    using Responses = XArrayData<unsigned char, ResponseDataValue<0u>::kCommand, Args...>;
-};
-
-// ResponseArray generates recursively kResponses type, which contains static constant array kValues.
-// Usage: unsigned char *arr = ResponseArray<k8090::Comand::None>::kCommands::kValues
-template<unsigned char N>
-struct ResponseArray
-{
-    using Responses = typename ResponseArrayGenerator_<N>::Responses;
-};
-
-// static const array definition (needed to create the static array kValues to satisfy ODR, deprecated c++17)
-template<typename T, T ...Args>
-constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
-
-// Array of hexadecimal representation of commands used to control the relay.
-constexpr const unsigned char *kCommands_ = CommandArray<as_number(CommandID::NONE)>::Commands::kValues;
-// Array of default priorities used to command scheduling.
-constexpr const int *kPriorities_ = CommandArray<as_number(CommandID::NONE)>::Priorities::kValues;
-// Array of hexadecimal representation of responses sended by the relay.
-constexpr const unsigned char *kResponses_ = ResponseArray<as_number(ResponseID::NONE)>::Responses::kValues;
-// Start delimiting command byte.
-constexpr unsigned char kStxByte_ = 0x04;
-// End delimiting command byte.
-constexpr unsigned char kEtxByte_ = 0x0f;
-
-}  // unnamed namespace
-
 
 /*!
     \class K8090
@@ -267,16 +78,16 @@ constexpr unsigned char kEtxByte_ = 0x0f;
 
 // public
 /*!
-    \brief Product id for the virtual port identification.
+    \brief Product id for the automatic port identification.
     \sa K8090::connectK8090()
 */
-const quint16 K8090::kProductID = 32912;
+const quint16 K8090::kProductID = impl_::kProductID;
 
 /*!
-    \brief Vendor id for the virtual port identification.
+    \brief Vendor id for the automatic port identification.
     \sa K8090::connectK8090()
 */
-const quint16 K8090::kVendorID = 4303;
+const quint16 K8090::kVendorID = impl_::kVendorID;
 
 // private
 // Shortest interval in ms from sending one command to sending a new one.
@@ -817,22 +628,22 @@ void K8090::onReadyData()
                 return;
             }
             switch (buffer[i + 1]) {
-                case kResponses_[as_number(ResponseID::BUTTON_MODE)] :
+                case impl_::kResponses[as_number(ResponseID::BUTTON_MODE)] :
                     buttonModeResponse(buffer + i);
                     break;
-                case kResponses_[as_number(ResponseID::TIMER)] :
+                case impl_::kResponses[as_number(ResponseID::TIMER)] :
                     timerResponse(buffer + i);
                     break;
-                case kResponses_[as_number(ResponseID::BUTTON_STATUS)] :
+                case impl_::kResponses[as_number(ResponseID::BUTTON_STATUS)] :
                     buttonStatusResponse(buffer + i);
                     break;
-                case kResponses_[as_number(ResponseID::RELAY_STATUS)] :
+                case impl_::kResponses[as_number(ResponseID::RELAY_STATUS)] :
                     relayStatusResponse(buffer + i);
                     break;
-                case kResponses_[as_number(ResponseID::JUMPER_STATUS)] :
+                case impl_::kResponses[as_number(ResponseID::JUMPER_STATUS)] :
                     jumperStatusResponse(buffer + i);
                     break;
-                case kResponses_[as_number(ResponseID::FIRMWARE_VERSION)] :
+                case impl_::kResponses[as_number(ResponseID::FIRMWARE_VERSION)] :
                     firmwareVersionResponse(buffer + i);
                     break;
                 default:
@@ -912,7 +723,7 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
     } else {  // send command undirectly
         // TODO(lumik): don't insert query commands if set command with the same response is already inside
         // TODO(lumik): treat commands, which are directly sended better (avoid duplication)
-        impl_::Command command{command_id, kPriorities_[as_number(command_id)], as_number(mask), param1, param2};
+        impl_::Command command{command_id, impl_::kPriorities[as_number(command_id)], as_number(mask), param1, param2};
         const QList<const impl_::Command *> & pending_command_list = pending_commands_->get(command_id);
         // if there is no command with the same id waiting
         if (pending_command_list.isEmpty()) {
@@ -971,13 +782,13 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
 {
     static const int n = 7;  // Number of command bytes.
     std::unique_ptr<unsigned char []> cmd = std::unique_ptr<unsigned char []>{new unsigned char[n]};
-    cmd[0] = kStxByte_;
-    cmd[1] = kCommands_[as_number(command_id)];
+    cmd[0] = impl_::kStxByte;
+    cmd[1] = impl_::kCommands[as_number(command_id)];
     cmd[2] = as_number(mask);
     cmd[3] = param1;
     cmd[4] = param2;
     cmd[5] = checkSum(cmd.get(), 5);
-    cmd[6] = kEtxByte_;
+    cmd[6] = impl_::kEtxByte;
     // store current command for response testing. Commands with no response triggers query task after the command
     // timer elapses, see the dequeuCommand() method.
     current_command_->id = command_id;
@@ -1317,12 +1128,12 @@ unsigned char K8090::checkSum(const unsigned char *msg, int n)
 // validates response from card in binary representation
 bool K8090::validateResponse(const unsigned char *msg)
 {
-    if (msg[0] != kStxByte_)
+    if (msg[0] != impl_::kStxByte)
         return false;
     unsigned char chk = checkSum(msg, 5);
     if (chk != msg[5])
         return false;
-    if (msg[6] != kEtxByte_)
+    if (msg[6] != impl_::kEtxByte)
         return false;
     return true;
 }

@@ -21,12 +21,13 @@ HEADERS += \
     $$sprelay_source_dir/src/sprelay/core/command_queue.h \
     $$sprelay_source_dir/src/sprelay/core/command_queue.tpp \
     $$sprelay_source_dir/src/sprelay/core/k8090.h \
+    $$sprelay_source_dir/src/sprelay/core/k8090_commands.h \
     $$sprelay_source_dir/src/sprelay/core/k8090_defines.h \
     $$sprelay_source_dir/src/sprelay/core/k8090_utils.h \
     $$sprelay_source_dir/src/sprelay/core/mock_serial_port.h \
-    $$sprelay_source_dir/src/sprelay/core/unified_serial_port.h \
     $$sprelay_source_dir/src/sprelay/core/serial_port_defines.h \
     $$sprelay_source_dir/src/sprelay/core/serial_port_utils.h \
+    $$sprelay_source_dir/src/sprelay/core/unified_serial_port.h \
     command_queue_test.h \
     k8090_test.h \
     serial_port_utils_test.h \

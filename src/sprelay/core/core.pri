@@ -13,4 +13,5 @@ HEADERS  += \
     $$PWD/serial_port_utils.h \
     $$PWD/serial_port_defines.h \
     $$PWD/k8090_utils.h \
-    $$PWD/k8090_defines.h
+    $$PWD/k8090_defines.h \
+    $$PWD/k8090_commands.h

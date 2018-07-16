@@ -33,7 +33,7 @@
 #include <chrono>
 #endif
 
-#include "k8090.h"
+#include "k8090_commands.h"
 
 namespace sprelay {
 namespace core {
@@ -42,185 +42,13 @@ namespace core {
 // generator of random numbers which is used throughout the class to produce random undefined responses (active timer
 // delay query when the timer is not active) and random response delays from the card
 namespace {
+
 #ifdef __MINGW32__
 std::mt19937_64 random_generator(std::chrono::system_clock::now().time_since_epoch().count());
 #else  // ifdef __MINGW32__
 std::random_device random_device;  // random device on MinGW does not work, a seed is always same.
 std::mt19937_64 random_generator(random_device());
 #endif  // ifdef __MINGW32__
-
-// TODO(lumik): it duplicates K8090::kCommands_ etc. It should be moved to some utility namespace
-// generate static arrays containing commands and responses at compile time
-
-// template function to fill the array with appropriate commands
-template<unsigned int N>
-struct CommandDataValue;
-
-// specializations
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::RELAY_ON)>
-{
-    static const unsigned char kCommand = 0x11;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::RELAY_OFF)>
-{
-    static const unsigned char kCommand = 0x12;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::TOGGLE_RELAY)>
-{
-    static const unsigned char kCommand = 0x14;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::QUERY_RELAY)>
-{
-    static const unsigned char kCommand = 0x18;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::SET_BUTTON_MODE)>
-{
-    static const unsigned char kCommand = 0x21;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::BUTTON_MODE)>
-{
-    static const unsigned char kCommand = 0x22;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::START_TIMER)>
-{
-    static const unsigned char kCommand = 0x41;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::SET_TIMER)>
-{
-    static const unsigned char kCommand = 0x42;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::TIMER)>
-{
-    static const unsigned char kCommand = 0x44;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::RESET_FACTORY_DEFAULTS)>
-{
-    static const unsigned char kCommand = 0x66;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::JUMPER_STATUS)>
-{
-    static const unsigned char kCommand = 0x70;
-};
-template<>
-struct CommandDataValue<as_number(k8090::CommandID::FIRMWARE_VERSION)>
-{
-    static const unsigned char kCommand = 0x71;
-};
-
-
-// template function to fill the array with appropriate responses
-template<unsigned int N>
-struct ResponseDataValue;
-
-// specializations
-template<>
-struct ResponseDataValue<as_number(k8090::ResponseID::BUTTON_MODE)>
-{
-    static const unsigned char kCommand = 0x22;
-};
-template<>
-struct ResponseDataValue<as_number(k8090::ResponseID::TIMER)>
-{
-    static const unsigned char kCommand = 0x44;
-};
-template<>
-struct ResponseDataValue<as_number(k8090::ResponseID::BUTTON_STATUS)>
-{
-    static const unsigned char kCommand = 0x50;
-};
-template<>
-struct ResponseDataValue<as_number(k8090::ResponseID::RELAY_STATUS)>
-{
-    static const unsigned char kCommand = 0x51;
-};
-template<>
-struct ResponseDataValue<as_number(k8090::ResponseID::JUMPER_STATUS)>
-{
-    static const unsigned char kCommand = 0x70;
-};
-template<>
-struct ResponseDataValue<as_number(k8090::ResponseID::FIRMWARE_VERSION)>
-{
-    static const unsigned char kCommand = 0x71;
-};
-
-// Template containing static array
-template<typename T, T ...Args>
-struct XArrayData
-{
-    // initializing declaration
-    static constexpr T kValues[sizeof...(Args)] = {Args...};
-};
-
-// recursively generates command typedefs
-template<unsigned int N, unsigned char ...Args>
-struct CommandArrayGenerator_
-{
-    using Commands = typename CommandArrayGenerator_<N - 1, CommandDataValue<N - 1>::kCommand, Args...>::Commands;
-};
-
-// end case template partial specialization of command typedefs
-template<unsigned char ...Args>
-struct CommandArrayGenerator_<1u, Args...>
-{
-    using Commands = XArrayData<unsigned char, CommandDataValue<0u>::kCommand, Args...>;
-};
-
-// CommandArray generates recursively kCommand types, which contains static constant array kValues.
-// Usage: unsigned char *arr = CommandArray<k8090::Comand::None>::kCommands::kValues
-template<unsigned char N>
-struct CommandArray
-{
-    using Commands = typename CommandArrayGenerator_<N>::Commands;
-};
-
-// recursively generates reponse typedefs
-template<unsigned int N, unsigned char ...Args>
-struct ResponseArrayGenerator_
-{
-    using Responses = typename ResponseArrayGenerator_<N - 1, ResponseDataValue<N - 1>::kCommand, Args...>::Responses;
-};
-
-// end case template partial specialization of response typedefs
-template<unsigned char ...Args>
-struct ResponseArrayGenerator_<1u, Args...>
-{
-    using Responses = XArrayData<unsigned char, ResponseDataValue<0u>::kCommand, Args...>;
-};
-
-// ResponseArray generates recursively kResponses type, which contains static constant array kValues.
-// Usage: unsigned char *arr = ResponseArray<k8090::Comand::None>::kCommands::kValues
-template<unsigned char N>
-struct ResponseArray
-{
-    using Responses = typename ResponseArrayGenerator_<N>::Responses;
-};
-
-// static const array definition (needed to create the static array kValues to satisfy ODR, deprecated c++17)
-template<typename T, T ...Args>
-constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
-
-// Array of hexadecimal representation of commands used to control the relay.
-constexpr const unsigned char *kCommands_ =
-        CommandArray<as_number(k8090::CommandID::NONE)>::Commands::kValues;
-// Array of hexadecimal representation of responses sended by the relay.
-constexpr const unsigned char *kResponses_ =
-        ResponseArray<as_number(k8090::ResponseID::NONE)>::Responses::kValues;
-// Start delimiting command byte.
-constexpr unsigned char kStxByte_ = 0x04;
-// End delimiting command byte.
-constexpr unsigned char kEtxByte_ = 0x0f;
 
 }  // unnamed namespace
 
@@ -274,12 +102,12 @@ constexpr unsigned char kEtxByte_ = 0x0f;
 /*!
     \brief Product id for port identification. Taken from real card obtained at FUUK.
 */
-const quint16 MockSerialPort::kProductID = 32912;
+const quint16 MockSerialPort::kProductID = k8090::impl_::kProductID;
 
 /*!
     \brief Vendor id for port identification. Taken from real card obtained at FUUK.
 */
-const quint16 MockSerialPort::kVendorID = 4303;
+const quint16 MockSerialPort::kVendorID = k8090::impl_::kVendorID;
 
 // private
 // minimal delay for random response delay generation
@@ -597,13 +425,13 @@ void MockSerialPort::delayTimeout(int i)
 
     // insert response to queue with responses
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        kStxByte_,
-        kResponses_[as_number(k8090::ResponseID::RELAY_STATUS)],
+        k8090::impl_::kStxByte,
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
         previous,
         current,
         active_timers_,
         0,
-        kEtxByte_
+        k8090::impl_::kEtxByte
     }};
     response[5] = checkSum(response.get(), 5);
     stored_responses_.push(std::move(response));
@@ -632,40 +460,40 @@ void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
 {
     if (max_size >= 7 && validateCommand(buffer)) {
         switch (buffer[1]) {
-            case kCommands_[as_number(k8090::CommandID::RELAY_ON)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_ON)] :
                 relayOn(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::RELAY_OFF)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_OFF)] :
                 relayOff(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::TOGGLE_RELAY)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::TOGGLE_RELAY)] :
                 toggleRelay(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::SET_BUTTON_MODE)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_BUTTON_MODE)] :
                 setButtonMode(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::BUTTON_MODE)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::BUTTON_MODE)] :
                 queryButtonMode();
                 break;
-            case kCommands_[as_number(k8090::CommandID::START_TIMER)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::START_TIMER)] :
                 startTimer(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::SET_TIMER)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_TIMER)] :
                 setTimer(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::TIMER)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::TIMER)] :
                 queryTimer(buffer);
                 break;
-            case kCommands_[as_number(k8090::CommandID::QUERY_RELAY)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::QUERY_RELAY)] :
                 queryRelay();
                 break;
-            case kCommands_[as_number(k8090::CommandID::RESET_FACTORY_DEFAULTS)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::RESET_FACTORY_DEFAULTS)] :
                 factoryDefaults();
                 break;
-            case kCommands_[as_number(k8090::CommandID::JUMPER_STATUS)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::JUMPER_STATUS)] :
                 jumperStatus();
                 break;
-            case kCommands_[as_number(k8090::CommandID::FIRMWARE_VERSION)] :
+            case k8090::impl_::kCommands[as_number(k8090::CommandID::FIRMWARE_VERSION)] :
                 firmwareVersion();
                 break;
         }
@@ -693,12 +521,12 @@ unsigned char MockSerialPort::checkSum(const unsigned char *msg, int n)
 // TODO(lumik): it duplicates K8090::validateResponse(). It should be moved to some utility namespace
 bool MockSerialPort::validateCommand(const unsigned char *msg)
 {
-    if (msg[0] != kStxByte_)
+    if (msg[0] != k8090::impl_::kStxByte)
         return false;
     unsigned char chk = checkSum(msg, 5);
     if (chk != msg[5])
         return false;
-    if (msg[6] != kEtxByte_)
+    if (msg[6] != k8090::impl_::kEtxByte)
         return false;
     return true;
 }
@@ -727,13 +555,13 @@ void MockSerialPort::relayOn(const unsigned char *command)
     unsigned char current = on_;
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            kStxByte_,
-            kResponses_[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kStxByte,
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
             previous,
             current,
             active_timers_,
             0,
-            kEtxByte_
+            k8090::impl_::kEtxByte
         }};
         response[5] = checkSum(response.get(), 5);
         stored_responses_.push(std::move(response));
@@ -759,13 +587,13 @@ void MockSerialPort::relayOff(const unsigned char *command)
             }
         }
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            kStxByte_,
-            kResponses_[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kStxByte,
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
             previous,
             current,
             active_timers_,
             0,
-            kEtxByte_
+            k8090::impl_::kEtxByte
         }};
         response[5] = checkSum(response.get(), 5);
         stored_responses_.push(std::move(response));
@@ -791,13 +619,13 @@ void MockSerialPort::toggleRelay(const unsigned char *command)
             }
         }
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            kStxByte_,
-            kResponses_[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kStxByte,
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
             previous,
             current,
             active_timers_,
             0,
-            kEtxByte_
+            k8090::impl_::kEtxByte
         }};
         response[5] = checkSum(response.get(), 5);
         stored_responses_.push(std::move(response));
@@ -821,13 +649,13 @@ void MockSerialPort::setButtonMode(const unsigned char *command)
 void MockSerialPort::queryButtonMode()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        kStxByte_,
-        kResponses_[as_number(k8090::ResponseID::BUTTON_MODE)],
+        k8090::impl_::kStxByte,
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::BUTTON_MODE)],
         momentary_,
         toggle_,
         timed_,
         0,
-        kEtxByte_
+        k8090::impl_::kEtxByte
     }};
     response[5] = checkSum(response.get(), 5);
     stored_responses_.push(std::move(response));
@@ -861,14 +689,14 @@ void MockSerialPort::startTimer(const unsigned char *command)
     unsigned char current = on_;
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-                kStxByte_,
-                        kResponses_[as_number(k8090::ResponseID::RELAY_STATUS)],
-                        previous,
-                        current,
-                        active_timers_,
-                        0,
-                        kEtxByte_
-            }};
+            k8090::impl_::kStxByte,
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+            previous,
+            current,
+            active_timers_,
+            0,
+            k8090::impl_::kEtxByte
+        }};
         response[5] = checkSum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
@@ -914,13 +742,13 @@ void MockSerialPort::queryTimer(const unsigned char *command)
                 low_byte = lowByte(delay);
             }
             std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-                kStxByte_,
-                kResponses_[as_number(k8090::ResponseID::TIMER)],
+                k8090::impl_::kStxByte,
+                k8090::impl_::kResponses[as_number(k8090::ResponseID::TIMER)],
                 as_number(k8090::from_number(i)),
                 high_byte,
                 low_byte,
                 0,
-                kEtxByte_
+                k8090::impl_::kEtxByte
             }};
             response[5] = checkSum(response.get(), 5);
             stored_responses_.push(std::move(response));
@@ -936,13 +764,13 @@ void MockSerialPort::queryTimer(const unsigned char *command)
 void MockSerialPort::queryRelay()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        kStxByte_,
-        kResponses_[as_number(k8090::ResponseID::RELAY_STATUS)],
+        k8090::impl_::kStxByte,
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
         on_,
         on_,
         active_timers_,
         0,
-        kEtxByte_
+        k8090::impl_::kEtxByte
     }};
     response[5] = checkSum(response.get(), 5);
     stored_responses_.push(std::move(response));
@@ -963,13 +791,14 @@ void MockSerialPort::factoryDefaults()
     }
     if (on_ != k8090::as_number(k8090::RelayID::NONE)) {
         unsigned char off_command[7] {
-                kStxByte_,
-                kResponses_[as_number(k8090::CommandID::RELAY_OFF)],
-                on_,
-                0,
-                0,
-                0,
-                kEtxByte_};
+            k8090::impl_::kStxByte,
+            k8090::impl_::kResponses[as_number(k8090::CommandID::RELAY_OFF)],
+            on_,
+            0,
+            0,
+            0,
+            k8090::impl_::kEtxByte
+        };
         off_command[5] = checkSum(off_command, 5);
         relayOff(off_command);
     }
@@ -980,13 +809,13 @@ void MockSerialPort::factoryDefaults()
 void MockSerialPort::jumperStatus()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        kStxByte_,
-        kResponses_[as_number(k8090::ResponseID::JUMPER_STATUS)],
+        k8090::impl_::kStxByte,
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::JUMPER_STATUS)],
         0,
         jumper_status_,
         0,
         0,
-        kEtxByte_
+        k8090::impl_::kEtxByte
     }};
     response[5] = checkSum(response.get(), 5);
     stored_responses_.push(std::move(response));
@@ -1000,13 +829,13 @@ void MockSerialPort::jumperStatus()
 void MockSerialPort::firmwareVersion()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        kStxByte_,
-        kResponses_[as_number(k8090::ResponseID::FIRMWARE_VERSION)],
+        k8090::impl_::kStxByte,
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::FIRMWARE_VERSION)],
         0,
         firmware_version_[0],
         firmware_version_[1],
         0,
-        kEtxByte_
+        k8090::impl_::kEtxByte
     }};
     response[5] = checkSum(response.get(), 5);
     stored_responses_.push(std::move(response));
