@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     status |= QTest::qExec(card_message_test.get(), argc, argv);
 
     // K8090Test
-    std::unique_ptr<K8090Test> k8090_test{new K8090Test};
+    std::unique_ptr<k8090::K8090Test> k8090_test{new k8090::K8090Test};
     status |= QTest::qExec(k8090_test.get(), argc, argv);
 
     return status;

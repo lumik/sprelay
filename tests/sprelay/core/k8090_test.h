@@ -35,6 +35,7 @@ class QSignalSpy;
 
 namespace sprelay {
 namespace core {
+namespace k8090 {
 
 // forward declarations
 class K8090;
@@ -75,11 +76,12 @@ private:  // NOLINT(whitespace/indent)
     void createTestData();
     bool checkNoSpyData(QSignalSpy **spies, int n);
 
-    std::unique_ptr<k8090::K8090> k8090_;
+    std::unique_ptr<K8090> k8090_;
     bool real_card_present_;
     QString real_card_port_name_;
 };
 
+}  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
 
