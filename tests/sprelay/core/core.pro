@@ -15,7 +15,8 @@ SOURCES += \
     k8090_test.cpp \
     serial_port_utils_test.cpp \
     unified_serial_port_test.cpp \
-    mock_serial_port_test.cpp
+    mock_serial_port_test.cpp \
+    k8090_utils_test.cpp
 
 HEADERS += \
     $$sprelay_source_dir/src/sprelay/core/command_queue.h \
@@ -33,7 +34,8 @@ HEADERS += \
     serial_port_utils_test.h \
     unified_serial_port_test.h \
     mock_serial_port_test.h \
-    core_test_utils.h
+    core_test_utils.h \
+    k8090_utils_test.h
 
 DESTDIR = $$sprelay_source_dir/bin
 target.path = $$sprelay_install_prefix/bin
