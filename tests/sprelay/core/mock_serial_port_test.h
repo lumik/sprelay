@@ -28,6 +28,8 @@
 
 #include <memory>
 
+#include "sprelay/test_suite/test_suite.h"
+
 #include "sprelay/core/mock_serial_port.h"
 
 
@@ -65,6 +67,8 @@ private:  // NOLINT(whitespace/indent)
 
     std::unique_ptr<MockSerialPort> mock_serial_port_;
 };
+
+ADD_TEST(MockSerialPortTest)
 
 }  // namespace core
 }  // namespace sprelay

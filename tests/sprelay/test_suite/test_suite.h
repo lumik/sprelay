@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -20,31 +22,70 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
-#define SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
+/*!
+ * \file      test_suite.h
+ * \brief     Test suite for automated test addition.
 
-#include <QObject>
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2018-07-17
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ *
+ * \copyright Inspired by
+ * https://stackoverflow.com/questions/12194256/qt-how-to-organize-unit-test-with-more-than-one-class
+ */
 
-#include "sprelay/test_suite/test_suite.h"
+
+#ifndef SPRELAY_TEST_SUITE_TEST_SUITE_H_
+#define SPRELAY_TEST_SUITE_TEST_SUITE_H_
+
+#include <QtTest>
+
+#include <memory>
+#include <map>
+#include <string>
 
 namespace sprelay {
-namespace core {
-namespace command_queue {
+namespace test_suite{
 
-class CommandQueueTest: public QObject
+// TODO(lumik): make documentation
+
+using TestContainer = std::map<std::string, std::unique_ptr<QObject>>;
+
+inline TestContainer & get_tests()
 {
-    Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
-    void uniquePush();
-    void notUniquePush();
-    void updateCommand();
+    static TestContainer map;
+    return map;
+}
+
+
+inline int run_tests(int argc, char **argv) {
+    int status = 0;
+    for (const auto &i : get_tests()) {
+        status |= QTest::qExec(i.second.get(), argc, argv);
+    }
+    return status;
+}
+
+
+template <typename TestClass>
+class TestInserter {
+public:  // NOLINT(whitespace/indent)
+    explicit TestInserter(const char *name)
+    {
+        auto &tests = get_tests();
+        if (!tests.count(name)) {
+            tests.insert(std::make_pair(name, std::unique_ptr<TestClass>(new TestClass)));
+        }
+    }
 };
 
-ADD_TEST(CommandQueueTest)
-
-}  // namespace command_queue
-}  // namespace core
+}  // namespace test_suite
 }  // namespace sprelay
 
-#endif  // SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
+#define ADD_TEST(class_name) static sprelay::test_suite::TestInserter<class_name> test_##class_name{#class_name};
+
+#endif  // SPRELAY_TEST_SUITE_TEST_SUITE_H_
 

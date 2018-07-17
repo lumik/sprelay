@@ -63,6 +63,7 @@ When CONFIG+=sprelay_build_standalone is omited, the application is built as sha
 Then run your `make` command, for example (`-j` flag enables compilation paralelization)
 ```
 mingw32-make -j2
+mingw32-make -j1 check TESTARGS="-silent"  # optional if you want to run tests
 mingw32-make doc      # optional if you want to make documentation
 mingw32-make install  # optional if you want to install the application, see above
 ```
@@ -70,14 +71,13 @@ mingw32-make install  # optional if you want to install the application, see abo
 After make process finishes, go to the bin directory and try to run tests and the program
 ```
 cd C:\path\where\you\want\the\application\installed\bin
-sprelayunittests.exe
 sprelay.exe
 ```
 
 #### Compilation using Qt Creator
 Open the sprelay.pro project file in the top directory and cofigure it for appropriate compiler. Setup on the `Projects` tab the right qmake flags in the
 `Build Steps` section `Additional arguments`: `CONFIG+=sprelay_build_standalone` (see above the *Command line compilation* section for more details) Then run
-either `core` (for tests) or `sprelay` (for the application) subprojects.
+either `core_test` (for tests) or `sprelay` (for the application) subprojects.
 
 Then compile the documentation by executing
 ```

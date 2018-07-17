@@ -28,6 +28,8 @@
 
 #include <memory>
 
+#include "sprelay/test_suite/test_suite.h"
+
 
 namespace sprelay {
 namespace core {
@@ -68,6 +70,8 @@ private:  // NOLINT(whitespace/indent)
     bool real_card_present_;
     QString real_card_port_name_;
 };
+
+ADD_TEST(UnifiedSerialPortTest)
 
 }  // namespace core
 }  // namespace sprelay

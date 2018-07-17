@@ -25,6 +25,8 @@
 
 #include <QObject>
 
+#include "sprelay/test_suite/test_suite.h"
+
 namespace sprelay {
 namespace core {
 namespace serial_utils {
@@ -35,6 +37,8 @@ class SerialPortUtilsTest : public QObject
 private slots:  // NOLINT(whitespace/indent)
     void hexToByteTestCase();
 };
+
+ADD_TEST(SerialPortUtilsTest)
 
 }  // namespace serial_utils
 }  // namespace core

@@ -19,6 +19,7 @@ SOURCES += \
     k8090_utils_test.cpp
 
 HEADERS += \
+    $$sprelay_source_dir/tests/sprelay/test_suite/test_suite.h \
     $$sprelay_source_dir/src/sprelay/core/command_queue.h \
     $$sprelay_source_dir/src/sprelay/core/command_queue.tpp \
     $$sprelay_source_dir/src/sprelay/core/k8090.h \
@@ -39,8 +40,6 @@ HEADERS += \
 
 DESTDIR = $$sprelay_source_dir/bin
 target.path = $$sprelay_install_prefix/bin
-
-INCLUDEPATH += $$sprelay_source_dir/src
 
 !equals(sprelay_install_prefix, $$sprelay_source_dir) {
     INSTALLS += target

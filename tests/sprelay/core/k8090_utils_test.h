@@ -40,6 +40,8 @@
 
 #include <QObject>
 
+#include "sprelay/test_suite/test_suite.h"
+
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -52,6 +54,9 @@ class K8090UtilsTest : public QObject
 private slots:  // NOLINT(whitespace/indent)
     void checkSum();
 };
+
+ADD_TEST(K8090UtilsTest)
+
 
 class CommandTest : public QObject
 {
@@ -70,6 +75,8 @@ private slots:  // NOLINT(whitespace/indent)
     void isNotCompatible();
 };
 
+ADD_TEST(CommandTest)
+
 
 class CardMessageTest : public QObject
 {
@@ -81,6 +88,8 @@ private slots:  // NOLINT(whitespace/indent)
     void isValid();
     void commandByte();
 };
+
+ADD_TEST(CardMessageTest)
 
 }  // namespace impl_
 }  // namespace k8090

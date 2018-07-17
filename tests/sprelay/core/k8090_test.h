@@ -28,6 +28,8 @@
 
 #include <memory>
 
+#include "sprelay/test_suite/test_suite.h"
+
 #include "sprelay/core/k8090.h"
 
 // forward declarations
@@ -80,6 +82,8 @@ private:  // NOLINT(whitespace/indent)
     bool real_card_present_;
     QString real_card_port_name_;
 };
+
+ADD_TEST(K8090Test)
 
 }  // namespace k8090
 }  // namespace core

@@ -744,7 +744,7 @@ void CardMessageTest::commandByte()
     const unsigned char chk = 0xdc;  // check sum
     const unsigned char etx = 0x0f;  // ETX byte
 
-    CardMessage message{stx, cmd, mask, param1, param2, chk - 1, etx};
+    CardMessage message{stx, cmd, mask, param1, param2, chk, etx};
     QVERIFY2(message.commandByte() == cmd,
         qPrintable(QString{"commandByte = '%1' does not match the expected %2."}
             .arg(message.commandByte(), 8, 2, QChar('0')).arg(cmd, 8, 2, QChar('0'))));
