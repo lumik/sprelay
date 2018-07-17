@@ -152,14 +152,20 @@ namespace impl_ {
     If the other command is k8090::CommandID::RELAY_ON and is merged to k8090::CommandID::RELAY_OFF or the
     oposite, the negation is merged. XOR is applied to k8090::CommandID::TOGGLE_RELAY and for
     k8090::CommandID::SET_BUTTON_MODE and duplicate assignments, the command is merged according to precedence
-    stated in Velleman %K8090 card manual (momentary mode, toggle mode, timed mode from most important to less).
+    stated in Velleman %K8090 card manual (momentary mode, toggle mode, timed mode from most important to less). The
+    parameters of k8090::CommandID::START_TIMER, k8090::CommandID::SET_TIMER and k8090::CommandID::TIMER are not
+    merged, only the affected relays are updated. Check, if that makes sense, is up to class user.
 
     The other commands are merged naturally as _or assignment_ operator to their members.
+
+    The compatibility of commands is not checked inside the method. This method enables you to merge commands with
+    different ids. The compatibility can be checked for example by the Command::isCompatible() method.
 
     \param other The other command.
     \return Merged command.
 */
 Command & Command::operator|=(const Command &other) {
+    // TODO(lumik): enable merging into none command
     switch (id) {
         // commands with special treatment
         case k8090::CommandID::RELAY_ON :
@@ -181,8 +187,8 @@ Command & Command::operator|=(const Command &other) {
             break;
         case k8090::CommandID::SET_BUTTON_MODE :
             params[0] |= other.params[0];
-            params[1] |= other.params[1] & ~params[0];
-            params[2] |= other.params[2] & ~params[1] & ~params[2];
+            params[1] = (params[1] | other.params[1]) & ~params[0];
+            params[2] = (params[2] | other.params[2]) & ~params[1] & ~params[0];
             break;
         // commands with one relevant parameter mask
         case k8090::CommandID::START_TIMER :
@@ -196,6 +202,7 @@ Command & Command::operator|=(const Command &other) {
         //     case k8090::CommandID::RESET_FACTORY_DEFAULTS :
         //     case k8090::CommandID::JUMPER_STATUS :
         //     case k8090::CommandID::FIRMWARE_VERSION :
+        //     case k8090::CommandID::NONE
         default :
             break;
     }
@@ -229,7 +236,10 @@ Command & Command::operator|=(const Command &other) {
 */
 bool Command::isCompatible(const Command &other) const
 {
+    // ids are not equal
     if (id != other.id) {
+        // TODO(lumik): treat compatibility of toggle relay
+        // TODO(lumik): treat compatibility to none command
         switch (id) {
             case k8090::CommandID::RELAY_ON :
                 if (other.id == k8090::CommandID::RELAY_OFF) {
@@ -245,7 +255,10 @@ bool Command::isCompatible(const Command &other) const
                 return false;
         }
     }
+
+    // ids are equal
     switch (id) {
+        // TODO(lumik): handle the cases with the same id as compatible.
         case k8090::CommandID::START_TIMER :
         case k8090::CommandID::SET_TIMER :
             for (int i = 1; i < 3; ++i) {
