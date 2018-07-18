@@ -50,10 +50,24 @@
 namespace sprelay {
 namespace test_suite{
 
-// TODO(lumik): make documentation
-
+/*!
+ * \brief Container type used for storage of tests declaration
+ */
 using TestContainer = std::map<std::string, std::unique_ptr<QObject>>;
 
+
+/*!
+ * \brief Returns the tests storage container static instance.
+ * \return The test storage container.
+ *
+ * This method can be used to insert tests inside test container for the later execution.
+ * \code
+ * auto &tests = get_tests();
+ * if (!tests.count(name)) {
+ *     tests.insert(std::make_pair(name, std::unique_ptr<TestClass>(new TestClass)));
+ * }
+ * \endcode
+ */
 inline TestContainer & get_tests()
 {
     static TestContainer map;
@@ -61,6 +75,25 @@ inline TestContainer & get_tests()
 }
 
 
+/*!
+ * \brief Runs all tests from the test storage.
+ * \param argc The number of command line arguments.
+ * \param argv Command line arguments.
+ * \return Logic or of all the returned statuses.
+ *
+ * Example:
+ * \code
+ * #include <QCoreApplication>
+ * #include "sprelay/test_suite/test_suite.h"
+ *
+ * int main(int argc, char **argv)
+ * {
+ *     QCoreApplication app(argc, argv);
+ *     return sprelay::test_suite::run_tests(argc, argv);
+ * }
+ * \endcode
+ * \sa ADD_TEST(class_name), sprelay::test_suite::TestInserter
+ */
 inline int run_tests(int argc, char **argv) {
     int status = 0;
     for (const auto &i : get_tests()) {
@@ -70,9 +103,35 @@ inline int run_tests(int argc, char **argv) {
 }
 
 
+/*!
+ * \brief Class template for test insertion.
+ *
+ * Usage:
+ * \code
+ * #include <QObject>
+ * #include <QtTest>
+ *
+ * #include "sprelay/test_suite/test_suite.h"
+ *
+ * class TestClass : public QObject
+ * {
+ *     Q_OBJECT
+ *
+ * private slots:
+ *     void testCase() { QVERIFY(true); }
+ * };
+ *
+ * static sprelay::test_suite::TestInserter<TestClass> test_class{"test id name"};
+ * \endcode
+ * \sa ADD_TEST(class_name), run_tests()
+ */
 template <typename TestClass>
-class TestInserter {
-public:  // NOLINT(whitespace/indent)
+struct TestInserter {
+    /*!
+     * \brief Inserts test with the specified name into test container.
+     * \param name The test name.
+     * \sa get_tests()
+     */
     explicit TestInserter(const char *name)
     {
         auto &tests = get_tests();
@@ -85,7 +144,33 @@ public:  // NOLINT(whitespace/indent)
 }  // namespace test_suite
 }  // namespace sprelay
 
+/*!
+ * \brief Macro for adding tests.
+ *
+ * The macro defines static variable with internal scope and with the name
+ * Usage:
+ * \code
+ * #include <QObject>
+ * #include <QtTest>
+ *
+ * #include "sprelay/test_suite/test_suite.h"
+ *
+ * namespace test_class_namespace {
+ *
+ * class TestClass : public QObject
+ * {
+ *     Q_OBJECT
+ *
+ * private slots:
+ *     void testCase() { QVERIFY(true); }
+ * };
+ *
+ * ADD_TEST(TestClass);
+ *
+ * }  // namespace test_class_namespace
+ * \endcode
+ * \sa sprelay::test_suite::TestInserter, run_tests()
+ */
 #define ADD_TEST(class_name) static sprelay::test_suite::TestInserter<class_name> test_##class_name{#class_name};
 
 #endif  // SPRELAY_TEST_SUITE_TEST_SUITE_H_
-

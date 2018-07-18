@@ -21,10 +21,6 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
-#include <QtTest>
-
-#include <memory>
-
 #include "sprelay/test_suite/test_suite.h"
 
 int main(int argc, char **argv)
