@@ -1,6 +1,9 @@
 CONFIG += c++11
 
-INCLUDEPATH += $$PWD/src/external/enum_flags/src
+INCLUDEPATH += $$sprelay_source_dir/src/external/enum_flags/src
+
+HEADERS += \
+    $$sprelay_source_dir/src/external/enum_flags/src/enum_flags/enum_flags.h
 
 defineReplace(copyToDir) {
     base = $$1
