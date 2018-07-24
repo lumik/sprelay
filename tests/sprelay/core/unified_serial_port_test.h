@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "sprelay/test_suite/test_suite.h"
+#include "lumik/qtest_suite/qtest_suite.h"
 
 
 namespace sprelay {

@@ -21,11 +21,11 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
-#include "sprelay/test_suite/test_suite.h"
+#include "lumik/qtest_suite/qtest_suite.h"
 
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
     app.setAttribute(Qt::AA_Use96Dpi, true);
-    return sprelay::test_suite::run_tests(argc, argv);
+    return lumik::qtest_suite::run_tests(argc, argv);
 }

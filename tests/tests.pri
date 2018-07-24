@@ -13,5 +13,5 @@ CONFIG -= app_bundle
 include($$sprelay_source_dir/sprelay.pri)
 
 INCLUDEPATH += \
-    $$sprelay_source_dir/tests \
+    $$sprelay_source_dir/tests/external/qtest_suite/include \
     $$sprelay_source_dir/src
