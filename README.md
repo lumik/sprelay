@@ -68,7 +68,7 @@ mingw32-make doc      # optional if you want to make documentation
 mingw32-make install  # optional if you want to install the application, see above
 ```
 
-After make process finishes, go to the bin directory and try to run tests and the program
+After make process finishes, go to the bin directory and try to run the program
 ```
 cd C:\path\where\you\want\the\application\installed\bin
 sprelay.exe
