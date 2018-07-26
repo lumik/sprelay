@@ -68,15 +68,15 @@ namespace impl_ {
     See the Velleman %K8090 card manual for more info about timer delay types.
 */
 /*!
-    \var sprelay::core::k8090::impl_::TimerDelayType::TOTAL
+    \var sprelay::core::k8090::impl_::TimerDelayType::Total
     \brief Total timer time.
 */
 /*!
-    \var sprelay::core::k8090::impl_::TimerDelayType::REMAINING
+    \var sprelay::core::k8090::impl_::TimerDelayType::Remaining
     \brief Currently remaining timer time.
 */
 /*!
-    \var sprelay::core::k8090::impl_::TimerDelayType::ALL
+    \var sprelay::core::k8090::impl_::TimerDelayType::All
     \brief Determines the highest element.
 */
 
@@ -107,7 +107,7 @@ namespace impl_ {
     \fn Command::Command()
     \brief Default constructor.
 
-    Initializes its id member to k8090::CommandID::NONE so the Command can be used as return value indicating failure.
+    Initializes its id member to k8090::CommandID::None so the Command can be used as return value indicating failure.
 */
 
 /*!
@@ -149,11 +149,11 @@ namespace impl_ {
 /*!
     \brief Merges the other Command.
 
-    If the other command is k8090::CommandID::RELAY_ON and is merged to k8090::CommandID::RELAY_OFF or the
-    oposite, the negation is merged. XOR is applied to k8090::CommandID::TOGGLE_RELAY and for
-    k8090::CommandID::SET_BUTTON_MODE and duplicate assignments, the command is merged according to precedence
+    If the other command is k8090::CommandID::RelayON and is merged to k8090::CommandID::RelayOff or the
+    oposite, the negation is merged. XOR is applied to k8090::CommandID::ToggleRelay and for
+    k8090::CommandID::SetButtonMode and duplicate assignments, the command is merged according to precedence
     stated in Velleman %K8090 card manual (momentary mode, toggle mode, timed mode from most important to less). The
-    parameters of k8090::CommandID::START_TIMER, k8090::CommandID::SET_TIMER and k8090::CommandID::TIMER are not
+    parameters of k8090::CommandID::StartTimer, k8090::CommandID::SetTimer and k8090::CommandID::Timer are not
     merged, only the affected relays are updated. Check, if that makes sense, is up to class user.
 
     The other commands are merged naturally as _or assignment_ operator to their members.
@@ -168,41 +168,41 @@ Command & Command::operator|=(const Command &other) {
     // TODO(lumik): enable merging into none command
     switch (id) {
         // commands with special treatment
-        case k8090::CommandID::RELAY_ON :
-            if (other.id == k8090::CommandID::RELAY_OFF) {
+        case k8090::CommandID::RelayOn :
+            if (other.id == k8090::CommandID::RelayOff) {
                 params[0] &= ~other.params[0];
             } else {
                 params[0] |= other.params[0];
             }
             break;
-        case k8090::CommandID::RELAY_OFF :
-            if (other.id == k8090::CommandID::RELAY_ON) {
+        case k8090::CommandID::RelayOff :
+            if (other.id == k8090::CommandID::RelayOn) {
                 params[0] &= ~other.params[0];
             } else {
                 params[0] |= other.params[0];
             }
             break;
-        case k8090::CommandID::TOGGLE_RELAY :
+        case k8090::CommandID::ToggleRelay :
             params[0] ^= other.params[0];
             break;
-        case k8090::CommandID::SET_BUTTON_MODE :
+        case k8090::CommandID::SetButtonMode :
             params[0] |= other.params[0];
             params[1] = (params[1] | other.params[1]) & ~params[0];
             params[2] = (params[2] | other.params[2]) & ~params[1] & ~params[0];
             break;
         // commands with one relevant parameter mask
-        case k8090::CommandID::START_TIMER :
-        case k8090::CommandID::SET_TIMER :
-        case k8090::CommandID::TIMER :
+        case k8090::CommandID::StartTimer :
+        case k8090::CommandID::SetTimer :
+        case k8090::CommandID::Timer :
             params[0] |= other.params[0];
             break;
         // commands with no parameters
-        //     case k8090::CommandID::QUERY_RELAY :
-        //     case k8090::CommandID::BUTTON_MODE :
-        //     case k8090::CommandID::RESET_FACTORY_DEFAULTS :
-        //     case k8090::CommandID::JUMPER_STATUS :
-        //     case k8090::CommandID::FIRMWARE_VERSION :
-        //     case k8090::CommandID::NONE
+        //     case k8090::CommandID::QueryRelay :
+        //     case k8090::CommandID::ButtonMode :
+        //     case k8090::CommandID::ResetFactoryDefaults :
+        //     case k8090::CommandID::JumperStatus :
+        //     case k8090::CommandID::FirmwareVersion :
+        //     case k8090::CommandID::None
         default :
             break;
     }
@@ -241,13 +241,13 @@ bool Command::isCompatible(const Command &other) const
         // TODO(lumik): treat compatibility of toggle relay
         // TODO(lumik): treat compatibility to none command
         switch (id) {
-            case k8090::CommandID::RELAY_ON :
-                if (other.id == k8090::CommandID::RELAY_OFF) {
+            case k8090::CommandID::RelayOn :
+                if (other.id == k8090::CommandID::RelayOff) {
                     return true;
                 }
                 return false;
-            case k8090::CommandID::RELAY_OFF :
-                if (other.id == k8090::CommandID::RELAY_ON) {
+            case k8090::CommandID::RelayOff :
+                if (other.id == k8090::CommandID::RelayOn) {
                     return true;
                 }
                 return false;
@@ -259,15 +259,15 @@ bool Command::isCompatible(const Command &other) const
     // ids are equal
     switch (id) {
         // TODO(lumik): handle the cases with the same id as compatible.
-        case k8090::CommandID::START_TIMER :
-        case k8090::CommandID::SET_TIMER :
+        case k8090::CommandID::StartTimer :
+        case k8090::CommandID::SetTimer :
             for (int i = 1; i < 3; ++i) {
                 if (params[i] != other.params[i]) {
                     return false;
                 }
             }
             return true;
-        case k8090::CommandID::TIMER :
+        case k8090::CommandID::Timer :
             // compare only first bits
             if ((params[1] & 1) != (other.params[1] & 1)) {
                 return false;

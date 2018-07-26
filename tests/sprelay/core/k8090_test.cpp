@@ -285,7 +285,7 @@ void K8090Test::switchRelayOnOff()
         SIGNAL(relayStatus(sprelay::core::k8090::RelayID, sprelay::core::k8090::RelayID,
             sprelay::core::k8090::RelayID)));
     // switch relay 1 off at first
-    k8090_->switchRelayOff(RelayID::ONE);
+    k8090_->switchRelayOff(RelayID::One);
 
     // the K8090 class should always respond. If nothing changes, the query relay status command is issued
     // automatically
@@ -298,16 +298,16 @@ void K8090Test::switchRelayOnOff()
     // test if the right arguments came
     // save the previous state of the relay 1
     RelayID previous = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
-    if (static_cast<bool>(previous & RelayID::ONE)) {
+    if (static_cast<bool>(previous & RelayID::One)) {
         qDebug() << "The relay 1 was initialy on.";
         initial_on = true;
     }
     // test if the relay 1 is realy currently off
     RelayID current = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
-    QVERIFY2(static_cast<bool>(~current & RelayID::ONE), "The relay 1 should be now set off.");
+    QVERIFY2(static_cast<bool>(~current & RelayID::One), "The relay 1 should be now set off.");
 
     // switch relay 1 on
-    k8090_->switchRelayOn(RelayID::ONE);
+    k8090_->switchRelayOn(RelayID::One);
 
     // test relay status signal
     if (spy_relay_status.count() < 1) {
@@ -318,14 +318,14 @@ void K8090Test::switchRelayOnOff()
     // test if the right arguments came
     // test if relay 1 was previously off and now on
     previous = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
-    QVERIFY2(static_cast<bool>(~previous & RelayID::ONE), "The prvious status of relay 1 should be off.");
+    QVERIFY2(static_cast<bool>(~previous & RelayID::One), "The prvious status of relay 1 should be off.");
     current = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
-    QVERIFY2(static_cast<bool>(current & RelayID::ONE), "The relay 1 should be now set on.");
+    QVERIFY2(static_cast<bool>(current & RelayID::One), "The relay 1 should be now set on.");
 
     // if relay 1 was initially set off, set it off again
     if (!initial_on) {
         // switch relay 1 on
-        k8090_->switchRelayOff(RelayID::ONE);
+        k8090_->switchRelayOff(RelayID::One);
 
         // test relay status signal
         if (spy_relay_status.count() < 1) {
@@ -336,10 +336,10 @@ void K8090Test::switchRelayOnOff()
         // test if the right arguments came
         // test if relay 1 was previously on and now off
         previous = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
-        QVERIFY2(static_cast<bool>(previous & RelayID::ONE),
+        QVERIFY2(static_cast<bool>(previous & RelayID::One),
             "The prvious status of relay 1 should be on.");
         current = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
-        QVERIFY2(static_cast<bool>(~current & RelayID::ONE), "The relay 1 should be now set off.");
+        QVERIFY2(static_cast<bool>(~current & RelayID::One), "The relay 1 should be now set off.");
     }
 }
 
@@ -359,7 +359,7 @@ void K8090Test::toggleRelay()
         SIGNAL(relayStatus(sprelay::core::k8090::RelayID, sprelay::core::k8090::RelayID,
             sprelay::core::k8090::RelayID)));
     // toggle relay 2
-    k8090_->toggleRelay(RelayID::TWO);
+    k8090_->toggleRelay(RelayID::Two);
 
     // test for response
     if (spy_relay_status.count() < 1) {
@@ -373,11 +373,11 @@ void K8090Test::toggleRelay()
     RelayID previous = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
     // test if the relay 1 is realy currently off
     RelayID current = qvariant_cast<sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
-    QVERIFY2(static_cast<bool>((current ^ previous) & RelayID::TWO),
+    QVERIFY2(static_cast<bool>((current ^ previous) & RelayID::Two),
         "The status of relay 1 should change.");
 
     // toggle relay back
-    k8090_->toggleRelay(RelayID::TWO);
+    k8090_->toggleRelay(RelayID::Two);
 
     // test relay status signal
     if (spy_relay_status.count() < 1) {
@@ -405,9 +405,9 @@ void K8090Test::buttonMode()
             sprelay::core::k8090::RelayID)));
 
     // get current button modes
-    RelayID previous_momentary = RelayID::NONE;
-    RelayID previous_toggle = RelayID::NONE;
-    RelayID previous_timed = RelayID::NONE;
+    RelayID previous_momentary = RelayID::None;
+    RelayID previous_toggle = RelayID::None;
+    RelayID previous_timed = RelayID::None;
     k8090_->queryButtonModes();
     // test for response
     if (spy_button_modes.count() < 1) {
@@ -423,9 +423,9 @@ void K8090Test::buttonMode()
         .arg(as_number(previous_timed), 8, 2, QChar('0'));
 
     // create correct initial state
-    RelayID momentary = RelayID::NONE;
-    RelayID toggle = RelayID::ALL;
-    RelayID timed = RelayID::NONE;
+    RelayID momentary = RelayID::None;
+    RelayID toggle = RelayID::All;
+    RelayID timed = RelayID::None;
     if (previous_momentary != momentary || previous_toggle != toggle || previous_timed != timed) {
         k8090_->setButtonMode(momentary, toggle, timed);
         // test for response
@@ -435,20 +435,20 @@ void K8090Test::buttonMode()
         QCOMPARE(spy_button_modes.count(), 1);
         button_modes_arguments = spy_button_modes.takeFirst();
         QVERIFY2(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(0))
-                 == RelayID::NONE,
+                 == RelayID::None,
                  "All relays should be in toggle mode!");
         QVERIFY2(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(1))
-                 == RelayID::ALL,
+                 == RelayID::All,
                  "All relays should be in toggle mode!");
         QVERIFY2(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(2))
-                 == RelayID::NONE,
+                 == RelayID::None,
                  "All relays should be in toggle mode!");
     }
 
     // set relay 1 to momentary mode
-    momentary = RelayID::ONE;
-    toggle = RelayID::ALL & ~RelayID::ONE;
-    timed = RelayID::NONE;
+    momentary = RelayID::One;
+    toggle = RelayID::All & ~RelayID::One;
+    timed = RelayID::None;
     k8090_->setButtonMode(momentary, toggle, timed);
     // test for response
     if (spy_button_modes.count() < 1) {
@@ -464,9 +464,9 @@ void K8090Test::buttonMode()
         "All relays should be in toggle or momentary mode!");
 
     // set relay 2 to timed mode
-    momentary = RelayID::NONE;
-    toggle = RelayID::ALL & ~RelayID::TWO;
-    timed = RelayID::TWO;
+    momentary = RelayID::None;
+    toggle = RelayID::All & ~RelayID::Two;
+    timed = RelayID::Two;
     k8090_->setButtonMode(momentary, toggle, timed);
     // test for response
     if (spy_button_modes.count() < 1) {
@@ -511,7 +511,7 @@ void K8090Test::totalTimer()
         SIGNAL(totalTimerDelay(sprelay::core::k8090::RelayID, quint16)));
 
     // get all total timers
-    RelayID relay_ids = RelayID::ALL;
+    RelayID relay_ids = RelayID::All;
     k8090_->queryTotalTimerDelay(relay_ids);
     // test total timer delay signals
     while (spy_total_timer_delay.count() < kTimerCount) {
@@ -540,13 +540,13 @@ void K8090Test::totalTimer()
         total_timers[number - 1] = initial_total_timers[number - 1];
         qDebug() << QString("        relay %1: %2s").arg(number).arg(initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // set timers
-    RelayID relay_id1 = RelayID::ONE;
-    RelayID relay_ids2 = RelayID::TWO | RelayID::THREE;
-    RelayID relay_ids3 = RelayID::THREE | RelayID::FOUR;
-    RelayID relay_ids4 = RelayID::FOUR | RelayID::FIVE;
+    RelayID relay_id1 = RelayID::One;
+    RelayID relay_ids2 = RelayID::Two | RelayID::Three;
+    RelayID relay_ids3 = RelayID::Three | RelayID::Four;
+    RelayID relay_ids4 = RelayID::Four | RelayID::Five;
     // set relay_id1 timer
     id = as_number(relay_id1);
     number = 0;
@@ -558,7 +558,7 @@ void K8090Test::totalTimer()
     // first query relay so, all the following commands are enqueued while waiting for response
     k8090_->queryTotalTimerDelay(relay_id1);
     k8090_->setRelayTimerDelay(relay_id1, total_timers[number - 1]);
-    QCOMPARE(k8090_->pendingCommandCount(CommandID::SET_TIMER), 1);
+    QCOMPARE(k8090_->pendingCommandCount(CommandID::SetTimer), 1);
 
     // test if two consecutive set relay timer commands are merged
     unsigned int temp_i = 0;
@@ -572,7 +572,7 @@ void K8090Test::totalTimer()
     }
     k8090_->setRelayTimerDelay(relay_ids2, total_timers[temp_i]);
     k8090_->setRelayTimerDelay(relay_ids3, total_timers[temp_i]);
-    QCOMPARE(k8090_->pendingCommandCount(CommandID::SET_TIMER), 2);
+    QCOMPARE(k8090_->pendingCommandCount(CommandID::SetTimer), 2);
 
     // test if set command with different number is not merged
     for (unsigned int i = 0; i < kTimerCount; ++i) {
@@ -582,7 +582,7 @@ void K8090Test::totalTimer()
         }
     }
     k8090_->setRelayTimerDelay(relay_ids4, total_timers[temp_i]);
-    QCOMPARE(k8090_->pendingCommandCount(CommandID::SET_TIMER), 3);
+    QCOMPARE(k8090_->pendingCommandCount(CommandID::SetTimer), 3);
 
     // test if query relay timer priority works compared to set relay timer
     relay_ids = relay_id1 | relay_ids2 | relay_ids3 | relay_ids4;
@@ -597,7 +597,7 @@ void K8090Test::totalTimer()
     k8090_->queryTotalTimerDelay(relay_ids2);
     k8090_->queryTotalTimerDelay(relay_ids3);
     k8090_->queryTotalTimerDelay(relay_ids4);
-    QCOMPARE(k8090_->pendingCommandCount(CommandID::TIMER), 1);
+    QCOMPARE(k8090_->pendingCommandCount(CommandID::Timer), 1);
 
     // test total timer delay signals as response for query relay timer commands
     while (spy_total_timer_delay.count() < merged_timer_count) {
@@ -620,7 +620,7 @@ void K8090Test::totalTimer()
         temp_total_timer = qvariant_cast<quint16>(merged_total_timer_delay_arguments.at(1));
         QCOMPARE(temp_total_timer, initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // test total timer delay signals as response for set relay timer commands
     relay_ids = relay_id1 | relay_ids2 | relay_ids3 | relay_ids4;
@@ -654,11 +654,11 @@ void K8090Test::totalTimer()
             QCOMPARE(temp_total_timer, total_timers[number - 1]);
         }
     }
-    QCOMPARE(overlap_ids, RelayID::NONE);
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(overlap_ids, RelayID::None);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // reset initial values
-    relay_ids = RelayID::ALL;
+    relay_ids = RelayID::All;
     for (unsigned int i = 0; i < kTimerCount; ++i) {
         k8090_->setRelayTimerDelay(from_number(i), initial_total_timers[i]);
     }
@@ -681,7 +681,7 @@ void K8090Test::totalTimer()
         relay_ids &= ~temp_id;
         QCOMPARE(temp_total_timer, initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 }
 
 
@@ -709,8 +709,8 @@ void K8090Test::startTimer()
     // get used initial timers delay
     quint16 timer_delay1 = 1;
     quint16 timer_delay2 = 2;
-    RelayID relay_id1 = RelayID::ONE;
-    RelayID relay_ids2 =  RelayID::TWO | RelayID::THREE;
+    RelayID relay_id1 = RelayID::One;
+    RelayID relay_ids2 =  RelayID::Two | RelayID::Three;
     RelayID relay_ids = relay_id1 | relay_ids2;
     k8090_->queryTotalTimerDelay(relay_ids);
 
@@ -743,7 +743,7 @@ void K8090Test::startTimer()
         }
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // set total timer delays
     relay_ids = relay_id1 | relay_ids2;
@@ -780,7 +780,7 @@ void K8090Test::startTimer()
             QCOMPARE(temp_total_timer, timer_delay2);
         }
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // get status of affected relays
     k8090_->queryRelayStatus();
@@ -851,7 +851,7 @@ void K8090Test::startTimer()
         qDebug() << QString("Relay %1: remaining delay = %2s")
                     .arg(number).arg(qvariant_cast<quint16>(remaining_timer_delay_arguments.at(1)));
     }
-    QCOMPARE(remaining_relay_ids, RelayID::NONE);
+    QCOMPARE(remaining_relay_ids, RelayID::None);
 
     // wait for the first relay to timeout
     if (spy_relay_status.count() < 1) {
@@ -890,7 +890,7 @@ void K8090Test::startTimer()
         }
     }
     // test, if the timer commands for relay_ids2 merged
-    QCOMPARE(k8090_->pendingCommandCount(CommandID::START_TIMER), 2);
+    QCOMPARE(k8090_->pendingCommandCount(CommandID::StartTimer), 2);
 
     // pop out remaining timer query
     while (spy_remaining_timer_delay.count() < 1) {
@@ -947,7 +947,7 @@ void K8090Test::startTimer()
         qDebug() << QString("Relay %1: remaining delay = %2s")
                     .arg(number).arg(qvariant_cast<quint16>(remaining_timer_delay_arguments.at(1)));
     }
-    QCOMPARE(remaining_relay_ids, RelayID::NONE);
+    QCOMPARE(remaining_relay_ids, RelayID::None);
 
     // wait for the first relay to timeout
     if (spy_relay_status.count() < 1) {
@@ -1005,7 +1005,7 @@ void K8090Test::startTimer()
         relay_ids &= ~temp_id;
         QCOMPARE(temp_total_timer, initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 }
 
 
@@ -1018,9 +1018,9 @@ void K8090Test::factoryDefaults_data()
 void K8090Test::factoryDefaults()
 {
     const int kTimerCount = 8;
-    const RelayID kDefaultMomentary = RelayID::NONE;
-    const RelayID kDefaultToggle = RelayID::ALL;
-    const RelayID kDefaultTimed = RelayID::NONE;
+    const RelayID kDefaultMomentary = RelayID::None;
+    const RelayID kDefaultToggle = RelayID::All;
+    const RelayID kDefaultTimed = RelayID::None;
     const quint16 kDefaultTimerDelay = 5;
 
     // connect signals
@@ -1061,7 +1061,7 @@ void K8090Test::factoryDefaults()
         .arg(as_number(previous_timed), 8, 2, QChar('0'));
 
     // get all total timers
-    RelayID relay_ids = RelayID::ALL;
+    RelayID relay_ids = RelayID::All;
     k8090_->queryTotalTimerDelay(relay_ids);
     // test total timer delay signals
     while (spy_total_timer_delay.count() < kTimerCount) {
@@ -1088,12 +1088,12 @@ void K8090Test::factoryDefaults()
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
         qDebug() << QString("        relay %1: %2s").arg(number).arg(initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // create initial state different from factory defaults
-    RelayID momentary = RelayID::ONE;
-    RelayID toggle = RelayID::ALL & ~RelayID::ONE & ~RelayID::TWO;
-    RelayID timed = RelayID::TWO;
+    RelayID momentary = RelayID::One;
+    RelayID toggle = RelayID::All & ~RelayID::One & ~RelayID::Two;
+    RelayID timed = RelayID::Two;
     quint16 timer1_delay = 10;
     k8090_->setButtonMode(momentary, toggle, timed);
     // test for response
@@ -1106,7 +1106,7 @@ void K8090Test::factoryDefaults()
     QCOMPARE(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(1)), toggle);
     QCOMPARE(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(2)), timed);
 
-    k8090_->setRelayTimerDelay(RelayID::ONE, timer1_delay);
+    k8090_->setRelayTimerDelay(RelayID::One, timer1_delay);
     // test total timer delay signals
     if (spy_total_timer_delay.count() < 1) {
         QVERIFY2(spy_total_timer_delay.wait(), "Total timer signal not received!");
@@ -1114,7 +1114,7 @@ void K8090Test::factoryDefaults()
     QCOMPARE(spy_total_timer_delay.count(), 1);
     total_timer_delay_arguments = spy_total_timer_delay.takeFirst();
     temp_id = qvariant_cast<sprelay::core::k8090::RelayID>(total_timer_delay_arguments.at(0));
-    QCOMPARE(temp_id, RelayID::ONE);
+    QCOMPARE(temp_id, RelayID::One);
     quint16 temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
     QCOMPARE(temp_total_timer, timer1_delay);
 
@@ -1125,7 +1125,7 @@ void K8090Test::factoryDefaults()
     }
     QCOMPARE(spy_relay_status.count(), 1);
     RelayID on = qvariant_cast<sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
-    QCOMPARE(on, RelayID::NONE);
+    QCOMPARE(on, RelayID::None);
 
     k8090_->queryButtonModes();
     // test for response
@@ -1144,7 +1144,7 @@ void K8090Test::factoryDefaults()
         .arg(as_number(momentary), 8, 2, QChar('0')).arg(as_number(toggle), 8, 2, QChar('0'))
         .arg(as_number(timed), 8, 2, QChar('0'));
 
-    relay_ids = RelayID::ALL;
+    relay_ids = RelayID::All;
     k8090_->queryTotalTimerDelay(relay_ids);
     // test total timer delay signals
     while (spy_total_timer_delay.count() < kTimerCount) {
@@ -1167,7 +1167,7 @@ void K8090Test::factoryDefaults()
         QCOMPARE(temp_total_timer, kDefaultTimerDelay);
         qDebug() << QString("        relay %1: %2s").arg(number).arg(temp_total_timer);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // reset initial values
     k8090_->switchRelayOn(initially_on);
@@ -1189,7 +1189,7 @@ void K8090Test::factoryDefaults()
     QCOMPARE(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(1)), previous_toggle);
     QCOMPARE(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(2)), previous_timed);
 
-    relay_ids = RelayID::ALL;
+    relay_ids = RelayID::All;
     for (unsigned int i = 0; i < kTimerCount; ++i) {
         k8090_->setRelayTimerDelay(from_number(i), initial_total_timers[i]);
     }
@@ -1212,7 +1212,7 @@ void K8090Test::factoryDefaults()
         relay_ids &= ~temp_id;
         QCOMPARE(temp_total_timer, initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 }
 
 
@@ -1313,7 +1313,7 @@ void K8090Test::priorities()
         .arg(as_number(previous_timed), 8, 2, QChar('0'));
 
     // get all total timers
-    RelayID relay_ids = RelayID::ALL;
+    RelayID relay_ids = RelayID::All;
     k8090_->queryTotalTimerDelay(relay_ids);
     // test total timer delay signals
     while (spy_total_timer_delay.count() < kTimerCount) {
@@ -1340,28 +1340,28 @@ void K8090Test::priorities()
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
         qDebug() << QString("        relay %1: %2s").arg(number).arg(initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 
     // test priorities - queries has higher priority than set commands
-    RelayID momentary = RelayID::ONE;
-    RelayID toggle = RelayID::ALL & ~RelayID::ONE & ~RelayID::TWO;
-    RelayID timed = RelayID::TWO;
+    RelayID momentary = RelayID::One;
+    RelayID toggle = RelayID::All & ~RelayID::One & ~RelayID::Two;
+    RelayID timed = RelayID::Two;
     // first send any command, all the next commands will be added to the queue
     k8090_->resetFactoryDefaults();
     // set commands first
     k8090_->resetFactoryDefaults();
-    k8090_->switchRelayOn(RelayID::FIVE);
-    k8090_->switchRelayOff(RelayID::SIX);
-    k8090_->toggleRelay(RelayID::SEVEN);
+    k8090_->switchRelayOn(RelayID::Five);
+    k8090_->switchRelayOff(RelayID::Six);
+    k8090_->toggleRelay(RelayID::Seven);
     k8090_->setButtonMode(momentary, toggle, timed);
     k8090_->queryJumperStatus();
     k8090_->queryFirmwareVersion();
-    k8090_->setRelayTimerDelay(RelayID::THREE, 2);
-    k8090_->startRelayTimer(RelayID::EIGHT, 1);
+    k8090_->setRelayTimerDelay(RelayID::Three, 2);
+    k8090_->startRelayTimer(RelayID::Eight, 1);
     // then query commands, which should move before set commands
     k8090_->queryRelayStatus();
-    k8090_->queryTotalTimerDelay(RelayID::ONE);
-    k8090_->queryRemainingTimerDelay(RelayID::ONE);
+    k8090_->queryTotalTimerDelay(RelayID::One);
+    k8090_->queryRemainingTimerDelay(RelayID::One);
     k8090_->queryButtonModes();
     // TODO(lumik): test also if the output is correct
     // then control, if the answers comes in the right order
@@ -1476,7 +1476,7 @@ void K8090Test::priorities()
     QCOMPARE(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(1)), previous_toggle);
     QCOMPARE(qvariant_cast<sprelay::core::k8090::RelayID>(button_modes_arguments.at(2)), previous_timed);
 
-    relay_ids = RelayID::ALL;
+    relay_ids = RelayID::All;
     for (unsigned int i = 0; i < kTimerCount; ++i) {
         k8090_->setRelayTimerDelay(from_number(i), initial_total_timers[i]);
     }
@@ -1500,7 +1500,7 @@ void K8090Test::priorities()
         relay_ids &= ~temp_id;
         QCOMPARE(temp_total_timer, initial_total_timers[number - 1]);
     }
-    QCOMPARE(relay_ids, RelayID::NONE);
+    QCOMPARE(relay_ids, RelayID::None);
 }
 
 

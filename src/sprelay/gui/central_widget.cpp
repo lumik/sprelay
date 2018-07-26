@@ -169,9 +169,9 @@ void CentralWidget::onMomentaryButtonClicked(int relay)
     // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
     // mechanism of their synchronisation with states saved in indicator buttons.
     // get current button modes
-    core::k8090::RelayID momentary = core::k8090::RelayID::NONE;
-    core::k8090::RelayID toggle = core::k8090::RelayID::NONE;
-    core::k8090::RelayID timed = core::k8090::RelayID::NONE;
+    core::k8090::RelayID momentary = core::k8090::RelayID::None;
+    core::k8090::RelayID toggle = core::k8090::RelayID::None;
+    core::k8090::RelayID timed = core::k8090::RelayID::None;
     for (int i = 0; i < kNRelays; ++i) {
         if (momentary_buttons_arr_[i]->state()) {
             momentary |= core::k8090::from_number(i);
@@ -197,9 +197,9 @@ void CentralWidget::onToggleModeButtonClicked(int relay)
     // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
     // mechanism of their synchronisation with states saved in indicator buttons.
     // get current button modes
-    core::k8090::RelayID momentary = core::k8090::RelayID::NONE;
-    core::k8090::RelayID toggle = core::k8090::RelayID::NONE;
-    core::k8090::RelayID timed = core::k8090::RelayID::NONE;
+    core::k8090::RelayID momentary = core::k8090::RelayID::None;
+    core::k8090::RelayID toggle = core::k8090::RelayID::None;
+    core::k8090::RelayID timed = core::k8090::RelayID::None;
     for (int i = 0; i < kNRelays; ++i) {
         if (momentary_buttons_arr_[i]->state()) {
             momentary |= core::k8090::from_number(i);
@@ -225,9 +225,9 @@ void CentralWidget::onTimedButtonClicked(int relay)
     // TODO(lumik): make method for computing button modes, probably store them inside some struct. Make general
     // mechanism of their synchronisation with states saved in indicator buttons.
     // get current button modes
-    core::k8090::RelayID momentary = core::k8090::RelayID::NONE;
-    core::k8090::RelayID toggle = core::k8090::RelayID::NONE;
-    core::k8090::RelayID timed = core::k8090::RelayID::NONE;
+    core::k8090::RelayID momentary = core::k8090::RelayID::None;
+    core::k8090::RelayID toggle = core::k8090::RelayID::None;
+    core::k8090::RelayID timed = core::k8090::RelayID::None;
     for (int i = 0; i < kNRelays; ++i) {
         if (momentary_buttons_arr_[i]->state()) {
             momentary |= core::k8090::from_number(i);

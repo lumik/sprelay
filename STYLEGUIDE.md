@@ -1,66 +1,79 @@
 # Coding style guide
 
-This style guide is inspired by the [Google style guide][gStyleGuide].
+This style guide is inspired by the [Google style guide][g_style_guide].
+
 
 ## C++ feature conventions
-* Use **forward declarations** when it is possible
-* place code in **namespace** based on project name
-* don't use **using directivers**, don't use **name aliasses** in header file
+
+* Use **forward declarations** when it is possible.
+* place code in **namespace** based on project name.
+* don't use **using directivers**, don't use **name aliasses** in header file.
 * **unnamed namespaces** – static variables, methods which are used only inside
   source file should be included in unnamed namespace or declared static and
   shouldn't be in `.h` file.
 * **local variables**:
   * place them in the narrowest scope possible (nearest scope to their usage)
-    and initialize them in the declaration
+    and initialize them in the declaration.
   * exception – loops, where variable is declared in each iteration. Here, place
-    the local variable outside the loop
+    the local variable outside the loop.
 * **static variables** should be only POD due to undetermined calling order of
   destructors.
-* **default arguments** are banned on **virtual functions**
+* **default arguments** are banned on **virtual functions**.
 * **exceptions** – use them for constructors to preserve RAII but be aware of
   Qt's specifics – if exception occur in slot, it has to be handled there,
   unwinding Qt's stack is not exception safe, so if the exception propagates
   through Qt, you can then only do clean up and exit application.
 * use **RTTI** as rarely, as possible, use for example the visitor pattern
-  instead, with Qt, you can use Qt's equivalent for QObjects
-* use C++ **type casts** or brace initialization for casts
-* use prefix **++** and **--**, not postfix
+  instead, with Qt, you can use Qt's equivalent for QObjects.
+* use C++ **type casts** or brace initialization for casts.
+* use prefix **++** and **--**, not postfix.
 * use **const** and **constexpr** whenever it's possible but don't overuse
   constexpr (for example in functions, which may be in future downgraded to not
-  constexpr)
+  constexpr).
 * **integer types** – from C++ integer types use only `int`, other use from
-  `<cstdint>` or `Qt`
+  `<cstdint>` or `Qt`.
+* do not use unsigned types (e. g. `std::size_t`) for indices, there is a risk
+  of unintended modulo arithmetics, see
+	[C++ Core Guidelines][core_guidelines-size_t].
+
 
 ## Naming conventions:
+
 * **names** should be descriptive, avoid abbreviations, use abbreviations only
-  generally known and not ambiguous
+  generally known and not ambiguous.
 * **file** names – all lowercase, can include underscores (`_`) and dashes
-  (`-`), prefer underscores
+  (`-`), prefer underscores.
 * **type** names – CamelCase with no underscores, i.e. type names should start
   with a capital letter and have a capital letter for each new word. It applies
 	to names of all custom types as classes, structs, type aliases, enums, and
 	type template	parameters.
 * **variable** names – all lowercase with underscore between words, a class
   private data members (not methods) should have trailing underscore, struct
-  data members are withou trailing underscore
+  data members are withou trailing underscore.
 * **constant** names – leading k + CamelCase – this applies especially for
-  static storage duration
+  static storage duration.
 * **function** names:
   * class methods - mixedCase (CamelCase with leading lowercase) it also
-    applies for acronyms
+    applies for acronyms.
   * other functions - all lower case as variables.
-* **getters** and **setters** – as variables
-* **namespace** names – all lowercase with underscores between words
-* **macro** names – capitals with underscores between names MY_MACRO
-* **enumerator** names – like macros
+* **getters** and **setters** – as variables.
+* **namespace** names – all lowercase with underscores between words.
+* **macro** names – capitals with underscores between names MY_MACRO, other
+  names shouldn't be in all capitals to distiguish that only macros are not
+  subjected to namespaces.
+* **enumerator** names – CamelCase.
 * **include guards** – header include guards should be named after the filename
   ending with _H_ suffix and prefixed with subdirectory names. For exmaple if
-  you have file `my_app/my_class.h`, you should use `MY_APP_MY_CLASS_H_`
+  you have file `my_app/my_class.h`, you should use `MY_APP_MY_CLASS_H_`.
+* **template parameter** names – CamelCase with leading `T` for type or
+  template arguments and with leading `t` for non-type arguments.
+
     
 ## Formating conventions
+
 * **comments**
-  * start each file with license boilerplate
-  * at the beginning describe the file content
+  * start each file with license boilerplate.
+  * at the beginning describe the file content.
   * inline comments – put 2 spaces between code and comment
   ```
   int i;  // inline comment
@@ -111,8 +124,8 @@ This style guide is inspired by the [Google style guide][gStyleGuide].
   1. inputs
   2. outputs
 * if the function is longer then 40 lines, think of breaking it
-* **lines** should be maximally **120 characters long**
-* use 4 spaces for **indentation**, never tabs
+* **lines** should be maximally **120 characters long**.
+* use 4 spaces for **indentation**, never tabs.
 * **function declarations** and **headers** – function signature parentheses
   are closely attached to the function name (without space):
   ```cpp
@@ -138,7 +151,7 @@ This style guide is inspired by the [Google style guide][gStyleGuide].
   also for other similar constructs like expressions in parentheses, control
   structures, return statements, assignment operators, ...
 * **inline function definitions** (this apply also for inline functions in
-  classes)
+  classes).
   * if definition is also declaration
   ```cpp
   inline int f() { return 5; }  // if it can be at one line, let it be at one
@@ -240,11 +253,19 @@ This style guide is inspired by the [Google style guide][gStyleGuide].
   std::vector<string> x;
   y = static_cast<char *>(x);
   ```
-* termine the file with new line
+* **templates** declaration – do not use space between template and `<`, place
+  identifier to a new line. Use `typename` keyword instead of `class` keyword.
+  ```cpp
+  template <typename TType, int tScalarArgument>
+	class MyClassTemplate;
+  ```
+* termine the file with new line.
+
 
 ## References
 
 <a name="Knuth:1996"></a>Donald Knuth's The TeXBook, 1996.
 
 
-[gStyleGuide]: https://google.github.io/styleguide/cppguide.html
+[g_style_guide]: https://google.github.io/styleguide/cppguide.html
+[core_guidelines-size_t]: https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#arithmetic

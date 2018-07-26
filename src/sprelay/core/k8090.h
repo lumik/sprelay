@@ -123,14 +123,14 @@ private slots:  // NOLINT(whitespace/indent)
     void onCommandFailed();
 
 private:  // NOLINT(whitespace/indent)
-    void sendCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::NONE,
+    void sendCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
             unsigned char param1 = 0, unsigned char param2 = 0);
-    void enqueueCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::NONE,
+    void enqueueCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
                         unsigned char param1 = 0, unsigned char param2 = 0);
     bool updateCommand(
             const k8090::impl_::Command &command,
             const QList<const k8090::impl_::Command *> &pending_command_list);
-    void sendCommandHelper(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::NONE,
+    void sendCommandHelper(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
             unsigned char param1 = 0, unsigned char param2 = 0);
     bool hasResponse(k8090::CommandID command_id);
     void sendToSerial(std::unique_ptr<unsigned char []> buffer, int n);
@@ -156,7 +156,7 @@ private:  // NOLINT(whitespace/indent)
     std::unique_ptr<UnifiedSerialPort> serial_port_;
 
     std::unique_ptr<command_queue::CommandQueue<k8090::impl_::Command,
-                        k8090::as_number(k8090::CommandID::NONE)>>
+                        k8090::as_number(k8090::CommandID::None)>>
         pending_commands_;
     std::unique_ptr<k8090::impl_::Command> current_command_;
     std::unique_ptr<QTimer> command_timer_;

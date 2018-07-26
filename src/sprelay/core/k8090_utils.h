@@ -49,9 +49,9 @@ namespace impl_ {
 
 enum struct TimerDelayType : unsigned char
 {
-    TOTAL     = 0,
-    REMAINING = 1 << 0,
-    ALL       = 0xff
+    Total     = 0,
+    Remaining = 1 << 0,
+    All       = 0xff
 };
 
 
@@ -60,7 +60,7 @@ struct Command
     using IdType = k8090::CommandID;
     using NumberType = typename std::underlying_type<IdType>::type;
 
-    Command() : id(k8090::CommandID::NONE), priority{0} {}
+    Command() : id(k8090::CommandID::None), priority{0} {}
     explicit Command(IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0,
             unsigned char param2 = 0)
         : id(id), priority{priority}, params{mask, param1, param2} {}

@@ -141,13 +141,13 @@ MockSerialPort::MockSerialPort(QObject *parent)
       flow_control_{QSerialPort::NoFlowControl},
       error_{QSerialPort::NoError},
       open_{false},
-      on_{k8090::as_number(k8090::RelayID::NONE)},
-      momentary_{k8090::as_number(k8090::RelayID::NONE)},
-      toggle_{k8090::as_number(k8090::RelayID::ALL)},
-      timed_{k8090::as_number(k8090::RelayID::NONE)},
-      pressed_{k8090::as_number(k8090::RelayID::NONE)},
+      on_{k8090::as_number(k8090::RelayID::None)},
+      momentary_{k8090::as_number(k8090::RelayID::None)},
+      toggle_{k8090::as_number(k8090::RelayID::All)},
+      timed_{k8090::as_number(k8090::RelayID::None)},
+      pressed_{k8090::as_number(k8090::RelayID::None)},
       default_delays_{5, 5, 5, 5, 5, 5, 5, 5},
-      active_timers_{k8090::as_number(k8090::RelayID::NONE)},
+      active_timers_{k8090::as_number(k8090::RelayID::None)},
       jumper_status_{0},
       firmware_version_{16, 6},
       delay_timer_mapper_{new QSignalMapper}
@@ -428,7 +428,7 @@ void MockSerialPort::delayTimeout(int i)
     // insert response to queue with responses
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
         k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
         previous,
         current,
         active_timers_,
@@ -476,40 +476,40 @@ void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
     }
 
     switch (buffer[1]) {
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_ON)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RelayOn)] :
             relayOn(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::RELAY_OFF)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RelayOff)] :
             relayOff(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::TOGGLE_RELAY)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::ToggleRelay)] :
             toggleRelay(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_BUTTON_MODE)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::SetButtonMode)] :
             setButtonMode(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::BUTTON_MODE)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::ButtonMode)] :
             queryButtonMode();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::START_TIMER)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::StartTimer)] :
             startTimer(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::SET_TIMER)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::SetTimer)] :
             setTimer(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::TIMER)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::Timer)] :
             queryTimer(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::QUERY_RELAY)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::QueryRelay)] :
             queryRelay();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::RESET_FACTORY_DEFAULTS)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::ResetFactoryDefaults)] :
             factoryDefaults();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::JUMPER_STATUS)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::JumperStatus)] :
             jumperStatus();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::FIRMWARE_VERSION)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::FirmwareVersion)] :
             firmwareVersion();
             break;
     }
@@ -540,7 +540,7 @@ void MockSerialPort::relayOn(std::unique_ptr<k8090::impl_::CardMessage> command)
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
             k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
             previous,
             current,
             active_timers_,
@@ -572,7 +572,7 @@ void MockSerialPort::relayOff(std::unique_ptr<k8090::impl_::CardMessage> command
         }
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
             k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
             previous,
             current,
             active_timers_,
@@ -604,7 +604,7 @@ void MockSerialPort::toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> comm
         }
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
             k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
             previous,
             current,
             active_timers_,
@@ -634,7 +634,7 @@ void MockSerialPort::queryButtonMode()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
         k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::BUTTON_MODE)],
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::ButtonMode)],
         momentary_,
         toggle_,
         timed_,
@@ -674,7 +674,7 @@ void MockSerialPort::startTimer(std::unique_ptr<k8090::impl_::CardMessage> comma
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
             k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
             previous,
             current,
             active_timers_,
@@ -727,7 +727,7 @@ void MockSerialPort::queryTimer(std::unique_ptr<k8090::impl_::CardMessage> comma
             }
             std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
                 k8090::impl_::kStxByte,
-                k8090::impl_::kResponses[as_number(k8090::ResponseID::TIMER)],
+                k8090::impl_::kResponses[as_number(k8090::ResponseID::Timer)],
                 as_number(k8090::from_number(i)),
                 high_byte,
                 low_byte,
@@ -749,7 +749,7 @@ void MockSerialPort::queryRelay()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
         k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::RELAY_STATUS)],
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
         on_,
         on_,
         active_timers_,
@@ -767,17 +767,17 @@ void MockSerialPort::queryRelay()
 // resets to factory defaults
 void MockSerialPort::factoryDefaults()
 {
-    momentary_ = as_number(k8090::RelayID::NONE);
-    toggle_ = as_number(k8090::RelayID::ALL);
-    timed_ = as_number(k8090::RelayID::NONE);
+    momentary_ = as_number(k8090::RelayID::None);
+    toggle_ = as_number(k8090::RelayID::All);
+    timed_ = as_number(k8090::RelayID::None);
     for (int i = 0; i < 8; ++i) {
         default_delays_[i] = 5;
     }
-    if (on_ != k8090::as_number(k8090::RelayID::NONE)) {
+    if (on_ != k8090::as_number(k8090::RelayID::None)) {
         // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
         std::unique_ptr<k8090::impl_::CardMessage> off_command{new k8090::impl_::CardMessage{
             k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::CommandID::RELAY_OFF)],
+            k8090::impl_::kResponses[as_number(k8090::CommandID::RelayOff)],
             on_,
             0,
             0,
@@ -795,7 +795,7 @@ void MockSerialPort::jumperStatus()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
         k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::JUMPER_STATUS)],
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::JumperStatus)],
         0,
         jumper_status_,
         0,
@@ -815,7 +815,7 @@ void MockSerialPort::firmwareVersion()
 {
     std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
         k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::FIRMWARE_VERSION)],
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::FirmwareVersion)],
         0,
         firmware_version_[0],
         firmware_version_[1],

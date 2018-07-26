@@ -71,126 +71,126 @@ void CommandTest::orEqual_data()
 
     // relay on command with random parameters
     {
-        const Command cmd1{CommandID::RELAY_ON, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority2, 2u, 3u, 4u};
-        const Command response{CommandID::RELAY_ON, priority1, 1u | 2u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority2, 2u, 3u, 4u};
+        const Command response{CommandID::RelayOn, priority1, 1u | 2u, 2u, 3u};
         QTest::newRow("Random relay on") << cmd1 << cmd2 << response;
     }
 
     // duplicated relay on
     {
-        const Command cmd1{CommandID::RELAY_ON, priority2, as_number(RelayID::ONE | RelayID::TWO), 5u, 10u};
-        const Command cmd2{CommandID::RELAY_ON, priority1, as_number(RelayID::TWO | RelayID::THREE), 10u, 5u};
-        const Command response{CommandID::RELAY_ON, priority2, as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE),
+        const Command cmd1{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two), 5u, 10u};
+        const Command cmd2{CommandID::RelayOn, priority1, as_number(RelayID::Two | RelayID::Three), 10u, 5u};
+        const Command response{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three),
             5u, 10u};
         QTest::newRow("Duplicated relay on") << cmd1 << cmd2 << response;
     }
 
     // relay on with relay off command
     {
-        const Command cmd1{CommandID::RELAY_ON, priority2, as_number(RelayID::ONE | RelayID::TWO), 0, 0};
-        const Command cmd2{CommandID::RELAY_OFF, priority1, as_number(RelayID::TWO | RelayID::THREE), 0, 0};
-        const Command response{CommandID::RELAY_ON, priority2, as_number(RelayID::ONE), 0, 0};
+        const Command cmd1{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two), 0, 0};
+        const Command cmd2{CommandID::RelayOff, priority1, as_number(RelayID::Two | RelayID::Three), 0, 0};
+        const Command response{CommandID::RelayOn, priority2, as_number(RelayID::One), 0, 0};
         QTest::newRow("Relay on + off") << cmd1 << cmd2 << response;
     }
 
     // relay on with random command
     {
-        const Command cmd1{CommandID::RELAY_ON, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::NONE, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::RELAY_ON, priority2, as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE),
+        const Command cmd1{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::None, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three),
             3u, 7u};
         QTest::newRow("Relay on + none") << cmd1 << cmd2 << response;
     }
 
     // relay off
     {
-        const Command cmd1{CommandID::RELAY_OFF, priority1, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::RELAY_OFF, priority2, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::RELAY_OFF, priority1, as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE),
+        const Command cmd1{CommandID::RelayOff, priority1, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::RelayOff, priority2, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::RelayOff, priority1, as_number(RelayID::One | RelayID::Two | RelayID::Three),
             3u, 7u};
         QTest::newRow("Relay off") << cmd1 << cmd2 << response;
     }
 
     // relay off with relay on command
     {
-        const Command cmd1{CommandID::RELAY_OFF, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::RELAY_ON, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::RELAY_OFF, priority2, as_number(RelayID::ONE), 3u, 7u};
+        const Command cmd1{CommandID::RelayOff, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::RelayOn, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::RelayOff, priority2, as_number(RelayID::One), 3u, 7u};
         QTest::newRow("Relay off + on") << cmd1 << cmd2 << response;
     }
 
     // toggle relay command
     {
-        const Command cmd1{CommandID::TOGGLE_RELAY, priority1, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::TOGGLE_RELAY, priority2, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::TOGGLE_RELAY, priority1, as_number(RelayID::ONE | RelayID::THREE), 3u, 7u};
+        const Command cmd1{CommandID::ToggleRelay, priority1, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::ToggleRelay, priority2, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::ToggleRelay, priority1, as_number(RelayID::One | RelayID::Three), 3u, 7u};
         QTest::newRow("toggle") << cmd1 << cmd2 << response;
     }
 
     // set button mode
     {
-        const unsigned char momentary1 = as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE);
-        const unsigned char toggle1 = as_number(RelayID::FOUR | RelayID::FIVE | RelayID::SIX);
-        const unsigned char timed1 = as_number(RelayID::SEVEN | RelayID::EIGHT);
-        const unsigned char momentary2 = as_number(RelayID::FOUR | RelayID::SEVEN);
-        const unsigned char toggle2 = as_number(RelayID::ONE | RelayID::THREE | RelayID::FIVE);
-        const unsigned char timed2 = as_number(RelayID::TWO | RelayID::SIX | RelayID::EIGHT);
-        const Command cmd1{CommandID::SET_BUTTON_MODE, priority2, momentary1, toggle1, timed1};
-        const Command cmd2{CommandID::SET_BUTTON_MODE, priority1, momentary2, toggle2, timed2};
-        const Command response{CommandID::SET_BUTTON_MODE, priority2, momentary1 | momentary2,
-            as_number(RelayID::FIVE | RelayID::SIX), as_number(RelayID::EIGHT)};
+        const unsigned char momentary1 = as_number(RelayID::One | RelayID::Two | RelayID::Three);
+        const unsigned char toggle1 = as_number(RelayID::Four | RelayID::Five | RelayID::Six);
+        const unsigned char timed1 = as_number(RelayID::Seven | RelayID::Eight);
+        const unsigned char momentary2 = as_number(RelayID::Four | RelayID::Seven);
+        const unsigned char toggle2 = as_number(RelayID::One | RelayID::Three | RelayID::Five);
+        const unsigned char timed2 = as_number(RelayID::Two | RelayID::Six | RelayID::Eight);
+        const Command cmd1{CommandID::SetButtonMode, priority2, momentary1, toggle1, timed1};
+        const Command cmd2{CommandID::SetButtonMode, priority1, momentary2, toggle2, timed2};
+        const Command response{CommandID::SetButtonMode, priority2, momentary1 | momentary2,
+            as_number(RelayID::Five | RelayID::Six), as_number(RelayID::Eight)};
         QTest::newRow("set button mode") << cmd1 << cmd2 << response;
     }
 
     // start timer
     {
-        const Command cmd1{CommandID::START_TIMER, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::START_TIMER, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::START_TIMER, priority2,
-            as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE), 3u, 7u};
+        const Command cmd1{CommandID::StartTimer, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::StartTimer, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::StartTimer, priority2,
+            as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
         QTest::newRow("start timer") << cmd1 << cmd2 << response;
     }
 
     // set timer
     {
-        const Command cmd1{CommandID::SET_TIMER, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::SET_TIMER, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::SET_TIMER, priority2, as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE),
+        const Command cmd1{CommandID::SetTimer, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::SetTimer, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::SetTimer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three),
             3u, 7u};
         QTest::newRow("set timer") << cmd1 << cmd2 << response;
     }
 
     // query timer
     {
-        const Command cmd1{CommandID::TIMER, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::TIMER, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
-        const Command response{CommandID::TIMER, priority2, as_number(RelayID::ONE | RelayID::TWO | RelayID::THREE), 3u,
+        const Command cmd1{CommandID::Timer, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::Timer, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
+        const Command response{CommandID::Timer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u,
             7u};
         QTest::newRow("query timer") << cmd1 << cmd2 << response;
     }
 
     // query relay status
     {
-        const Command cmd1{CommandID::QUERY_RELAY, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::QUERY_RELAY, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
+        const Command cmd1{CommandID::QueryRelay, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::QueryRelay, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("query relay status") << cmd1 << cmd2 << response;
     }
 
     // query button modes
     {
-        const Command cmd1{CommandID::BUTTON_MODE, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::BUTTON_MODE, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
+        const Command cmd1{CommandID::ButtonMode, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::ButtonMode, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("query button modes") << cmd1 << cmd2 << response;
     }
 
     // reset factory defaults
     {
-        const Command cmd1{CommandID::RESET_FACTORY_DEFAULTS, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u,
+        const Command cmd1{CommandID::ResetFactoryDefaults, priority2, as_number(RelayID::One | RelayID::Two), 3u,
             7u};
-        const Command cmd2{CommandID::RESET_FACTORY_DEFAULTS, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u,
+        const Command cmd2{CommandID::ResetFactoryDefaults, priority1, as_number(RelayID::Two | RelayID::Three), 5u,
             3u};
         const Command response = cmd1;
         QTest::newRow("reset factory defaults") << cmd1 << cmd2 << response;
@@ -198,32 +198,32 @@ void CommandTest::orEqual_data()
 
     // jumper status
     {
-        const Command cmd1{CommandID::JUMPER_STATUS, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::JUMPER_STATUS, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
+        const Command cmd1{CommandID::JumperStatus, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::JumperStatus, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("jumper status") << cmd1 << cmd2 << response;
     }
 
     // firmware version
     {
-        const Command cmd1{CommandID::FIRMWARE_VERSION, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::FIRMWARE_VERSION, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
+        const Command cmd1{CommandID::FirmwareVersion, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::FirmwareVersion, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("firmware version") << cmd1 << cmd2 << response;
     }
 
     // none command
     {
-        const Command cmd1{CommandID::NONE, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::NONE, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
+        const Command cmd1{CommandID::None, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::None, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("none command") << cmd1 << cmd2 << response;
     }
 
     // none command with relay on
     {
-        const Command cmd1{CommandID::NONE, priority2, as_number(RelayID::ONE | RelayID::TWO), 3u, 7u};
-        const Command cmd2{CommandID::RELAY_ON, priority1, as_number(RelayID::TWO | RelayID::THREE), 5u, 3u};
+        const Command cmd1{CommandID::None, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{CommandID::RelayOn, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("none command + relay on") << cmd1 << cmd2 << response;
     }
@@ -263,15 +263,15 @@ void CommandTest::equality_data()
 
     // commands with the same priority
     {
-        const Command cmd1{CommandID::RELAY_ON, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority1, 1u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority1, 1u, 2u, 3u};
         QTest::newRow("the same priority") << cmd1 << cmd2;
     }
 
     // commands with different priorities
     {
-        const Command cmd1{CommandID::RELAY_ON, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority2, 1u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority2, 1u, 2u, 3u};
         QTest::newRow("different priorities") << cmd1 << cmd2;
     }
 }
@@ -299,29 +299,29 @@ void CommandTest::equalityFalse_data()
 
     // different ids
     {
-        const Command cmd1{CommandID::RELAY_ON, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_OFF, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOff, priority, 1u, 2u, 3u};
         QTest::newRow("different ids") << cmd1 << cmd2;
     }
 
     // different 1st param
     {
-        const Command cmd1{CommandID::RELAY_ON, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority, 2u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority, 2u, 2u, 3u};
         QTest::newRow("different 1st param") << cmd1 << cmd2;
     }
 
     // different 2nd param
     {
-        const Command cmd1{CommandID::RELAY_ON, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority, 1u, 3u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority, 1u, 3u, 3u};
         QTest::newRow("different 2nd param") << cmd1 << cmd2;
     }
 
     // different 3rd param
     {
-        const Command cmd1{CommandID::RELAY_ON, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority, 1u, 2u, 4u};
+        const Command cmd1{CommandID::RelayOn, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority, 1u, 2u, 4u};
         QTest::newRow("different 3rd param") << cmd1 << cmd2;
     }
 }
@@ -350,124 +350,124 @@ void CommandTest::isCompatible_data()
 
     // The same commands
     {
-        const Command cmd1{CommandID::TOGGLE_RELAY, priority1, 1u, 2u, 3u};
+        const Command cmd1{CommandID::ToggleRelay, priority1, 1u, 2u, 3u};
         const Command cmd2 = cmd1;
         QTest::newRow("the same command") << cmd1 << cmd2;
     }
 
     // relay on
     {
-        const Command cmd1{CommandID::RELAY_ON, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::RelayOn, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority2, 2u, 3u, 4u};
         QTest::newRow("relay on") << cmd1 << cmd2;
     }
 
     // relay on + off
     {
-        const Command cmd1{CommandID::RELAY_ON, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_OFF, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::RelayOn, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOff, priority2, 2u, 3u, 4u};
         QTest::newRow("relay on + off") << cmd1 << cmd2;
     }
 
     // relay off
     {
-        const Command cmd1{CommandID::RELAY_OFF, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_OFF, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::RelayOff, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOff, priority2, 2u, 3u, 4u};
         QTest::newRow("relay off") << cmd1 << cmd2;
     }
 
     // relay off + on
     {
-        const Command cmd1{CommandID::RELAY_OFF, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RELAY_ON, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::RelayOff, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::RelayOn, priority2, 2u, 3u, 4u};
         QTest::newRow("relay off + on") << cmd1 << cmd2;
     }
 
     // start timer
     {
-        const Command cmd1{CommandID::START_TIMER, priority1, as_number(RelayID::ONE | RelayID::TWO), 2u, 3u};
-        const Command cmd2{CommandID::START_TIMER, priority2, as_number(RelayID::TWO | RelayID::THREE), 2u, 3u};
+        const Command cmd1{CommandID::StartTimer, priority1, as_number(RelayID::One | RelayID::Two), 2u, 3u};
+        const Command cmd2{CommandID::StartTimer, priority2, as_number(RelayID::Two | RelayID::Three), 2u, 3u};
         QTest::newRow("start timer") << cmd1 << cmd2;
     }
 
     // set timer
     {
-        const Command cmd1{CommandID::SET_TIMER, priority1, as_number(RelayID::ONE | RelayID::TWO), 2u, 3u};
-        const Command cmd2{CommandID::SET_TIMER, priority2, as_number(RelayID::TWO | RelayID::THREE), 2u, 3u};
+        const Command cmd1{CommandID::SetTimer, priority1, as_number(RelayID::One | RelayID::Two), 2u, 3u};
+        const Command cmd2{CommandID::SetTimer, priority2, as_number(RelayID::Two | RelayID::Three), 2u, 3u};
         QTest::newRow("set timer") << cmd1 << cmd2;
     }
 
     // query total timer
     {
-        const Command cmd1{CommandID::TIMER, priority1, as_number(RelayID::ONE | RelayID::TWO),
-            as_number(TimerDelayType::TOTAL), 3u};
-        const Command cmd2{CommandID::TIMER, priority2, as_number(RelayID::TWO | RelayID::THREE),
-            as_number(TimerDelayType::TOTAL), 4u};
+        const Command cmd1{CommandID::Timer, priority1, as_number(RelayID::One | RelayID::Two),
+            as_number(TimerDelayType::Total), 3u};
+        const Command cmd2{CommandID::Timer, priority2, as_number(RelayID::Two | RelayID::Three),
+            as_number(TimerDelayType::Total), 4u};
         QTest::newRow("query total timer") << cmd1 << cmd2;
     }
 
     // query remaining timer
     {
-        const Command cmd1{CommandID::TIMER, priority1, as_number(RelayID::ONE | RelayID::TWO),
-            as_number(TimerDelayType::REMAINING), 3u};
-        const Command cmd2{CommandID::TIMER, priority2, as_number(RelayID::TWO | RelayID::THREE),
-            as_number(TimerDelayType::REMAINING), 4u};
+        const Command cmd1{CommandID::Timer, priority1, as_number(RelayID::One | RelayID::Two),
+            as_number(TimerDelayType::Remaining), 3u};
+        const Command cmd2{CommandID::Timer, priority2, as_number(RelayID::Two | RelayID::Three),
+            as_number(TimerDelayType::Remaining), 4u};
         QTest::newRow("query remaining timer") << cmd1 << cmd2;
     }
 
     // toggle relay
     {
-        const Command cmd1{CommandID::TOGGLE_RELAY, priority1, as_number(RelayID::ONE | RelayID::TWO), 2u, 3u};
-        const Command cmd2{CommandID::TOGGLE_RELAY, priority2, as_number(RelayID::TWO | RelayID::THREE), 3u, 4u};
+        const Command cmd1{CommandID::ToggleRelay, priority1, as_number(RelayID::One | RelayID::Two), 2u, 3u};
+        const Command cmd2{CommandID::ToggleRelay, priority2, as_number(RelayID::Two | RelayID::Three), 3u, 4u};
         QTest::newRow("toggle relay") << cmd1 << cmd2;
     }
 
     // query relay status
     {
-        const Command cmd1{CommandID::QUERY_RELAY, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::QUERY_RELAY, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::QueryRelay, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::QueryRelay, priority2, 2u, 3u, 4u};
         QTest::newRow("query relay status") << cmd1 << cmd2;
     }
 
     // set button mode
     {
-        const Command cmd1{CommandID::SET_BUTTON_MODE, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::SET_BUTTON_MODE, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::SetButtonMode, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::SetButtonMode, priority2, 2u, 3u, 4u};
         QTest::newRow("set button mode") << cmd1 << cmd2;
     }
 
     // query button mode
     {
-        const Command cmd1{CommandID::BUTTON_MODE, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::BUTTON_MODE, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::ButtonMode, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ButtonMode, priority2, 2u, 3u, 4u};
         QTest::newRow("query button mode") << cmd1 << cmd2;
     }
 
     // reset factory defaults
     {
-        const Command cmd1{CommandID::RESET_FACTORY_DEFAULTS, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::RESET_FACTORY_DEFAULTS, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::ResetFactoryDefaults, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ResetFactoryDefaults, priority2, 2u, 3u, 4u};
         QTest::newRow("reset factory defaults") << cmd1 << cmd2;
     }
 
     // jumper status
     {
-        const Command cmd1{CommandID::JUMPER_STATUS, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::JUMPER_STATUS, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::JumperStatus, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::JumperStatus, priority2, 2u, 3u, 4u};
         QTest::newRow("jumper status") << cmd1 << cmd2;
     }
 
     // firmware version
     {
-        const Command cmd1{CommandID::FIRMWARE_VERSION, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::FIRMWARE_VERSION, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::FirmwareVersion, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::FirmwareVersion, priority2, 2u, 3u, 4u};
         QTest::newRow("firmware version") << cmd1 << cmd2;
     }
 
     // none command
     {
-        const Command cmd1{CommandID::NONE, priority1, 1u, 2u, 3u};
-        const Command cmd2{CommandID::NONE, priority2, 2u, 3u, 4u};
+        const Command cmd1{CommandID::None, priority1, 1u, 2u, 3u};
+        const Command cmd2{CommandID::None, priority2, 2u, 3u, 4u};
         QTest::newRow("none command") << cmd1 << cmd2;
     }
 }
@@ -493,129 +493,129 @@ void CommandTest::isNotCompatible_data()
 
     // relay on
     {
-        const Command cmd1{CommandID::RELAY_ON, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::TOGGLE_RELAY, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOn, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ToggleRelay, priority, 1u, 2u, 3u};
         QTest::newRow("relay on") << cmd1 << cmd2;
     }
 
     // relay off
     {
-        const Command cmd1{CommandID::RELAY_OFF, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::TOGGLE_RELAY, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::RelayOff, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ToggleRelay, priority, 1u, 2u, 3u};
         QTest::newRow("relay off") << cmd1 << cmd2;
     }
 
     // start timer
     {
-        const Command cmd1{CommandID::START_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
+        const Command cmd1{CommandID::StartTimer, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::SetTimer, priority, as_number(RelayID::One), 2u, 3u};
         QTest::newRow("start timer") << cmd1 << cmd2;
     }
 
     // start timer - 1st arg
     {
-        const Command cmd1{CommandID::START_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::START_TIMER, priority, as_number(RelayID::ONE), 3u, 3u};
+        const Command cmd1{CommandID::StartTimer, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::StartTimer, priority, as_number(RelayID::One), 3u, 3u};
         QTest::newRow("start timer - 1st arg") << cmd1 << cmd2;
     }
 
     // start timer - 2nd arg
     {
-        const Command cmd1{CommandID::START_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::START_TIMER, priority, as_number(RelayID::ONE), 2u, 4u};
+        const Command cmd1{CommandID::StartTimer, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::StartTimer, priority, as_number(RelayID::One), 2u, 4u};
         QTest::newRow("start timer - 2nd arg") << cmd1 << cmd2;
     }
 
     // set timer
     {
-        const Command cmd1{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::START_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
+        const Command cmd1{CommandID::SetTimer, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::StartTimer, priority, as_number(RelayID::One), 2u, 3u};
         QTest::newRow("set timer") << cmd1 << cmd2;
     }
 
     // set timer - 1st arg
     {
-        const Command cmd1{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), 3u, 3u};
+        const Command cmd1{CommandID::SetTimer, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::SetTimer, priority, as_number(RelayID::One), 3u, 3u};
         QTest::newRow("set timer - 1st arg") << cmd1 << cmd2;
     }
 
     // set timer - 2nd arg
     {
-        const Command cmd1{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), 2u, 4u};
+        const Command cmd1{CommandID::SetTimer, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::SetTimer, priority, as_number(RelayID::One), 2u, 4u};
         QTest::newRow("set timer - 2nd arg") << cmd1 << cmd2;
     }
 
     // query timer
     {
-        const Command cmd1{CommandID::TIMER, priority, as_number(RelayID::ONE), as_number(TimerDelayType::TOTAL), 3u};
-        const Command cmd2{CommandID::SET_TIMER, priority, as_number(RelayID::ONE), as_number(TimerDelayType::TOTAL),
+        const Command cmd1{CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total), 3u};
+        const Command cmd2{CommandID::SetTimer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total),
             3u};
         QTest::newRow("query timer") << cmd1 << cmd2;
     }
 
     // query timer - 1st arg
     {
-        const Command cmd1{CommandID::TIMER, priority, as_number(RelayID::ONE), as_number(TimerDelayType::TOTAL), 3u};
-        const Command cmd2{CommandID::TIMER, priority, as_number(RelayID::ONE), as_number(TimerDelayType::REMAINING),
+        const Command cmd1{CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total), 3u};
+        const Command cmd2{CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Remaining),
             3u};
         QTest::newRow("query timer - 1st arg") << cmd1 << cmd2;
     }
 
     // toggle relay
     {
-        const Command cmd1{CommandID::TOGGLE_RELAY, priority, as_number(RelayID::ONE), 2u, 3u};
-        const Command cmd2{CommandID::RELAY_OFF, priority, as_number(RelayID::ONE), 2u, 3u};
+        const Command cmd1{CommandID::ToggleRelay, priority, as_number(RelayID::One), 2u, 3u};
+        const Command cmd2{CommandID::RelayOff, priority, as_number(RelayID::One), 2u, 3u};
         QTest::newRow("toggle relay") << cmd1 << cmd2;
     }
 
     // query relay status
     {
-        const Command cmd1{CommandID::QUERY_RELAY, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::BUTTON_MODE, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::QueryRelay, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ButtonMode, priority, 1u, 2u, 3u};
         QTest::newRow("query relay status") << cmd1 << cmd2;
     }
 
     // set button mode
     {
-        const Command cmd1{CommandID::SET_BUTTON_MODE, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::BUTTON_MODE, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::SetButtonMode, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ButtonMode, priority, 1u, 2u, 3u};
         QTest::newRow("set button mode") << cmd1 << cmd2;
     }
 
     // query button mode
     {
-        const Command cmd1{CommandID::BUTTON_MODE, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::SET_BUTTON_MODE, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::ButtonMode, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::SetButtonMode, priority, 1u, 2u, 3u};
         QTest::newRow("query button mode") << cmd1 << cmd2;
     }
 
     // reset factory defaults
     {
-        const Command cmd1{CommandID::RESET_FACTORY_DEFAULTS, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::JUMPER_STATUS, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::ResetFactoryDefaults, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::JumperStatus, priority, 1u, 2u, 3u};
         QTest::newRow("reset factory defaults") << cmd1 << cmd2;
     }
 
     // jumper status
     {
-        const Command cmd1{CommandID::JUMPER_STATUS, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::FIRMWARE_VERSION, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::JumperStatus, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::FirmwareVersion, priority, 1u, 2u, 3u};
         QTest::newRow("jumper status") << cmd1 << cmd2;
     }
 
     // firmware version
     {
-        const Command cmd1{CommandID::FIRMWARE_VERSION, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::JUMPER_STATUS, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::FirmwareVersion, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::JumperStatus, priority, 1u, 2u, 3u};
         QTest::newRow("firmware version") << cmd1 << cmd2;
     }
 
     // none command
     {
-        const Command cmd1{CommandID::NONE, priority, 1u, 2u, 3u};
-        const Command cmd2{CommandID::TOGGLE_RELAY, priority, 1u, 2u, 3u};
+        const Command cmd1{CommandID::None, priority, 1u, 2u, 3u};
+        const Command cmd2{CommandID::ToggleRelay, priority, 1u, 2u, 3u};
         QTest::newRow("none command") << cmd1 << cmd2;
     }
 }

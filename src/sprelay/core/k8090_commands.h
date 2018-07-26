@@ -52,73 +52,73 @@ struct CommandDataValue;
 
 // specializations
 template<>
-struct CommandDataValue<as_number(CommandID::RELAY_ON)>
+struct CommandDataValue<as_number(CommandID::RelayOn)>
 {
     static const unsigned char kCommand = 0x11;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::RELAY_OFF)>
+struct CommandDataValue<as_number(CommandID::RelayOff)>
 {
     static const unsigned char kCommand = 0x12;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::TOGGLE_RELAY)>
+struct CommandDataValue<as_number(CommandID::ToggleRelay)>
 {
     static const unsigned char kCommand = 0x14;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::QUERY_RELAY)>
+struct CommandDataValue<as_number(CommandID::QueryRelay)>
 {
     static const unsigned char kCommand = 0x18;
     static const int kPriority = 2;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::SET_BUTTON_MODE)>
+struct CommandDataValue<as_number(CommandID::SetButtonMode)>
 {
     static const unsigned char kCommand = 0x21;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::BUTTON_MODE)>
+struct CommandDataValue<as_number(CommandID::ButtonMode)>
 {
     static const unsigned char kCommand = 0x22;
     static const int kPriority = 2;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::START_TIMER)>
+struct CommandDataValue<as_number(CommandID::StartTimer)>
 {
     static const unsigned char kCommand = 0x41;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::SET_TIMER)>
+struct CommandDataValue<as_number(CommandID::SetTimer)>
 {
     static const unsigned char kCommand = 0x42;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::TIMER)>
+struct CommandDataValue<as_number(CommandID::Timer)>
 {
     static const unsigned char kCommand = 0x44;
     static const int kPriority = 2;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::RESET_FACTORY_DEFAULTS)>
+struct CommandDataValue<as_number(CommandID::ResetFactoryDefaults)>
 {
     static const unsigned char kCommand = 0x66;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::JUMPER_STATUS)>
+struct CommandDataValue<as_number(CommandID::JumperStatus)>
 {
     static const unsigned char kCommand = 0x70;
     static const int kPriority = 1;
 };
 template<>
-struct CommandDataValue<as_number(CommandID::FIRMWARE_VERSION)>
+struct CommandDataValue<as_number(CommandID::FirmwareVersion)>
 {
     static const unsigned char kCommand = 0x71;
     static const int kPriority = 1;
@@ -131,32 +131,32 @@ struct ResponseDataValue;
 
 // specializations
 template<>
-struct ResponseDataValue<as_number(ResponseID::BUTTON_MODE)>
+struct ResponseDataValue<as_number(ResponseID::ButtonMode)>
 {
     static const unsigned char kCommand = 0x22;
 };
 template<>
-struct ResponseDataValue<as_number(ResponseID::TIMER)>
+struct ResponseDataValue<as_number(ResponseID::Timer)>
 {
     static const unsigned char kCommand = 0x44;
 };
 template<>
-struct ResponseDataValue<as_number(ResponseID::BUTTON_STATUS)>
+struct ResponseDataValue<as_number(ResponseID::ButtonStatus)>
 {
     static const unsigned char kCommand = 0x50;
 };
 template<>
-struct ResponseDataValue<as_number(ResponseID::RELAY_STATUS)>
+struct ResponseDataValue<as_number(ResponseID::RelayStatus)>
 {
     static const unsigned char kCommand = 0x51;
 };
 template<>
-struct ResponseDataValue<as_number(ResponseID::JUMPER_STATUS)>
+struct ResponseDataValue<as_number(ResponseID::JumperStatus)>
 {
     static const unsigned char kCommand = 0x70;
 };
 template<>
-struct ResponseDataValue<as_number(ResponseID::FIRMWARE_VERSION)>
+struct ResponseDataValue<as_number(ResponseID::FirmwareVersion)>
 {
     static const unsigned char kCommand = 0x71;
 };
@@ -227,17 +227,17 @@ constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
 /*!
     \brief Array of hexadecimal representation of commands used to control the relay.
 */
-constexpr const unsigned char *kCommands = CommandArray_<as_number(CommandID::NONE)>::Commands::kValues;
+constexpr const unsigned char *kCommands = CommandArray_<as_number(CommandID::None)>::Commands::kValues;
 
 /*!
     \brief Array of default priorities used to command scheduling.
 */
-constexpr const int *kPriorities = CommandArray_<as_number(CommandID::NONE)>::Priorities::kValues;
+constexpr const int *kPriorities = CommandArray_<as_number(CommandID::None)>::Priorities::kValues;
 
 /*!
     \brief Array of hexadecimal representation of responses sended by the relay.
 */
-constexpr const unsigned char *kResponses = ResponseArray_<as_number(ResponseID::NONE)>::Responses::kValues;
+constexpr const unsigned char *kResponses = ResponseArray_<as_number(ResponseID::None)>::Responses::kValues;
 
 /*!
     \brief Start delimiting command byte.
