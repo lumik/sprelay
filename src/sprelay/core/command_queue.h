@@ -28,6 +28,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <queue>
 
 namespace sprelay {
@@ -100,6 +101,25 @@ private:  // NOLINT(whitespace/indent)
     const QList<const TCommand *> none_list_;
 
     unsigned int stamp_counter_;
+};
+
+template<typename TCommand, int tSize>
+class ConcurentCommandQueue : private CommandQueue<TCommand, tSize>
+{
+public:  // NOLINT(whitespace/indent)
+    bool empty() const;
+    std::size_t size() const;
+    bool push(const TCommand &command, bool unique = true);
+    TCommand pop();
+    const QList<const TCommand *> & get(typename TCommand::IdType command_id) const;
+    unsigned int stampCounter() const;
+    bool updateCommand(int idx, const TCommand &command);
+
+    void lock() { global_mutex_.lock(); }
+    void unlock() noexcept { global_mutex_.unlock(); }
+
+private:  // NOLINT(whitespace/indent)
+    mutable std::mutex global_mutex_;
 };
 
 }  // namespace command_queue

@@ -108,7 +108,7 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
 K8090::K8090(QObject *parent) :
     QObject{parent},
     serial_port_{new UnifiedSerialPort},
-    pending_commands_{new command_queue::CommandQueue<impl_::Command, as_number(CommandID::None)>},
+    pending_commands_{new command_queue::ConcurentCommandQueue<impl_::Command, as_number(CommandID::None)>},
     current_command_{new impl_::Command},
     command_timer_{new QTimer},
     failure_timer_{new QTimer},
@@ -1108,7 +1108,7 @@ void K8090::doDisconnect()
 {
     serial_port_->close();
     // erase all pending commands
-    pending_commands_.reset(new command_queue::CommandQueue<impl_::Command, as_number(CommandID::None)>);
+    pending_commands_.reset(new command_queue::ConcurentCommandQueue<impl_::Command, as_number(CommandID::None)>);
     // stop failure timers and erase failure counter
     command_timer_->stop();
     failure_timer_->stop();

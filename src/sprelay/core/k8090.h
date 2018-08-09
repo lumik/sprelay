@@ -46,7 +46,7 @@ class UnifiedSerialPort;
 namespace command_queue {
 // command_queue forward declaration
 template<typename TCommand, int tSize>
-class CommandQueue;
+class ConcurentCommandQueue;
 }  // namespace command_queue
 
 
@@ -155,7 +155,7 @@ private:  // NOLINT(whitespace/indent)
     QString com_port_name_;
     std::unique_ptr<UnifiedSerialPort> serial_port_;
 
-    std::unique_ptr<command_queue::CommandQueue<k8090::impl_::Command,
+    std::unique_ptr<command_queue::ConcurentCommandQueue<k8090::impl_::Command,
                         k8090::as_number(k8090::CommandID::None)>>
         pending_commands_;
     std::unique_ptr<k8090::impl_::Command> current_command_;

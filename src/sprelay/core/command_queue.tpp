@@ -188,7 +188,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
 
     int main()
     {
-        using namespace sprelay::core;
+        using namespace sprelay::core::command_queue;
         CommandQueue<Command, N> command_queue;
 
         unsigned int cmd_id1 = 0;
@@ -204,6 +204,8 @@ using namespace impl_;  // NOLINT(build/namespaces)
         return 0;
     }
     \endcode
+
+    See ConcurentCommandQueue for thread-safe version of CommandQueue.
 
     \tparam TCommand Command representation, which must containt `IdType` and `NumberType` typedefs, default
         constructor which initializes id to none value, `id` member of type `IdType`, `int priority` member, static
@@ -394,6 +396,160 @@ void CommandQueue<TCommand, tSize>::updatePriorities(typename TCommand::NumberTy
         std::priority_queue<CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
     }
 }
+
+
+/*!
+    \class ConcurentCommandQueue
+    \brief Thread-safe version of CommandQueue.
+
+    \warning Beware of ConcurentCommandQueue::get() method, it is thread-safe but it returns reference to the content.
+
+    \remark thread-safe
+*/
+
+
+/*!
+    For more details see CommandQueue::empty().
+*/
+template<typename TCommand, int tSize>
+bool ConcurentCommandQueue<TCommand, tSize>::empty() const
+{
+    std::lock_guard<std::mutex> lock{global_mutex_};
+    return CommandQueue<TCommand, tSize>::empty();
+}
+
+
+/*!
+    For more details see CommandQueue::size().
+*/
+template<typename TCommand, int tSize>
+std::size_t ConcurentCommandQueue<TCommand, tSize>::size() const
+{
+    std::lock_guard<std::mutex> lock{global_mutex_};
+    return CommandQueue<TCommand, tSize>::size();
+}
+
+
+/*!
+    For more details see CommandQueue::push().
+*/
+template<typename TCommand, int tSize>
+bool ConcurentCommandQueue<TCommand, tSize>::push(const TCommand &command, bool unique)
+{
+     std::lock_guard<std::mutex> lock{global_mutex_};
+     return CommandQueue<TCommand, tSize>::push(command, unique);
+}
+
+
+/*!
+    For more details see CommandQueue::pop().
+*/
+template<typename TCommand, int tSize>
+TCommand ConcurentCommandQueue<TCommand, tSize>::pop()
+{
+    std::lock_guard<std::mutex> lock{global_mutex_};
+    return CommandQueue<TCommand, tSize>::pop();
+}
+
+
+/*!
+    For more details see CommandQueue::get().
+
+    \warning Beware, the method is thread-safe but it returns reference to the content. The thread safety must be
+    treated by the user. Use ConcurentCommandQueue::lock() and ConcurentCommandQueue::unlock() methods.
+*/
+template<typename TCommand, int tSize>
+const QList<const TCommand *> & ConcurentCommandQueue<TCommand, tSize>::get(typename TCommand::IdType command_id) const
+{
+    std::lock_guard<std::mutex> lock{global_mutex_};
+    return CommandQueue<TCommand, tSize>::get(command_id);
+}
+
+
+/*!
+    For more details see CommandQueue::stampCounter().
+*/
+template<typename TCommand, int tSize>
+unsigned int ConcurentCommandQueue<TCommand, tSize>::stampCounter() const
+{
+    std::lock_guard<std::mutex> lock{global_mutex_};
+    return CommandQueue<TCommand, tSize>::stampCounter();
+}
+
+
+/*!
+    For more details see CommandQueue::updateCommand().
+*/
+template<typename TCommand, int tSize>
+bool ConcurentCommandQueue<TCommand, tSize>::updateCommand(int idx, const TCommand &command)
+{
+    std::lock_guard<std::mutex> lock{global_mutex_};
+    return CommandQueue<TCommand, tSize>::updateCommand(idx, command);
+}
+
+
+/*!
+    \fn ConcurentCommandQueue::lock()
+    \brief Can be used to lock internal global lock
+
+    \warning Locks the same lock as is used by all the thread-safe methods. Beware of deadlocks. No thread-safe method
+    can be called with this lock acquired.
+
+    \code
+    #include "command_queue.h"
+
+    const int N = 10;
+
+    struct Command
+    {
+        using IdType = unsigned int;
+        using NumberType = unsigned int;
+
+        Command() : id(N) {}
+        Command(IdType id) : id(id) {}
+        static NumberType idAsNumber(IdType id) { return id; }
+
+        IdType id;
+        int priority;
+    };
+
+    int main()
+    {
+        using namespace sprelay::core::command_queue;
+        ConcurentCommandQueue<Command, N> command_queue;
+
+        unsigned int cmd_id1 = 0;
+        unsigned int priority1 = 1;
+        Command cmd1{cmd_id1, priority1};
+        command_queue.push(cmd1);
+        const QList<const * Command> & cmd_list = command_queue.get(cmd_id1);
+
+        Command cmd2
+        {
+            std::lock_guard<ConcurentCommandQueue<Command, N>> command_queue_lock{command_queue};
+            cmd2 = *cmd_list[0];
+        }
+        cmd2.priority = 2;
+
+        // be sure that the lock is unlocked before any function call to command_queue
+        command_queue.updateCommand(0, cmd2);
+        Command cmd3 = command_queue.pop();
+
+        return 0;
+    }
+    \endcode
+
+    \sa ConcurentCommandQueue::unlock()
+*/
+
+/*!
+    \fn ConcurentCommandQueue::unlock()
+    \brief Can be used to unlock internal global lock
+
+    \warning Unlocks the same lock as is used by all the thread-safe methods. Beware of unlocking it if you don't
+    acquired it by the ConcurentCommandQueue::lock() method.
+*/
+
 
 }  // namespace command_queue
 /*!

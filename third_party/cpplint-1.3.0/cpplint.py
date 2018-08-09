@@ -6014,7 +6014,12 @@ def FlagCxx11Features(filename, clean_lines, linenum, error):
                                       'condition_variable',
                                       'fenv.h',
                                       'future',
-                                      'mutex',
+  ##############################################################################
+  # modified : lumik 2018-08-09
+  # search include for template source tpp files
+                                      # 'mutex',
+  # end modified : lumik 2018-08-09
+  ############################################################################
                                       'ratio',
                                       'regex',
                                       'system_error',
