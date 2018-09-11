@@ -35,6 +35,7 @@
 #include "sprelay/sprelay_global.h"
 
 // forward declarations
+class QMutex;
 class QTimer;
 
 namespace sprelay {
@@ -88,6 +89,13 @@ signals:  // NOLINT(whitespace/indent)
     void connectionFailed();
     void notConnected();
     void disconnected();
+    void doDisconnect(bool failure);
+    void enqueueCommand(sprelay::core::k8090::CommandID command_id);
+    void enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask);
+    void enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
+        unsigned char param1);
+    void enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
+        unsigned char param1, unsigned char param2);
 
 public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
@@ -116,11 +124,12 @@ private slots:  // NOLINT(whitespace/indent)
     void onReadyData();
     void dequeueCommand();
     void onCommandFailed();
+    void onDoDisconnect(bool failure);
 
 private:  // NOLINT(whitespace/indent)
     void sendCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
             unsigned char param1 = 0, unsigned char param2 = 0);
-    void enqueueCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
+    void onEnqueueCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
                         unsigned char param1 = 0, unsigned char param2 = 0);
     void sendCommandHelper(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
             unsigned char param1 = 0, unsigned char param2 = 0);
@@ -134,7 +143,6 @@ private:  // NOLINT(whitespace/indent)
     void jumperStatusResponse(std::unique_ptr<impl_::CardMessage> response);
     void firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response);
     void connectionSuccessful();
-    void doDisconnect();
 
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
@@ -145,6 +153,7 @@ private:  // NOLINT(whitespace/indent)
 
 
     QString com_port_name_;
+    std::unique_ptr<QMutex> com_port_name_mutex_;
     std::unique_ptr<UnifiedSerialPort> serial_port_;
 
     std::unique_ptr<impl_::ConcurentCommandQueue>
@@ -155,10 +164,14 @@ private:  // NOLINT(whitespace/indent)
     int failure_counter_;
     bool connected_;
     bool connecting_;
+    std::unique_ptr<QMutex> connected_mutex_;
     int command_delay_;
     int factory_defaults_command_delay_;
+    std::unique_ptr<QMutex> command_delay_mutex_;
     int failure_delay_;
+    std::unique_ptr<QMutex> failure_delay_mutex_;
     int failure_max_count_;
+    std::unique_ptr<QMutex> failure_max_count_mutex_;
 };
 
 }  // namespace k8090

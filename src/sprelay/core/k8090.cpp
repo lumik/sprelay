@@ -26,6 +26,7 @@
 
 #include "k8090.h"
 
+#include <QMutex>
 #include <QStringBuilder>
 #include <QTimer>
 
@@ -108,6 +109,7 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
 */
 K8090::K8090(QObject *parent) :
     QObject{parent},
+    com_port_name_mutex_{new QMutex},
     serial_port_{new UnifiedSerialPort},
     pending_commands_{new impl_::ConcurentCommandQueue},
     current_command_{new impl_::Command},
@@ -116,10 +118,14 @@ K8090::K8090(QObject *parent) :
     failure_counter_{0},
     connected_{false},
     connecting_{false},
+    connected_mutex_{new QMutex},
     command_delay_{kDefaultCommandDelay_},
     factory_defaults_command_delay_{2 * kDefaultCommandDelay_},
+    command_delay_mutex_{new QMutex},
     failure_delay_{kDefaultFailureDelay_},
-    failure_max_count_{kDefaultMaxFailureCount_}
+    failure_delay_mutex_{new QMutex},
+    failure_max_count_{kDefaultMaxFailureCount_},
+    failure_max_count_mutex_{new QMutex}
 {
     command_timer_->setSingleShot(true);
     failure_timer_->setSingleShot(true);
@@ -127,6 +133,18 @@ K8090::K8090(QObject *parent) :
     connect(serial_port_.get(), &UnifiedSerialPort::readyRead, this, &K8090::onReadyData);
     connect(command_timer_.get(), &QTimer::timeout, this, &K8090::dequeueCommand);
     connect(failure_timer_.get(), &QTimer::timeout, this, &K8090::onCommandFailed);
+    connect(this, &K8090::doDisconnect, this, &K8090::onDoDisconnect);
+    connect(this, static_cast<void (K8090::*)(CommandID)>(&K8090::enqueueCommand),
+        this, [=](CommandID command_id) { this->onEnqueueCommand(command_id); });
+    connect(this, static_cast<void (K8090::*)(CommandID, RelayID)>(&K8090::enqueueCommand),
+        this, [=](CommandID command_id, RelayID mask) { this->onEnqueueCommand(command_id, mask); });
+    connect(this, static_cast<void (K8090::*)(CommandID, RelayID, unsigned char)>(&K8090::enqueueCommand),
+        this, [=](CommandID command_id, RelayID mask, unsigned char param1)
+            { this->onEnqueueCommand(command_id, mask, param1); });
+    connect(this, static_cast<void (K8090::*)(CommandID, RelayID, unsigned char, unsigned char)>(
+            &K8090::enqueueCommand),
+        this, [=](CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
+            { this->onEnqueueCommand(command_id, mask, param1, param2); });
 }
 
 
@@ -142,9 +160,11 @@ K8090::~K8090()
 /*!
   \brief Lists available serial ports.
   \return Available serial ports information list.
+  \remark reentrant, thread-safe.
 */
 QList<serial_utils::ComPortParams> K8090::availablePorts()
 {
+    // UnifiedSerialPort::availablePorts is thread safe, so it is safe to call it
     return UnifiedSerialPort::availablePorts();
 }
 
@@ -158,12 +178,11 @@ QList<serial_utils::ComPortParams> K8090::availablePorts()
 */
 void K8090::setComPortName(const QString &name)
 {
+    QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
     if (com_port_name_ != name) {
         com_port_name_ = name;
-        if (connected_ | connecting_) {
-            doDisconnect();
-            emit disconnected();
-        }
+        com_port_name_locker.unlock();
+        emit doDisconnect(false);
     }
 }
 
@@ -178,6 +197,7 @@ void K8090::setComPortName(const QString &name)
 */
 void K8090::setCommandDelay(int msec)
 {
+    QMutexLocker command_delay_locker{command_delay_mutex_.get()};
     command_delay_ = msec;
     factory_defaults_command_delay_ = 2 * command_delay_;
 }
@@ -194,6 +214,7 @@ void K8090::setCommandDelay(int msec)
 */
 void K8090::setFailureDelay(int msec)
 {
+    QMutexLocker failure_delay_locker{failure_delay_mutex_.get()};
     failure_delay_ = msec;
 }
 
@@ -207,6 +228,7 @@ void K8090::setFailureDelay(int msec)
 */
 void K8090::setMaxFailureCount(int count)
 {
+    QMutexLocker failure_max_count_locker{failure_max_count_mutex_.get()};
     failure_max_count_ = count;
 }
 
@@ -217,6 +239,7 @@ void K8090::setMaxFailureCount(int count)
 */
 bool K8090::isConnected()
 {
+    QMutexLocker connected_locker{connected_mutex_.get()};
     return connected_;
 }
 
@@ -224,10 +247,13 @@ bool K8090::isConnected()
 /*!
     \brief Gets a number of commands waiting for execution in queue.
     \param id Queried command.
-    \return The number of commands in queue.
+    \return The number of commands in queue.(
 */
 int K8090::pendingCommandCount(CommandID id)
 {
+    // TODO(lumik): Replace this hack. Pending commands unique_ptr is reseted in doDisconnect method when
+    // connected_mutex_ is locked. Create new reset method of ConcurentCommandQueue and use it here instead.
+    QMutexLocker connected_locker{connected_mutex_.get()};
     return pending_commands_->count(id);
 }
 
@@ -335,6 +361,28 @@ int K8090::pendingCommandCount(CommandID id)
     \fn void K8090::disconnected()
     \brief This signal is emited as the reaction to the K8090::disconnect().
 */
+/*!
+    \fn void K8090::doDisconnect(bool failure)
+    \brief A signal for internal usage to disconnect in K8090's thread.
+*/
+/*!
+    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id)
+    \brief A signal for internal usage to enqueueCommand in K8090's thread.
+*/
+/*!
+    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask)
+    \brief A signal for internal usage to enqueueCommand in K8090's thread.
+*/
+/*!
+    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
+        unsigned char param1)
+    \brief A signal for internal usage to enqueueCommand in K8090's thread.
+*/
+/*!
+    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
+        unsigned char param1, unsigned char param2)
+    \brief A signal for internal usage to enqueueCommand in K8090's thread.
+*/
 
 
 // public slots
@@ -347,11 +395,13 @@ int K8090::pendingCommandCount(CommandID id)
 */
 void K8090::connectK8090()
 {
+    QMutexLocker connected_locker{connected_mutex_.get()};
     if (connecting_) {
         return;
     }
     connected_ = false;
     bool card_found = false;
+    QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
             UnifiedSerialPort::availablePorts()) {
         if (params.port_name == com_port_name_
@@ -360,13 +410,17 @@ void K8090::connectK8090()
             card_found = true;
         }
     }
+    com_port_name_locker.unlock();
 
     if (!card_found) {
+        connected_locker.unlock();
         emit connectionFailed();
         return;
     }
 
+    com_port_name_locker.relock();
     serial_port_->setPortName(com_port_name_);
+    com_port_name_locker.unlock();
     serial_port_->setBaudRate(QSerialPort::Baud19200);
     serial_port_->setDataBits(QSerialPort::Data8);
     serial_port_->setParity(QSerialPort::NoParity);
@@ -375,18 +429,21 @@ void K8090::connectK8090()
 
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
+            connected_locker.unlock();
             emit connectionFailed();
             return;
         }
     }
 
     connecting_ = true;
-    enqueueCommand(CommandID::QueryRelay);
-    enqueueCommand(CommandID::ButtonMode);
-    enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Total));
-    enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Remaining));
-    enqueueCommand(CommandID::JumperStatus);
-    enqueueCommand(CommandID::FirmwareVersion);
+    connected_locker.unlock();
+
+    emit enqueueCommand(CommandID::QueryRelay);
+    emit enqueueCommand(CommandID::ButtonMode);
+    emit enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Total));
+    emit enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Remaining));
+    emit enqueueCommand(CommandID::JumperStatus);
+    emit enqueueCommand(CommandID::FirmwareVersion);
 }
 
 
@@ -397,8 +454,7 @@ void K8090::connectK8090()
 */
 void K8090::disconnect()
 {
-    doDisconnect();
-    emit disconnected();
+    emit doDisconnect(false);
 }
 
 
@@ -410,12 +466,12 @@ void K8090::disconnect()
 */
 void K8090::refreshRelaysInfo()
 {
-    enqueueCommand(CommandID::QueryRelay);
-    enqueueCommand(CommandID::ButtonMode);
-    enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Total));
-    enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Remaining));
-    enqueueCommand(CommandID::JumperStatus);
-    enqueueCommand(CommandID::FirmwareVersion);
+    emit enqueueCommand(CommandID::QueryRelay);
+    emit enqueueCommand(CommandID::ButtonMode);
+    emit enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Total));
+    emit enqueueCommand(CommandID::Timer, RelayID::All, as_number(impl_::TimerDelayType::Remaining));
+    emit enqueueCommand(CommandID::JumperStatus);
+    emit enqueueCommand(CommandID::FirmwareVersion);
 }
 
 
@@ -666,6 +722,7 @@ void K8090::onReadyData()
 // There must be some delay between commands, so the commands are inserted inside queue and dequeued after
 // command_delay_ miliseconds which is controlled by commad_timer_. Commands with a response are dequeued after the
 // response comes.
+// dequeueCommand() is alway called from the K8090's thread.
 void K8090::dequeueCommand()
 {
     // commands without response sends after delay the appropriate query command to test connection.
@@ -700,11 +757,37 @@ void K8090::onCommandFailed()
 {
     failure_timer_->stop();
     ++failure_counter_;
-    if (failure_counter_ > failure_max_count_) {
+    if (failure_counter_ > (QMutexLocker{failure_max_count_mutex_.get()}, failure_max_count_)) {
+        onDoDisconnect(true);
+    }
+}
+
+
+// This method should be called to do all the stuff needed to disconnect from the relay card
+// Stops timer, so it should be run in the K8090's thread. It is achieved by calling this method through signal slots
+// mechanism
+void K8090::onDoDisconnect(bool failure)
+{
+    QMutexLocker connected_locker{connected_mutex_.get()};
+    if (connected_ | connecting_) {
+        serial_port_->close();
+        // erase all pending commands
+        pending_commands_.reset(new impl_::ConcurentCommandQueue);
+        // stop failure timers and erase failure counter
+        command_timer_->stop();
+        failure_timer_->stop();
+        failure_counter_ = 0;
+
         connected_ = false;
         connecting_ = false;
-        serial_port_->close();
-        emit connectionFailed();
+
+        connected_locker.unlock();
+
+        if (failure) {
+            emit connectionFailed();
+        } else {
+            emit disconnected();
+        }
     }
 }
 
@@ -713,21 +796,23 @@ void K8090::onCommandFailed()
 // enqueuCommand().
 void K8090::sendCommand(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
-    if (!connected_) {
+    if (QMutexLocker{connected_mutex_.get()}, !connected_) {
         emit notConnected();
         return;
     }
-    enqueueCommand(command_id, mask, param1, param2);
+    emit enqueueCommand(command_id, mask, param1, param2);
 }
 
 
 // Each command is sended through this method. It controlls if the command can be sended directly or enqueued for
 // delayed sending, because the virtual serial port interface of the card doesn't accept commands which are sended with
 // too small delay in between them.
-void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
+// This method must be used from the K8090's thread, so invoke it by emitting enqueCommand signal through lambda
+// expression - see connections in the constructor.
+void K8090::onEnqueueCommand(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
     // Send command directly if it is sufficiently delayed from the previous one and there are no commands pending.
-    if (!command_timer_->isActive() && current_command_->id == CommandID::None && pending_commands_->empty()) {
+    if ((!command_timer_->isActive()) && current_command_->id == CommandID::None && pending_commands_->empty()) {
         sendCommandHelper(command_id, mask, param1, param2);
     } else {  // send command undirectly
         pending_commands_->updateOrPush(command_id, mask, param1, param2);
@@ -756,21 +841,21 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
     // if command can be without response, do not start failure check, next command is sent when the responses for the
     // command is processed
     if (hasResponse(command_id)) {
-        failure_timer_->start(failure_delay_);
+        failure_timer_->start((QMutexLocker{failure_delay_mutex_.get()}, failure_delay_));
         if (command_id == CommandID::QueryRelay) {
-            command_timer_->start(command_delay_);
+            command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, command_delay_));
         } else if (command_id == CommandID::ToggleRelay) {
             // relay status can be response to many situations so it is better to not rely on right response and rather
             // send the next command after command delays
-            command_timer_->start(command_delay_);
+            command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, command_delay_));
         }
     // if there is some delay between commands specified and the command hasn't response, start the delay
-    } else if (command_delay_) {
+    } else if (QMutexLocker{command_delay_mutex_.get()}, command_delay_) {
         if (command_id == CommandID::ResetFactoryDefaults) {
             // reset factory defaults execution takes longer
-            command_timer_->start(factory_defaults_command_delay_);
+            command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, factory_defaults_command_delay_));
         } else {
-            command_timer_->start(command_delay_);
+            command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, command_delay_));
         }
     }
     sendToSerial(std::move(cmd), n);
@@ -799,10 +884,7 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
 {
     if (!serial_port_->isOpen()) {
         if (!serial_port_->open(QIODevice::ReadWrite)) {
-            connected_ = false;
-            failure_timer_->stop();
-            command_timer_->stop();
-            emit connectionFailed();
+            onDoDisconnect(true);
             return;
         }
     }
@@ -822,11 +904,11 @@ void K8090::buttonModeResponse(std::unique_ptr<impl_::CardMessage> response)
     // query button mode has no parameters. It is satisfactory only to remove one button mode request from the list
     current_command_->id = CommandID::None;
     failure_timer_->stop();
-    if (connected_) {
+    if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit buttonModes(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
             static_cast<RelayID>(response->data[4]));
         dequeueCommand();
-    } else if (connecting_) {
+    } else if (QMutexLocker {connected_mutex_.get()}, connecting_) {
         emit buttonModes(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
             static_cast<RelayID>(response->data[4]));
         if (pending_commands_->empty()) {
@@ -874,14 +956,14 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
             failure_timer_->start();
         }
     }
-    if (connected_ | connecting_) {
+    if (QMutexLocker{connected_mutex_.get()}, (connected_ | connecting_)) {
         if (is_total) {
             emit totalTimerDelay(static_cast<RelayID>(response->data[2]), response->data[3] << 8 | response->data[4]);
         } else {
             emit remainingTimerDelay(static_cast<RelayID>(response->data[2]),
                     response->data[3] << 8 | response->data[4]);
         }
-        if (connecting_ && pending_commands_->empty()) {
+        if ((QMutexLocker{connected_mutex_.get()}, connecting_) && pending_commands_->empty()) {
             connectionSuccessful();
         } else if (should_dequeue_next) {
             dequeueCommand();
@@ -896,7 +978,7 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
 // processes button status response
 void K8090::buttonStatusResponse(std::unique_ptr<impl_::CardMessage> response)
 {
-    if (connected_) {
+    if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit buttonStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
                 static_cast<RelayID>(response->data[4]));
     }
@@ -973,10 +1055,10 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // or user interaction directly with the card
         failure_timer_->stop();
     }
-    if (connected_) {
+    if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit relayStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
                 static_cast<RelayID>(response->data[4]));
-    } else if (connecting_) {
+    } else if (QMutexLocker{connected_mutex_.get()}, connecting_) {
         // Beware, if the relay status message is obtained from the card as the reaction to the user interaction with
         // physical buttons, the relay status signal can be emited 2 times because of the message obtained as the
         // reaction to query message.
@@ -1000,10 +1082,10 @@ void K8090::jumperStatusResponse(std::unique_ptr<impl_::CardMessage> response)
     }
     current_command_->id = CommandID::None;
     failure_timer_->stop();
-    if (connected_) {
+    if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit jumperStatus(static_cast<bool>(response->data[3]));
         dequeueCommand();
-    } else if (connecting_) {
+    } else if (QMutexLocker{connected_mutex_.get()}, connecting_) {
         emit jumperStatus(static_cast<bool>(response->data[3]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
@@ -1026,10 +1108,10 @@ void K8090::firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response
     }
     current_command_->id = CommandID::None;
     failure_timer_->stop();
-    if (connected_) {
+    if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit firmwareVersion(2000 + static_cast<int>(response->data[3]), static_cast<int>(response->data[4]));
         dequeueCommand();
-    } else if (connecting_) {
+    } else if (QMutexLocker{connected_mutex_.get()}, connecting_) {
         emit firmwareVersion(2000 + static_cast<int>(response->data[3]), static_cast<int>(response->data[4]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
@@ -1047,25 +1129,12 @@ void K8090::firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response
 // that.
 void K8090::connectionSuccessful()
 {
-    connecting_ = false;
-    connected_ = true;
+    {
+        QMutexLocker connected_locker{connected_mutex_.get()};
+        connecting_ = false;
+        connected_ = true;
+    }
     emit connected();
-}
-
-
-// This method should be called to do all the stuff needed to disconnect from the relay card
-void K8090::doDisconnect()
-{
-    serial_port_->close();
-    // erase all pending commands
-    pending_commands_.reset(new impl_::ConcurentCommandQueue);
-    // stop failure timers and erase failure counter
-    command_timer_->stop();
-    failure_timer_->stop();
-    failure_counter_ = 0;
-
-    connected_ = false;
-    connecting_ = false;
 }
 
 }  // namespace k8090
