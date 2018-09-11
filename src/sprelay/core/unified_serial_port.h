@@ -34,6 +34,11 @@
 #include "serial_port_defines.h"
 #include "serial_port_utils.h"
 
+
+// forward declarations
+class QMutex;
+
+
 namespace sprelay {
 namespace core {
 
@@ -44,12 +49,14 @@ class MockSerialPort;
 class UnifiedSerialPort : public QObject
 {
     Q_OBJECT
+
 public:  // NOLINT(whitespace/indent)
     static const char *kMockPortName;
 
     static QList<serial_utils::ComPortParams> availablePorts();
 
     explicit UnifiedSerialPort(QObject *parent = nullptr);
+    ~UnifiedSerialPort() override;
 
     void setPortName(const QString &port_name);
     bool setBaudRate(qint32 baud_rate);
@@ -76,6 +83,8 @@ signals:  // NOLINT(whitespace/indent)
     void readyRead();
 
 private:  // NOLINT(whitespace/indent)
+    bool isMockImpl();
+    bool isRealImpl();
     bool createSerialPort();
     bool createMockPort();
     template<typename TSerialPort>
@@ -83,6 +92,7 @@ private:  // NOLINT(whitespace/indent)
 
     std::unique_ptr<QSerialPort> serial_port_;
     std::unique_ptr<MockSerialPort, serial_utils::MockSerialPortDeleter> mock_serial_port_;
+    std::unique_ptr<QMutex> serial_port_mutex_;
     QString port_name_;
     bool port_name_pristine_;
     qint32 baud_rate_;

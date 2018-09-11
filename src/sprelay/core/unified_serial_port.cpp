@@ -26,6 +26,7 @@
 
 #include "unified_serial_port.h"
 
+#include <QMutex>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
@@ -49,7 +50,7 @@ namespace core {
     from real to mock or other way, the parameters are moved to the new one. More information about the methods can be
     obtained from QSerialPort documentation.
 
-    \remark reentrant
+    \remark reentrant, thread-safe
 */
 
 
@@ -62,11 +63,14 @@ const char *UnifiedSerialPort::kMockPortName = "MOCKCOM";
 /*!
     \brief Returns a list of available serial ports extended with mock serial port.
     \return The ports list.
+    \remark reentrant, thread-safe
  */
 QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
 {
     QList<serial_utils::ComPortParams> com_port_params_list;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
+    // QSerialPortInfo::availablePorts() returns QList by value so it should be thread safe. Implicit sharing should
+    // not be a problem because it makes copy on write.
+    for (const QSerialPortInfo &info : QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
         serial_utils::ComPortParams com_port_params;
         com_port_params.port_name = info.portName();
         com_port_params.description = info.description();
@@ -93,6 +97,7 @@ QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
 */
 UnifiedSerialPort::UnifiedSerialPort(QObject *parent)
     : QObject{parent},
+      serial_port_mutex_{new QMutex},
       port_name_pristine_{true},
       baud_rate_pristine_{true},
       data_bits_pristine_{true},
@@ -104,16 +109,27 @@ UnifiedSerialPort::UnifiedSerialPort(QObject *parent)
 
 
 /*!
+    \brief Destructor.
+
+    Defined to enable forward declarations.
+*/
+UnifiedSerialPort::~UnifiedSerialPort()
+{
+}
+
+
+/*!
     \brief Sets port name.
     \param port_name The port name.
 */
 void UnifiedSerialPort::setPortName(const QString &port_name)
 {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     port_name_ = port_name;
     port_name_pristine_ = false;
-    if (isReal()) {
+    if (isRealImpl()) {
         serial_port_->setPortName(port_name);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         mock_serial_port_->setPortName(port_name);
     }
 }
@@ -126,11 +142,12 @@ void UnifiedSerialPort::setPortName(const QString &port_name)
 */
 bool UnifiedSerialPort::setBaudRate(qint32 baud_rate)
 {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     baud_rate_ = baud_rate;
     baud_rate_pristine_ = false;
-    if (isReal()) {
+    if (isRealImpl()) {
         return serial_port_->setBaudRate(baud_rate);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->setBaudRate(baud_rate);
     } else {
         return true;
@@ -145,11 +162,12 @@ bool UnifiedSerialPort::setBaudRate(qint32 baud_rate)
 */
 bool UnifiedSerialPort::setDataBits(QSerialPort::DataBits data_bits)
 {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     data_bits_ = data_bits;
     data_bits_pristine_ = false;
-    if (isReal()) {
+    if (isRealImpl()) {
         return serial_port_->setDataBits(data_bits);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->setDataBits(data_bits);
     } else {
         return true;
@@ -164,11 +182,12 @@ bool UnifiedSerialPort::setDataBits(QSerialPort::DataBits data_bits)
 */
 bool UnifiedSerialPort::setParity(QSerialPort::Parity parity)
 {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     parity_ = parity;
     parity_pristine_ = false;
-    if (isReal()) {
+    if (isRealImpl()) {
         return serial_port_->setParity(parity);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->setParity(parity);
     } else {
         return true;
@@ -183,11 +202,12 @@ bool UnifiedSerialPort::setParity(QSerialPort::Parity parity)
 */
 bool UnifiedSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     stop_bits_ = stop_bits;
     stop_bits_pristine_ = false;
-    if (isReal()) {
+    if (isRealImpl()) {
         return serial_port_->setStopBits(stop_bits);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->setStopBits(stop_bits);
     } else {
         return true;
@@ -202,11 +222,12 @@ bool UnifiedSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 */
 bool UnifiedSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
 {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     flow_control_ = flow_control;
     flow_control_pristine_ = false;
-    if (isReal()) {
+    if (isRealImpl()) {
         return serial_port_->setFlowControl(flow_control);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->setFlowControl(flow_control);
     } else {
         return true;
@@ -220,9 +241,10 @@ bool UnifiedSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
 */
 bool UnifiedSerialPort::isOpen()
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         return serial_port_->isOpen();
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->isOpen();
     } else {
         return false;
@@ -242,6 +264,7 @@ bool UnifiedSerialPort::isOpen()
 bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
 {
     // until now, serial port has been connected and its name changes
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (serial_port_) {
         // change to mock serial port
         if (!port_name_pristine_ && port_name_ == kMockPortName) {
@@ -278,9 +301,10 @@ bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
 */
 void UnifiedSerialPort::close()
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         serial_port_->close();
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         mock_serial_port_->close();
     }
 }
@@ -294,9 +318,10 @@ void UnifiedSerialPort::close()
 */
 QByteArray UnifiedSerialPort::readAll()
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         return serial_port_->readAll();
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->readAll();
     } else {
         return QByteArray{};
@@ -312,9 +337,10 @@ QByteArray UnifiedSerialPort::readAll()
 */
 qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         return serial_port_->write(data, max_size);
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->write(data, max_size);
     } else {
         return -1;
@@ -329,9 +355,10 @@ qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
 */
 bool UnifiedSerialPort::flush()
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         return serial_port_->flush();
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->flush();
     } else {
         return false;
@@ -345,9 +372,10 @@ bool UnifiedSerialPort::flush()
 */
 QSerialPort::SerialPortError UnifiedSerialPort::error()
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         return serial_port_->error();
-    } else if (isMock()) {
+    } else if (isMockImpl()) {
         return mock_serial_port_->error();
     }
     return QSerialPort::NoError;
@@ -360,7 +388,8 @@ QSerialPort::SerialPortError UnifiedSerialPort::error()
 */
 void UnifiedSerialPort::clearError()
 {
-    if (isReal()) {
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    if (isRealImpl()) {
         return serial_port_->clearError();
     } else {
         return mock_serial_port_->clearError();
@@ -378,7 +407,8 @@ void UnifiedSerialPort::clearError()
 */
 bool UnifiedSerialPort::isMock()
 {
-    return mock_serial_port_.get() != nullptr;
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    return isMockImpl();
 }
 
 
@@ -391,6 +421,29 @@ bool UnifiedSerialPort::isMock()
     \sa UnifiedSerialPort::isMock()
 */
 bool UnifiedSerialPort::isReal()
+{
+    QMutexLocker serial_port_locker{serial_port_mutex_.get()};
+    return isRealImpl();
+}
+
+
+/*!
+    \fn UnifiedSerialPort::readyRead()
+    \brief Emited, when some data comes through serial port.
+
+    The data can be readed with UnifiedSerialPort::readAll() method.
+*/
+
+
+// isMock() mplementation
+bool UnifiedSerialPort::isMockImpl()
+{
+    return mock_serial_port_ != nullptr;
+}
+
+
+// isReal() implementation
+bool UnifiedSerialPort::isRealImpl()
 {
     return serial_port_ != nullptr;
 }
@@ -405,6 +458,7 @@ bool UnifiedSerialPort::isReal()
 
 
 // helper method which resets private variables to represent real serial port
+// !!! Beare, it is not threa-safe, you have to treat thread-safety externaly !!!
 bool UnifiedSerialPort::createSerialPort()
 {
     serial_port_.reset(new QSerialPort);
@@ -415,6 +469,7 @@ bool UnifiedSerialPort::createSerialPort()
 
 
 // helper method which resets private variables to represent mock serial port
+// !!! Beare, it is not threa-safe, you have to treat thread-safety externaly !!!
 bool UnifiedSerialPort::createMockPort()
 {
     mock_serial_port_.reset(new MockSerialPort);
@@ -425,6 +480,7 @@ bool UnifiedSerialPort::createMockPort()
 
 
 // moves port parameters to the newly created one
+// !!! Beare, it is not threa-safe, you have to treat thread-safety externaly !!!
 template<typename TSerialPort>
 bool UnifiedSerialPort::setupPort(TSerialPort *serial_port)
 {
