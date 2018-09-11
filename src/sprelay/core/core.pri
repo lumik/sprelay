@@ -3,7 +3,8 @@ SOURCES += \
     $$PWD/unified_serial_port.cpp \
     $$PWD/mock_serial_port.cpp \
     $$PWD/serial_port_utils.cpp \
-    $$PWD/k8090_utils.cpp
+    $$PWD/k8090_utils.cpp \
+    $$PWD/concurent_command_queue.cpp
 HEADERS  += \
     $$PWD/k8090.h \
     $$PWD/command_queue.h \
@@ -14,4 +15,5 @@ HEADERS  += \
     $$PWD/serial_port_defines.h \
     $$PWD/k8090_utils.h \
     $$PWD/k8090_defines.h \
-    $$PWD/k8090_commands.h
+    $$PWD/k8090_commands.h \
+    $$PWD/concurent_command_queue.h

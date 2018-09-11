@@ -59,26 +59,26 @@ struct CommandPriority
 };
 
 // adaptor class which abuses constant access
-template<typename TCommand, int tSize>
+template<typename TCommand, int tSize, template <typename> class TList = QList>
 class PendingCommands
 {
 public:  // NOLINT(whitespace/indent)
     PendingCommands() : pending_commands_{} {}
-    const QList<const TCommand *> & operator[](std::size_t id) const { return pending_commands_[id]; }
-    QList<const TCommand *> & operator[](std::size_t id) { return pending_commands_[id]; }
+    const TList<const TCommand *> & operator[](std::size_t id) const { return pending_commands_[id]; }
+    TList<const TCommand *> & operator[](std::size_t id) { return pending_commands_[id]; }
     void updateEntry(int idx, const TCommand &command)
     {
         *const_cast<TCommand *>(pending_commands_[TCommand::idAsNumber(command.id)][idx]) = command;
     }
 
 private:  // NOLINT(whitespace/indent)
-    QList<const TCommand *> pending_commands_[tSize];  // NOLINT(runtime/arrays)
+    TList<const TCommand *> pending_commands_[tSize];  // NOLINT(runtime/arrays)
 };
 
 }  // namespace impl_
 
 
-template<typename TCommand, int tSize>
+template<typename TCommand, int tSize, template <typename> class TList = QList>
 class CommandQueue : private std::priority_queue<impl_::CommandPriority<TCommand>>
 {
 public:  // NOLINT(whitespace/indent)
@@ -88,38 +88,19 @@ public:  // NOLINT(whitespace/indent)
     std::size_t size() const { return std::priority_queue<impl_::CommandPriority<TCommand>>::size(); }
     bool push(const TCommand &command, bool unique = true);
     TCommand pop();
-    const QList<const TCommand *> & get(typename TCommand::IdType command_id) const;
+    const TList<const TCommand *> & get(typename TCommand::IdType command_id) const;
     unsigned int stampCounter() const { return stamp_counter_; }
     bool updateCommand(int idx, const TCommand &command);
 
 private:  // NOLINT(whitespace/indent)
     void updatePriorities(typename TCommand::NumberType command_id, int idx, int priority);
 
-    impl_::PendingCommands<TCommand, tSize> pending_commands_;  // NOLINT(runtime/arrays)
+    impl_::PendingCommands<TCommand, tSize, TList> pending_commands_;
     bool unique_[tSize];  // NOLINT(runtime/arrays)
     const TCommand none_command_;
-    const QList<const TCommand *> none_list_;
+    const TList<const TCommand *> none_list_;
 
     unsigned int stamp_counter_;
-};
-
-template<typename TCommand, int tSize>
-class ConcurentCommandQueue : private CommandQueue<TCommand, tSize>
-{
-public:  // NOLINT(whitespace/indent)
-    bool empty() const;
-    std::size_t size() const;
-    bool push(const TCommand &command, bool unique = true);
-    TCommand pop();
-    const QList<const TCommand *> & get(typename TCommand::IdType command_id) const;
-    unsigned int stampCounter() const;
-    bool updateCommand(int idx, const TCommand &command);
-
-    void lock() { global_mutex_.lock(); }
-    void unlock() noexcept { global_mutex_.unlock(); }
-
-private:  // NOLINT(whitespace/indent)
-    mutable std::mutex global_mutex_;
 };
 
 }  // namespace command_queue

@@ -43,17 +43,12 @@ namespace core {
 // forward declarations
 class UnifiedSerialPort;
 
-namespace command_queue {
-// command_queue forward declaration
-template<typename TCommand, int tSize>
-class ConcurentCommandQueue;
-}  // namespace command_queue
-
-
 namespace k8090 {
 namespace impl_ {
 // Command forward declaration
 struct Command;
+// command_queue forward declaration
+class ConcurentCommandQueue;
 // CardMessage forward declaration
 struct CardMessage;
 }  // namespace impl_
@@ -127,9 +122,6 @@ private:  // NOLINT(whitespace/indent)
             unsigned char param1 = 0, unsigned char param2 = 0);
     void enqueueCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
                         unsigned char param1 = 0, unsigned char param2 = 0);
-    bool updateCommand(
-            const k8090::impl_::Command &command,
-            const QList<const k8090::impl_::Command *> &pending_command_list);
     void sendCommandHelper(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
             unsigned char param1 = 0, unsigned char param2 = 0);
     bool hasResponse(k8090::CommandID command_id);
@@ -155,8 +147,7 @@ private:  // NOLINT(whitespace/indent)
     QString com_port_name_;
     std::unique_ptr<UnifiedSerialPort> serial_port_;
 
-    std::unique_ptr<command_queue::ConcurentCommandQueue<k8090::impl_::Command,
-                        k8090::as_number(k8090::CommandID::None)>>
+    std::unique_ptr<impl_::ConcurentCommandQueue>
         pending_commands_;
     std::unique_ptr<k8090::impl_::Command> current_command_;
     std::unique_ptr<QTimer> command_timer_;

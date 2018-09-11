@@ -5,6 +5,7 @@ QT += serialport
 include(../../tests.pri)
 
 SOURCES += \
+    $$sprelay_source_dir/src/sprelay/core/concurent_command_queue.cpp \
     $$sprelay_source_dir/src/sprelay/core/k8090.cpp \
     $$sprelay_source_dir/src/sprelay/core/k8090_utils.cpp \
     $$sprelay_source_dir/src/sprelay/core/mock_serial_port.cpp \
@@ -22,6 +23,7 @@ HEADERS += \
     $$sprelay_source_dir/tests/external/qtest_suite/include/lumik/qtest_suite/qtest_suite.h \
     $$sprelay_source_dir/src/sprelay/core/command_queue.h \
     $$sprelay_source_dir/src/sprelay/core/command_queue.tpp \
+    $$sprelay_source_dir/src/sprelay/core/concurent_command_queue.h \
     $$sprelay_source_dir/src/sprelay/core/k8090.h \
     $$sprelay_source_dir/src/sprelay/core/k8090_commands.h \
     $$sprelay_source_dir/src/sprelay/core/k8090_defines.h \

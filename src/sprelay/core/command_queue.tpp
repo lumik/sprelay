@@ -76,11 +76,12 @@ using namespace impl_;  // NOLINT(build/namespaces)
     \class sprelay::core::command_queue::impl_::PendingCommands
     \brief Helper class for pending commands storage.
 
-    The class abuses constant pointer access. You can get from it QList<const TCommand *> which is directly stored
+    The class abuses constant pointer access. You can get from it TList<const TCommand *> which is directly stored
     inside but you can also modify stored TCommand using PendingCommands::updateEntry() method.
 
     \tparam TCommand See CommandQueue template class.
     \tparam tSize See CommandQueue template class.
+    \tparam TList See CommandQueue template class.
     \remark reentrant
 */
 
@@ -125,7 +126,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
 */
 
 /*!
-    \fn const QList<const TCommand *> & PendingCommands::operator[](std::size_t id) const
+    \fn const TList<const TCommand *> & PendingCommands::operator[](std::size_t id) const
     \brief Direct constant member access.
 
     Index id is not controlled for validity.
@@ -135,7 +136,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
 */
 
 /*!
-    \fn QList<const TCommand *> & PendingCommands::operator[](std::size_t id)
+    \fn TList<const TCommand *> & PendingCommands::operator[](std::size_t id)
     \brief Direct member access.
 
     Index id is not controlled for validity.
@@ -162,6 +163,8 @@ using namespace impl_;  // NOLINT(build/namespaces)
     The queue sorts commands according to priority and time stamp. The commands can be inserted in unique mode, where
     old commands are replaced by newer ones but preserving their time stamps or non-unique mode in which more commands
     with the same id can be inserted. See CommandQueue::push() for more details.
+
+    \warning Beware time stamp overflow, see the CommandQueue::push() method description.
 
     Commands inside CommandQueue can be also updated using method CommandQueue::updateCommand(). To query stored
     commands with desired id, you can use CommandQueue::get() method.
@@ -212,6 +215,8 @@ using namespace impl_;  // NOLINT(build/namespaces)
         method `static NumberType idAsNumber(IdType)`.
     \tparam tSize Number of command ids. Command ids `NumberType` should be continuous sequence of numbers, the highest
         number must be less than `tSize`.
+    \tparam TList Type of container with one template parameter, which stores commands of the same id. Defaults to
+        QList.
     \remark reentrant
 */
 
@@ -219,8 +224,8 @@ using namespace impl_;  // NOLINT(build/namespaces)
 /*!
     \brief Default constructor
 */
-template<typename TCommand, int tSize>
-CommandQueue<TCommand, tSize>::CommandQueue()
+template<typename TCommand, int tSize, template <typename> class TList>
+CommandQueue<TCommand, tSize, TList>::CommandQueue()
     : unique_{true}, none_command_{}, none_list_{&none_command_}, stamp_counter_{0}
 {}
 
@@ -247,18 +252,23 @@ CommandQueue<TCommand, tSize>::CommandQueue()
     and the new command with the time stamp of the oldest from the removed commands is inserted instead. If the
     non-unique mode, the command is inserted without any control for the already inserted commands with the same id.
 
+    \warning Time stamp is `usnigned int`, so beware overflows when there are many commands stored in the queue. The
+    queue is designed to be empty most of the time. When queue is empty, the time stamp is reset to zero but if the
+    queue is never empty, the time stamp increments to infinity and there is overflow risk.
+
     \param command Command to be inserted.
     \param unique If the insertion should be unique.
     \return True if the operation was successful, false otherwise.
 */
-template<typename TCommand, int tSize>
-bool CommandQueue<TCommand, tSize>::push(const TCommand &command, bool unique)
+template<typename TCommand, int tSize, template <typename> class TList>
+bool CommandQueue<TCommand, tSize, TList>::push(const TCommand &command, bool unique)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
     // TODO(lumik): Use exceptions.
     if (id >= tSize || id < 0) {
         return false;
     }
+    // TODO(lumik): treat overflows of stamp_counter.
     if (!unique || pending_commands_[id].empty()) {  // no command with this id is inside
         CommandPriority<TCommand> command_priority{
             stamp_counter_++,
@@ -303,8 +313,8 @@ bool CommandQueue<TCommand, tSize>::push(const TCommand &command, bool unique)
 
     \return The oldest most importat element.
 */
-template<typename TCommand, int tSize>
-TCommand CommandQueue<TCommand, tSize>::pop()
+template<typename TCommand, int tSize, template <typename> class TList>
+TCommand CommandQueue<TCommand, tSize, TList>::pop()
 {
     if (empty()) {
         return TCommand{};
@@ -338,8 +348,8 @@ TCommand CommandQueue<TCommand, tSize>::pop()
     \param command_id Command id.
     \return Requested command or default constructed TCommand.
 */
-template<typename TCommand, int tSize>
-const QList<const TCommand *> & CommandQueue<TCommand, tSize>::get(typename TCommand::IdType command_id) const
+template<typename TCommand, int tSize, template <typename> class TList>
+const TList<const TCommand *> & CommandQueue<TCommand, tSize, TList>::get(typename TCommand::IdType command_id) const
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command_id);
     // TODO(lumik): Use exceptions.
@@ -365,8 +375,8 @@ const QList<const TCommand *> & CommandQueue<TCommand, tSize>::get(typename TCom
     \param idx Index of the command. For more info see CommandQueue::get().
     \param command Command which replaces the stored command.
 */
-template<typename TCommand, int tSize>
-bool CommandQueue<TCommand, tSize>::updateCommand(int idx, const TCommand &command)
+template<typename TCommand, int tSize, template <typename> class TList>
+bool CommandQueue<TCommand, tSize, TList>::updateCommand(int idx, const TCommand &command)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
     if (id >= tSize || id < 0 || idx < 0 || idx >= pending_commands_[id].size()) {
@@ -378,8 +388,9 @@ bool CommandQueue<TCommand, tSize>::updateCommand(int idx, const TCommand &comma
 }
 
 
-template<typename TCommand, int tSize>
-void CommandQueue<TCommand, tSize>::updatePriorities(typename TCommand::NumberType command_id, int idx, int priority)
+template<typename TCommand, int tSize, template <typename> class TList>
+void CommandQueue<TCommand, tSize, TList>::updatePriorities(typename TCommand::NumberType command_id, int idx,
+    int priority)
 {
     if (pending_commands_[command_id].at(idx)->priority != priority) {
         std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
@@ -396,160 +407,6 @@ void CommandQueue<TCommand, tSize>::updatePriorities(typename TCommand::NumberTy
         std::priority_queue<CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
     }
 }
-
-
-/*!
-    \class ConcurentCommandQueue
-    \brief Thread-safe version of CommandQueue.
-
-    \warning Beware of ConcurentCommandQueue::get() method, it is thread-safe but it returns reference to the content.
-
-    \remark thread-safe
-*/
-
-
-/*!
-    For more details see CommandQueue::empty().
-*/
-template<typename TCommand, int tSize>
-bool ConcurentCommandQueue<TCommand, tSize>::empty() const
-{
-    std::lock_guard<std::mutex> lock{global_mutex_};
-    return CommandQueue<TCommand, tSize>::empty();
-}
-
-
-/*!
-    For more details see CommandQueue::size().
-*/
-template<typename TCommand, int tSize>
-std::size_t ConcurentCommandQueue<TCommand, tSize>::size() const
-{
-    std::lock_guard<std::mutex> lock{global_mutex_};
-    return CommandQueue<TCommand, tSize>::size();
-}
-
-
-/*!
-    For more details see CommandQueue::push().
-*/
-template<typename TCommand, int tSize>
-bool ConcurentCommandQueue<TCommand, tSize>::push(const TCommand &command, bool unique)
-{
-     std::lock_guard<std::mutex> lock{global_mutex_};
-     return CommandQueue<TCommand, tSize>::push(command, unique);
-}
-
-
-/*!
-    For more details see CommandQueue::pop().
-*/
-template<typename TCommand, int tSize>
-TCommand ConcurentCommandQueue<TCommand, tSize>::pop()
-{
-    std::lock_guard<std::mutex> lock{global_mutex_};
-    return CommandQueue<TCommand, tSize>::pop();
-}
-
-
-/*!
-    For more details see CommandQueue::get().
-
-    \warning Beware, the method is thread-safe but it returns reference to the content. The thread safety must be
-    treated by the user. Use ConcurentCommandQueue::lock() and ConcurentCommandQueue::unlock() methods.
-*/
-template<typename TCommand, int tSize>
-const QList<const TCommand *> & ConcurentCommandQueue<TCommand, tSize>::get(typename TCommand::IdType command_id) const
-{
-    std::lock_guard<std::mutex> lock{global_mutex_};
-    return CommandQueue<TCommand, tSize>::get(command_id);
-}
-
-
-/*!
-    For more details see CommandQueue::stampCounter().
-*/
-template<typename TCommand, int tSize>
-unsigned int ConcurentCommandQueue<TCommand, tSize>::stampCounter() const
-{
-    std::lock_guard<std::mutex> lock{global_mutex_};
-    return CommandQueue<TCommand, tSize>::stampCounter();
-}
-
-
-/*!
-    For more details see CommandQueue::updateCommand().
-*/
-template<typename TCommand, int tSize>
-bool ConcurentCommandQueue<TCommand, tSize>::updateCommand(int idx, const TCommand &command)
-{
-    std::lock_guard<std::mutex> lock{global_mutex_};
-    return CommandQueue<TCommand, tSize>::updateCommand(idx, command);
-}
-
-
-/*!
-    \fn ConcurentCommandQueue::lock()
-    \brief Can be used to lock internal global lock
-
-    \warning Locks the same lock as is used by all the thread-safe methods. Beware of deadlocks. No thread-safe method
-    can be called with this lock acquired.
-
-    \code
-    #include "command_queue.h"
-
-    const int N = 10;
-
-    struct Command
-    {
-        using IdType = unsigned int;
-        using NumberType = unsigned int;
-
-        Command() : id(N) {}
-        Command(IdType id) : id(id) {}
-        static NumberType idAsNumber(IdType id) { return id; }
-
-        IdType id;
-        int priority;
-    };
-
-    int main()
-    {
-        using namespace sprelay::core::command_queue;
-        ConcurentCommandQueue<Command, N> command_queue;
-
-        unsigned int cmd_id1 = 0;
-        unsigned int priority1 = 1;
-        Command cmd1{cmd_id1, priority1};
-        command_queue.push(cmd1);
-        const QList<const * Command> & cmd_list = command_queue.get(cmd_id1);
-
-        Command cmd2
-        {
-            std::lock_guard<ConcurentCommandQueue<Command, N>> command_queue_lock{command_queue};
-            cmd2 = *cmd_list[0];
-        }
-        cmd2.priority = 2;
-
-        // be sure that the lock is unlocked before any function call to command_queue
-        command_queue.updateCommand(0, cmd2);
-        Command cmd3 = command_queue.pop();
-
-        return 0;
-    }
-    \endcode
-
-    \sa ConcurentCommandQueue::unlock()
-*/
-
-/*!
-    \fn ConcurentCommandQueue::unlock()
-    \brief Can be used to unlock internal global lock
-
-    \warning Unlocks the same lock as is used by all the thread-safe methods. Beware of unlocking it if you don't
-    acquired it by the ConcurentCommandQueue::lock() method.
-*/
-
 
 }  // namespace command_queue
 /*!

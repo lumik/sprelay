@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "command_queue.h"
+#include "concurent_command_queue.h"
 #include "k8090_commands.h"
 #include "k8090_utils.h"
 #include "serial_port_utils.h"
@@ -108,7 +109,7 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
 K8090::K8090(QObject *parent) :
     QObject{parent},
     serial_port_{new UnifiedSerialPort},
-    pending_commands_{new command_queue::ConcurentCommandQueue<impl_::Command, as_number(CommandID::None)>},
+    pending_commands_{new impl_::ConcurentCommandQueue},
     current_command_{new impl_::Command},
     command_timer_{new QTimer},
     failure_timer_{new QTimer},
@@ -227,7 +228,7 @@ bool K8090::isConnected()
 */
 int K8090::pendingCommandCount(CommandID id)
 {
-    return pending_commands_->get(id).size();
+    return pending_commands_->count(id);
 }
 
 
@@ -729,59 +730,8 @@ void K8090::enqueueCommand(CommandID command_id, RelayID mask, unsigned char par
     if (!command_timer_->isActive() && current_command_->id == CommandID::None && pending_commands_->empty()) {
         sendCommandHelper(command_id, mask, param1, param2);
     } else {  // send command undirectly
-        // TODO(lumik): don't insert query commands if set command with the same response is already inside
-        // TODO(lumik): treat commands, which are directly sended better (avoid duplication)
-        impl_::Command command{command_id, impl_::kPriorities[as_number(command_id)], as_number(mask), param1, param2};
-        const QList<const impl_::Command *> & pending_command_list = pending_commands_->get(command_id);
-        // if there is no command with the same id waiting
-        if (pending_command_list.isEmpty()) {
-            pending_commands_->push(command);
-        // else try to update stored command and if it is not possible (updateCommand returns false), push it to the
-        // queue
-        } else if (!updateCommand(command, pending_command_list)) {
-            pending_commands_->push(command, false);
-        }
-
-        // if the enqueued command was switch relay on or off command and there is the oposit command stored
-        // TODO(lumik): test if updated oposite command doesn't update any relay and if it does, remove it from the
-        // queue
-        if (command_id == CommandID::RelayOn) {
-            const QList<const impl_::Command *> & off_pending_command_list
-                    = pending_commands_->get(CommandID::RelayOff);
-            if (!off_pending_command_list.isEmpty()) {
-                updateCommand(command, off_pending_command_list);
-            }
-        } else if (command_id == CommandID::RelayOff) {
-            const QList<const impl_::Command *> & on_pending_command_list = pending_commands_->get(CommandID::RelayOn);
-            if (!on_pending_command_list.isEmpty()) {
-                updateCommand(command, on_pending_command_list);
-            }
-        }
+        pending_commands_->updateOrPush(command_id, mask, param1, param2);
     }
-}
-
-
-// helper method which updates already enqueued command
-bool K8090::updateCommand(const impl_::Command &command, const QList<const impl_::Command *> &pending_command_list)
-{
-    // check if equal command is in pending command list
-    int compatible_idx = pending_command_list.size();
-    for (int i = 0; i < pending_command_list.size(); ++i) {
-        if (pending_command_list[i]->isCompatible(command)) {
-            compatible_idx = i;
-            break;
-        }
-    }
-    if (compatible_idx != pending_command_list.size()) {
-        impl_::Command insert_command = *pending_command_list[compatible_idx];
-        insert_command |= command;
-        if (insert_command.priority < command.priority) {
-            insert_command.priority = command.priority;
-        }
-        pending_commands_->updateCommand(compatible_idx, insert_command);
-        return true;
-    }
-    return false;
 }
 
 
@@ -1108,7 +1058,7 @@ void K8090::doDisconnect()
 {
     serial_port_->close();
     // erase all pending commands
-    pending_commands_.reset(new command_queue::ConcurentCommandQueue<impl_::Command, as_number(CommandID::None)>);
+    pending_commands_.reset(new impl_::ConcurentCommandQueue);
     // stop failure timers and erase failure counter
     command_timer_->stop();
     failure_timer_->stop();
