@@ -41,9 +41,13 @@ CMakeLists.txt.user*
 
 # binaries
 /bin
+/lib
 
 # includes
 /include
 
 # build temporary files
 /build
+
+# cmake shared
+/share

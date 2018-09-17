@@ -55,7 +55,7 @@ struct CardMessage;
 }  // namespace impl_
 
 
-class SPRELAY_EXPORT K8090 : public QObject
+class SPRELAY_LIBRARY_EXPORT K8090 : public QObject
 {
     Q_OBJECT
 

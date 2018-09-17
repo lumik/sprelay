@@ -42,9 +42,12 @@
 
 /*!
  * \def SPRELAY_EXPORT
- * \brief This macro is used to export symbols from shared library
+ * \brief This macro is used to export symbols if the whole `sprelay` is compiled as shared library.
  *
- * Every declaration of symbol, which should be exported from the shared library should also contain this macro.
+ * Every declaration of symbol, which should be exported from the shared library should also contain this macro. You
+ * can also compile only part of the application as shared library. There should be used #SPRELAY_LIBRARY_EXPORT macro
+ * instead for code which should be compiled as shared library each time (despite the fact that the whole application
+ * is compiled as shared library or a standalone application).
  *
  * Typically, clients will include only the public header files of shared libraries. These libraries might be installed
  * in a different location, when deployed. Therefore, it is important to exclude other internal header files that were
@@ -57,17 +60,48 @@
  * SPRELAY_EXPORT void foo();
  * class SPRELAY_EXPORT MyClass {};
  * \endcode
+ * \sa SPRELAY_LIBRARY_EXPORT
  */
 #if defined(SPRELAY_STANDALONE)
     #define SPRELAY_EXPORT
 #else  // if defined(SPRELAY_STANDALONE)
-    #if defined(SPRELAY_BUILD_LIBRARY)
+    #if defined(SPRELAY_GLOBAL_LIBRARY)
         /*! This macro switches between library compilation or its importing. */
         #define SPRELAY_EXPORT Q_DECL_EXPORT
     #else  // if defined(SPRELAY_BUILD_LIBRARY)
         #define SPRELAY_EXPORT Q_DECL_IMPORT
     #endif  // if defined(SPRELAY_BUILD_LIBRARY)
 #endif  // if defined(SPRELAY_STANDALONE)
+
+
+/*!
+ * \def SPRELAY_LIBRARY_EXPORT
+ * \brief This macro is used to export symbols from shared library.
+ *
+ * Every declaration of symbol which should be exported from the shared library should also contain this macro. This
+ * macro should not be used for parts of code which can be compiled as shared library or into executable binary
+ * depending on compilation settings. The #SPRELAY_EXPORT macro should be use there instead.
+ *
+ * Typically, clients will include only the public header files of shared libraries. These libraries might be installed
+ * in a different location, when deployed. Therefore, it is important to exclude other internal header files that were
+ * used when building the shared library. This can be avoided by making use of the Pointer to implementation idiom
+ * described in various C++ programming books.
+ *
+ * Example usage:
+ *
+ * \code
+ * SPRELAY_LIBRARY_EXPORT void foo();
+ * class SPRELAY_LIBRARY_EXPORT MyClass {};
+ * \endcode
+ * \sa SPRELAY_EXPORT
+ */
+#if defined(SPRELAY_LIBRARY)
+    /*! This macro switches between library compilation or its importing. */
+    #define SPRELAY_LIBRARY_EXPORT Q_DECL_EXPORT
+#else  // if defined(SPRELAY_BUILD_LIBRARY)
+    #define SPRELAY_LIBRARY_EXPORT Q_DECL_IMPORT
+#endif  // if defined(SPRELAY_BUILD_LIBRARY)
+
 
 #endif  // SPRELAY_SPRELAY_GLOBAL_H_
 

@@ -6,10 +6,23 @@ language: cpp
 git:
   submodules: false
 
+addons:
+  apt:
+    sources:
+      # Qt 5.4.2
+      - sourceline: 'ppa:beineri/opt-qt542-trusty'
+      # cmake3
+      - ubuntu-toolchain-r-test
+    packages:
+      - qt54serialport
+      - qt54tools
+      - cmake
+
 before_install:
   - git submodule update --init --recursive
-  - sudo add-apt-repository --yes ppa:beineri/opt-qt542-trusty
-  - sudo apt-get update -qq
+#  - sudo add-apt-repository --yes ppa:beineri/opt-qt542-trusty
+#  - sudo add-apt-repository --yes ppa:george-edison55/cmake-3.x
+#  - sudo apt-get update -qq
 
 install:
   - sudo apt-get -y install qt54serialport qt54tools
@@ -21,7 +34,6 @@ install:
 #   - sleep 3 # give xvfb some time to start
 
 script:
-  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && /opt/qt54/bin/qmake "CONFIG+=release test" ../sprelay.pro -r
-  - make
-  - make -j1 check TESTARGS="-silent" && cd ..
-  - python third_party/cpplint-1.3.0/cpplint.py --extensions=cpp,h,tpp --headers=h,tpp --recursive src/sprelay tests/sprelay
+  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DSPRELAY_BUILD_STANDALONE=OFF -DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=ON
+  - make -j2
+  - make test ARGS="-V"
