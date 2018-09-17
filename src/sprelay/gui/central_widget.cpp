@@ -76,10 +76,11 @@ void CentralWidget::onConnectButtonClicked()
 }
 
 
-void CentralWidget::onPortsComboBoxCurrentIndexChanged(const QString &portName)
+void CentralWidget::onPortsComboBoxCurrentIndexChanged(const QString &port_name)
 {
-    Q_UNUSED(portName)
-    // TODO(lumik): probably disconnect if port name changes.
+    if (k8090_->isConnected() && k8090_->comPortName() != port_name) {
+        k8090_->disconnect();
+    }
 }
 
 

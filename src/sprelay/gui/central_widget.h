@@ -68,7 +68,7 @@ public slots:  // NOLINT(whitespace/indent)
 private slots:  // NOLINT(whitespace/indent)
     // reactions to user interaction with gui
     void onConnectButtonClicked();
-    void onPortsComboBoxCurrentIndexChanged(const QString &portName);
+    void onPortsComboBoxCurrentIndexChanged(const QString &port_name);
     void onRefreshPortsButtonClicked();
     void onRefreshRelaysButtonClicked();
     void resetFactoryDefaultsButtonClicked();

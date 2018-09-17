@@ -170,11 +170,25 @@ QList<serial_utils::ComPortParams> K8090::availablePorts()
 
 
 /*!
+    \brief Gets current serial port name.
+
+    \return name The port name.
+    \sa K8090::setComPortName(const QString &name)
+*/
+QString K8090::comPortName()
+{
+    QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
+    return com_port_name_;
+}
+
+
+/*!
     \brief Sets new serial port name.
 
     If the new name is different from the previous one, it disconnects and closes serial port. If the object was
     connected, it also emits signal K8090::notConnected().
     \param name
+    \sa K8090::comPortName()
 */
 void K8090::setComPortName(const QString &name)
 {
@@ -185,6 +199,7 @@ void K8090::setComPortName(const QString &name)
         emit doDisconnect(false);
     }
 }
+
 
 /*!
     \brief Sets command delay to msec.

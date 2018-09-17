@@ -67,6 +67,7 @@ public:  // NOLINT(whitespace/indent)
     ~K8090() override;
 
     static QList<serial_utils::ComPortParams> availablePorts();
+    QString comPortName();
     void setComPortName(const QString &name);
     void setCommandDelay(int msec);
     void setFailureDelay(int msec);
