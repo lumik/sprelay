@@ -8,9 +8,6 @@ This style guide is inspired by the [Google style guide][g_style_guide].
 * use **forward declarations** when it is possible.
 * place code in **namespace** based on project name.
 * don't use **using directivers**, don't use **name aliasses** in header file.
-* **unnamed namespaces** – static variables, methods which are used only inside
-  source file should be included in unnamed namespace or declared static and
-  shouldn't be in `.h` file.
 * **local variables**:
   * place them in the narrowest scope possible (nearest scope to their usage)
     and initialize them in the declaration.
@@ -26,8 +23,8 @@ This style guide is inspired by the [Google style guide][g_style_guide].
 * use **RTTI** as rarely, as possible, use for example the visitor pattern
   instead, with Qt, you can use Qt's equivalent for QObjects.
 * use C++ **type casts** or brace initialization for casts.
-* use prefix **++** and **--**, not postfix.
-* use **const** and **constexpr** whenever it's possible but don't overuse
+* use prefix **`++`** and **`--`**, not postfix.
+* use **`const`** and **`constexpr`** whenever it's possible but don't overuse
   constexpr (for example in functions, which may be in future downgraded to not
   constexpr).
 * **integer types** – from C++ integer types use only `int`, other use from
@@ -35,9 +32,74 @@ This style guide is inspired by the [Google style guide][g_style_guide].
 * do not use unsigned types (e. g. `std::size_t`) for indices, there is a risk
   of unintended modulo arithmetics, see
 	[C++ Core Guidelines][core_guidelines-size_t].
-* return true for success or zero for error codes from functions (if you can't
-  use exceptions). Error codes should be replaced by enum if exceptions can't
-  be used.
+* **`assert`** liberally – use `assert` macro to its fullest. Check all your
+  conditions and assumptions
+  ```cpp
+  inline Value *getOperand(unsigned i) {
+      assert(i < operands_.size() && "getOperand() out of range!");
+      return operands_[i];
+  }
+  ```
+* provide a virtual method anchor for classes in header – If a class is defined
+  in a header file and has vtable (either it has virtual methods or it derives
+	from classes with virtual methods), it must always have at least one
+	out-of-line (not inline) virtual method in the class to make hint to compiler
+	where to place the vtable. Without this, the compiler will copy the vtable
+	and RTTI into every `.o` file that includes the header, bloating `.o` file
+	sizes and increasing link times.
+* don’t use **`default`** labels in fully covered switches over enumerations –
+  The-Wswitch flag warns if a switch, without a default label, over an
+	enumeration does not cover every enumeration value and it won't fire if you
+	use default and add new value to enumeration which you forget to cover.
+* don’t evaluate `end()` every time through a loop – In cases where range-based
+  for loops can’t be used and it is necessary to write an explicit
+	iterator-based loop, pay close attention to whether `end()` is re-evaluted
+	on each loop iteration. One common mistake is to write a loop in this style:
+	```cpp
+	BasicBlock *bb = // ...
+  for (auto i = bb->begin(); i != bb->end(); ++i)
+      // ... use i ...
+	```
+	The problem with this construct is that it evaluates `bb->end()` every time
+	through the loop. Instead of writing the loop like this, we strongly prefer
+	loops to be written so that they evaluate it once before the loop starts. A
+	convenient way to do this is like so:
+	```cpp
+	BasicBlock *bb = ...
+      for (auto i = bb->begin(), e = bb->end(); i != e; ++i)
+          // ... use i ...
+	```
+	The observant may quickly point out that these two loops may have different
+	semantics: if the container (a basic block in this case) is being mutated,
+	then `bb->end()`` may change its value every time through the loop and the
+	second loop may not in fact be correct. If you actually do depend on this
+	behavior, please write the loop in the first form and add a comment
+	indicating that you did it intentionally.
+
+  Why do we prefer the second form (when correct)? Writing the loop in the
+	first form has two problems. First it may be less efficient than evaluating
+	it at the start of the loop. In this case, the cost is probably minor — a few
+	extra loads every time through the loop. However, if the base expression is
+	more complex, then the cost can rise quickly. I’ve seen loops where the end
+	expression was actually something like: `some_map[x]->end()` and map lookups
+	really aren’t cheap. By writing it in the second form consistently, you
+	eliminate the issue entirely and don’t even have to think about it.
+
+  The second (even bigger) issue is that writing the loop in the first form
+	hints to the reader that the loop is mutating the container (a fact that a
+	comment would handily confirm!). If you write the loop in the second form, it
+	is immediately obvious without even looking at the body of the loop that the
+	container isn’t being modified, which makes it easier to read the code and
+	understand what it does.
+* avoid **`std::endl`** – The `std::endl` modifier, when used with iostreams
+  outputs a newline to the output stream specified. In addition to doing this,
+	however, it also flushes the output stream. Use `'\n'` literal instead. It
+	can be used only when you realy want to flush output stream.
+* **anonymous namespaces** – Use `static` when possible instead of anonymous
+  namespace because it is localy more readable. While `static` is available in
+	C++, anonymous namespaces are more general: they can make entire classes
+	private to a file. Make anonymous namespaces as small as possible, and only
+	use them for class declarations.
 
 
 ## Naming conventions:
@@ -78,7 +140,7 @@ This style guide is inspired by the [Google style guide][g_style_guide].
   * start each file with license boilerplate.
   * at the beginning describe the file content.
   * inline comments – put 2 spaces between code and comment
-  ```
+  ```cpp
   int i;  // inline comment
   // line comment
   ```
@@ -90,6 +152,8 @@ This style guide is inspired by the [Google style guide][g_style_guide].
   // some code
   #endif  // MY_HEADER_H_
   ```
+  Place include guards only inside headers (`.h` extension) not heleper files
+  which are included in the middle of the headers (for example `.tpp`).
 * terminate **namespace** with comment with the namespace name
   ```cpp
   namespace my_namespace {
@@ -109,6 +173,8 @@ This style guide is inspired by the [Google style guide][g_style_guide].
   2. C++ includes
   3. other libraries
   4. project headers
+  Each category should be sorted lexicographically by the full path. Other
+  libraries can be divided into more subcategories.
 * **Order of acces control specifiers**:
   1. public
   2. protected
@@ -263,6 +329,71 @@ This style guide is inspired by the [Google style guide][g_style_guide].
 	class MyClassTemplate;
   ```
 * termine the file with new line.
+* return true for success or zero for error codes from functions (if you can't
+  use exceptions). Error codes should be replaced by enum if exceptions can't
+  be used.
+* use early exits and `continue` to simplify code
+  ```cpp
+	Value * do_something(Instruction *i) {
+      // We conservatively avoid transforming instructions with multiple uses
+      // because goats like cheese.
+      if (!i->hasOneUse())
+          return 0;
+
+      // This is really just here for example.
+      if (!do_other_thing(i))
+          return 0;
+
+      // ... some long code ....
+	}
+	```
+	or
+	```cpp
+	for (Instruction &i : bb) {
+      auto *bo = dynamic_cast<BinaryOperator>(&i);
+      if (!bo) continue;
+
+      Value *lhs = bo->getOperand(0);
+      Value *rhs = bo->getOperand(1);
+      if (lhs == rhs) continue;
+
+      // ...
+  }
+	```
+* don't use `else` after `return` – see example above about early exits
+* turn predicate loops into predicate functions – it forces you to name the
+  predicate and make its function clear, you can make them static to restrict
+	them to file scope. This rule improves reusability of the test. Convert this:
+  ```cpp
+  bool found_foo = false;
+  for (unsigned i = 0, e = bar_list.size(); i != e; ++i) {
+      if (bar_list[i]->isFoo()) {
+          found_foo = true;
+          break;
+      }
+  }
+
+  if (found_foo) {
+      // ...
+  }
+  ```
+  to this:
+  ```cpp
+  /// \returns true if the specified list has an element that is a foo.
+  static bool contains_foo(const std::vector<Bar*> &list) {
+      for (unsigned i = 0, e = List.size(); i != e; ++i) {
+          if (list[i]->isFoo()) return true;
+      }
+      return false;
+  }
+  // ...
+
+  if (contains_foo(bar_list)) {
+      // ...
+  }
+  ```
+* don’t use `inline` when defining a function in a class definition	– A member
+  function defined in a class definition is implicitly inline.
 
 
 ## References
