@@ -5,7 +5,7 @@ This style guide is inspired by the [Google style guide][g_style_guide].
 
 ## C++ feature conventions
 
-* Use **forward declarations** when it is possible.
+* use **forward declarations** when it is possible.
 * place code in **namespace** based on project name.
 * don't use **using directivers**, don't use **name aliasses** in header file.
 * **unnamed namespaces** – static variables, methods which are used only inside
@@ -35,6 +35,9 @@ This style guide is inspired by the [Google style guide][g_style_guide].
 * do not use unsigned types (e. g. `std::size_t`) for indices, there is a risk
   of unintended modulo arithmetics, see
 	[C++ Core Guidelines][core_guidelines-size_t].
+* return true for success or zero for error codes from functions (if you can't
+  use exceptions). Error codes should be replaced by enum if exceptions can't
+  be used.
 
 
 ## Naming conventions:
