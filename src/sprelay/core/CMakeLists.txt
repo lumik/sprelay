@@ -174,3 +174,14 @@ if(NOT SPRELAY_BUILD_STANDALONE)
     install(FILES ${${PROJECT_NAME}_lib_hdr} ${${PROJECT_NAME}_lib_qt_hdr}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sprelay/core)
 endif(NOT SPRELAY_BUILD_STANDALONE)
+
+# Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
+# normal targets
+if(DOXYGEN_FOUND)
+    set(${PROJECT_NAME}_doc_src
+        ${PROJECT_SOURCE_DIR}/core.dox
+        ${PROJECT_SOURCE_DIR}/k8090.dox
+        ${PROJECT_SOURCE_DIR}/serial_port.dox)
+    target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_doc_src})
+    set_source_files_properties(${${PROJECT_NAME}_doc_src} PROPERTIES HEADER_FILE_ONLY TRUE)
+endif(DOXYGEN_FOUND)

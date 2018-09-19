@@ -1,10 +1,12 @@
-# Sprelay – program for controlling K8090 relay card.
+# Sprelay
+
+A program for controlling K8090 relay card.
 
 
 ## Requirements
 
 * `Windows` operating system
-* `git` – to clone the `Sprelay` repository. You can get git from [here][git].
+* `git` – to clone the `sprelay` repository. You can get git from [here][git].
 * `Qt` > 5 – to compile the program. You can get it from [here][qt].
 * `MinGW` – it can be installed with Qt (32bit compiler) or downloaded for example with `MSYS2` suite from
   [here][msys2]. From MSYS2 terminal, you can also download and install Qt library for 64 mingw 
@@ -24,11 +26,11 @@ officialy suplied version with OpenGL is `5.4.2` and last supported `python` ver
 
 ## Getting Started
 
-To get you started you can clone the `Sprelay` repository and compile program with `Qt`. The documentation is created by
+To get you started you can clone the `sprelay` repository and compile program with `Qt`. The documentation is created by
 `Doxygen` and `dot` program from `GraphViz` library.
 
 
-### Obtaining `Sprelay` application
+### Obtaining `sprelay` application
 
 Clone the `sprelay` repository using git:
 
@@ -36,7 +38,7 @@ Clone the `sprelay` repository using git:
 git clone https://github.com/biomolecules/sprelay.git
 ```
 
-If you just want to use `Sprelay` without the commit history then you can do:
+If you just want to use `SpRelay` without the commit history then you can do:
 
 ```
 git clone --depth=1 https://github.com/biomolecules/sprelay.git
@@ -109,6 +111,11 @@ Then compile the documentation by executing
 doxygen Doxyfile
 ```
 from command line from the build project folder.
+
+
+## Documentation
+
+Se the @ref sprelay_overview "sprelay overview".
 
 
 [git]: https://git-scm.com/

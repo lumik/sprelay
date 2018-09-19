@@ -1,0 +1,35 @@
+/*!
+ * \defgroup group_sprelay_main Sprelay
+ * \brief All sprelay modules.
+ *
+ * @{
+ */
+
+/*!
+ * \defgroup group_sprelay_public Public
+ * \brief Sprelay public core elements.
+ *
+ * @{
+ */
+
+/*!
+ * \defgroup group_sprelay_core_public Core
+ * \brief Sprelay public core elements.
+ */
+
+/*!
+ * \defgroup group_sprelay_gui_public GUI
+ * \brief Sprelay public GUI elements.
+ */
+
+/*! @}*/  // group_sprelay_public
+
+/*!
+ * \namespace sprelay
+ * \brief Namespace containing sprelay application.
+ * \ingroup group_sprelay_main
+ */
+
+ */
+
+/*! @}*/  // group_sprelay_main

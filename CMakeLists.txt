@@ -116,7 +116,7 @@ endif(SPRELAY_MAKE_TESTS)
 if(DOXYGEN_FOUND)
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
+    set(doxy_main_page ${CMAKE_CURRENT_SOURCE_DIR}/src/sprelay/index.md)
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
     add_custom_target(doc

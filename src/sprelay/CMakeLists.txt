@@ -67,6 +67,17 @@ if(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
     endif(NOT SPRELAY_BUILD_STANDALONE)
 endif(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
 
+# Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
+# normal targets
+if(DOXYGEN_FOUND)
+    set(${sprelay_project_name}_doc_src
+        ${PROJECT_SOURCE_DIR}/index.md
+        ${PROJECT_SOURCE_DIR}/overview.md
+        ${PROJECT_SOURCE_DIR}/sprelay.dox)
+    target_sources(${sprelay_project_name} PRIVATE ${${sprelay_project_name}_doc_src})
+    set_source_files_properties(${${sprelay_project_name}_doc_src} PROPERTIES HEADER_FILE_ONLY TRUE)
+endif(DOXYGEN_FOUND)
+
 # build core
 add_subdirectory(core)
 

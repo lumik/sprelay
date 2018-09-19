@@ -67,4 +67,12 @@ if(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
         enum_flags
         sprelay_global
         sprelay_core)
+
+    if(DOXYGEN_FOUND)
+        set(${sprelay_project_name}_doc_src
+            ${CMAKE_CURRENT_LIST_DIR}/gui.dox)
+        target_sources(${sprelay_project_name} PRIVATE ${${sprelay_project_name}_doc_src})
+        set_source_files_properties(${${sprelay_project_name}_doc_src} PROPERTIES HEADER_FILE_ONLY TRUE)
+    endif(DOXYGEN_FOUND)
+
 endif(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
