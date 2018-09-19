@@ -57,7 +57,7 @@ class SPRELAY_EXPORT CentralWidget : public QWidget
 public:  // NOLINT(whitespace/indent)
     explicit CentralWidget(
             core::k8090::K8090 *k8090 = nullptr,
-            const QString &com_port_name = QString(),
+            const QString &com_port_name = QString{},
             QWidget *parent = 0);
     ~CentralWidget() override;
 

@@ -42,28 +42,130 @@
 namespace sprelay {
 namespace gui {
 
+/*!
+ * \class CentralWidget
+ * \ingroup group_sprelay_gui_public
+ * \brief Widget which controlls Velleman %K8090 card.
+ *
+ * This widget only creates the GUI, you need also to link to the `sprelay_core` library which implements the
+ * programatic interface between the relay card and the widget. Public interface of the `sprelay_core` library is
+ * described inside the \ref group_sprelay_core_public module.
+ *
+ * Below is an example, how to create simple application from the widget. You have to compile the `sprelay` application
+ * as a library (not as a standalone application) and install `enum_flags` with it and set the install prefix inside
+ * `external` directory in your project folder (or you can copy installed `bin` and `include` folders in it manually).
+ * See \ref index for more details about compilation and installation setup.
+ *
+ * The add the libraries inside your `.pro` file:
+ * \code
+ * CONFIG      += c++11  # sprelay needs c++11 enabled
+ * INCLUDEPATH += $$PWD/external/include
+ * LIBS        += -L$$PWD/external/bin -lsprelay -lsprelay_core
+ * \endcode
+ *
+ * Then you can create your application class:
+ * \code
+ * // main_window.h
+ * #ifndef MAIN_WINDOW_H_
+ * #define MAIN_WINDOW_H_
+ *
+ * #include <QMainWindow>
+ *
+ * #include <memory>
+ *
+ * // forward declarations
+ * namespace sprelay {
+ * namespace core {
+ * namespace k8090 {
+ * class K8090;
+ * }  // namespace k8090
+ * }  // namespace core
+ * namespace gui {
+ * class CentralWidget;
+ * }  // namespace gui
+ * }  // namespace sprelay
+
+ * class MainWindow : public QMainWindow
+ * {
+ *     Q_OBJECT
+ *
+ * public:
+ *     explicit MainWindow();
+ *     ~MainWindow() override;
+ *
+ * private:
+ *     std::unique_ptr<sprelay::core::k8090::K8090> k8090_;
+ *     std::unique_ptr<sprelay::gui::CentralWidget> central_widget_;
+ * };
+ *
+ * #endif  // MAIN_WINDOW_H_
+ * \endcode
+ * \code
+ * // main_window.cpp
+ * #include "main_window.h"
+ *
+ * #include "sprelay/core/k8090.h"
+ * #include "sprelay/gui/central_widget.h"
+ *
+ * MainWindow::MainWindow()
+ *     : k8090_{new sprelay::core::k8090::K8090},
+ *       // if you create central widget with external K8090 object, you can then
+ *       // connect signals to it inside your class or controll the card as you
+ *       // want programatically.
+ *       central_widget_{new sprelay::gui::CentralWidget(k8090_.get(), QString(), this)}
+ * {
+ *     setCentralWidget(central_widget_.get());
+ *     // you can connect signals to k8090_.get() here and controll it programatically
+ *     // ...
+ * }
+ *
+ * MainWindow::~MainWindow()
+ * {
+ * }
+ * \endcode
+ *
+ * \remarks reentrant
+ * \sa sprelay::core::k8090::K8090
+ */
+
+/*!
+ * \brief Constructor.
+ * \param k8090 External K8090 object. If not provided the internal one would be created.
+ * \param com_port_name Predefined COM port name.
+ * \param parent The widget's parent object in Qt ownership system.
+ */
 CentralWidget::CentralWidget(core::k8090::K8090 *k8090, const QString &com_port_name, QWidget *parent)
     : QWidget{parent},
       com_port_name_{com_port_name},
       refresh_delay_timer_{new QTimer}
 {
+    // gets K8090 class from the user or sets it to the private one.
     if (k8090) {
         k8090_ = k8090;
     } else {
         k8090_ = new core::k8090::K8090{this};
     }
+    // when the timer is on it is necessary to poll it to acquire remaining time. It is done
+    // with this timer.
     refresh_delay_timer_->setSingleShot(true);
     connect(refresh_delay_timer_.get(), &QTimer::timeout, this, &CentralWidget::onRefreshTimersDelay);
     connected_ = k8090_->isConnected();
 
     constructGui();
+
+    // erase gui element states
     connectionStatusChanged();
+
+    // poll the relay for its state if the provide K8090 was already connected.
     if (k8090_->isConnected()) {
         onRefreshRelaysButtonClicked();
     }
 }
 
 
+/*!
+ * \brief The destructor.
+ */
 CentralWidget::~CentralWidget()
 {
 }
