@@ -17,10 +17,8 @@ if(NOT SPRELAY_BUILD_STANDALONE)
     install(EXPORT ${sprelay_global_target}Config DESTINATION share/${sprelay_global_target}/cmake)
     export(TARGETS ${sprelay_global_target} FILE ${sprelay_global_target}Config.cmake)
 
-    if(INSTALL_SPRELAY_ENUM_FLAGS)
-        install(FILES "${PROJECT_SOURCE_DIR}/sprelay_global.h"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/sprelay")
-    endif(INSTALL_SPRELAY_ENUM_FLAGS)
+    install(FILES "${PROJECT_SOURCE_DIR}/sprelay_global.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/sprelay")
 endif(NOT SPRELAY_BUILD_STANDALONE)
 
 # sprelay gui #

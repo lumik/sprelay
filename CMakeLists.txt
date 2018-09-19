@@ -100,15 +100,17 @@ if(NOT SPRELAY_BUILD_STANDALONE)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(EXPORT ${enum_flags_target}Config DESTINATION share/${enum_flags_target}/cmake)
     export(TARGETS ${enum_flags_target} FILE ${enum_flags_target}Config.cmake)
-    if(INSTALL_SPRELAY_ENUM_FLAGS)
+    if(SPRELAY_INSTALL_ENUM_FLAGS)
         install(FILES "${PROJECT_SOURCE_DIR}/src/external/enum_flags/src/enum_flags/enum_flags.h"
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/enum_flags")
-    endif(INSTALL_SPRELAY_ENUM_FLAGS)
+    endif(SPRELAY_INSTALL_ENUM_FLAGS)
 endif(NOT SPRELAY_BUILD_STANDALONE)
 
 # execute all parts of projects placed in subdirectories
 add_subdirectory(src)
-add_subdirectory(tests)
+if(SPRELAY_MAKE_TESTS)
+    add_subdirectory(tests)
+endif(SPRELAY_MAKE_TESTS)
 
 # documentation
 if(DOXYGEN_FOUND)
@@ -118,8 +120,8 @@ if(DOXYGEN_FOUND)
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
     add_custom_target(doc
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND ${DOXYGEN_EXECUTABLE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating documentation with Doxygen"
         VERBATIM)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
