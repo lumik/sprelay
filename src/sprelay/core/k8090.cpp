@@ -50,7 +50,79 @@ namespace k8090 {
     \class K8090
     \ingroup group_sprelay_core_public
 
-    \remark reentrant, thread-safe
+    You can see example usage below, where QPushButton for each relay switch on action is created and relay response
+    is handled.
+
+    \code
+    // central_widget.h
+    // ...
+    class CentralWidget : public QWidget
+    {
+        Q_OBJECT
+
+    public:
+        explicit CentralWidget(QWidget *parent = 0);
+    // ...
+
+    private slots:
+    // ...
+        void onRelayOnButtonClicked(int relay);
+        void onRelayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
+            sprelay::core::k8090::RelayID timed);
+    private:
+    // ...
+        sprelay::core::k8090::K8090 *k8090_;
+        // buttons to swith the relay on
+        QPushButton * relay_on_buttons_arr_[8];
+        // signal mappers
+        std::unique_ptr<QSignalMapper> relay_on_mapper_;
+        bool relays_on_[8];
+        bool relays_timed_[8];
+    // ...
+    }
+    \endcode
+    \code
+    // central_widget.cpp
+    // ...
+    CentralWidget::CentralWidget(QWidget *parent) : QWidget{parent}, k8090_{new sprelay::core::k8090::K8090{this}}
+    {
+    // ...
+        // create switch relay on buttons
+        for (int i = 0; i < 8; ++i) {
+            relay_on_buttons_arr_[i] = new QPushButton{this};
+        // create signal mapper which connects all relay on buttons to only one slot
+        relay_on_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
+
+        // create connections
+        for (int i = 0; i < 8; ++i) {
+            connect(&relay_on_buttons_arr_[i], &QPushButton::clicked,
+                relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+            relay_on_mapper_->setMapping(&relay_on_buttons_arr_[i], i);
+        }
+        connect(relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
+            this, &CentralWidget::onRelayOnButtonClicked);
+        connect(k8090_, &sprelay::core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
+    // ...
+    }
+    // ...
+    void CentralWidget::onRelayOnButtonClicked(int relay)
+    {
+        k8090_->switchRelayOn(sprelay::core::k8090::from_number(relay));
+    }
+    // ...
+    void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::RelayID current,
+        core::k8090::RelayID timed)
+    {
+        Q_UNUSED(previous)
+        for (int i = 0; i < 8; ++i) {
+            relays_on_[i] = turestatic_cast<bool>(core::k8090::from_number(i) & current);
+            relays_timed_[i] = static_cast<bool>(core::k8090::from_number(i) & timed)
+        }
+    }
+    // ...
+    \endcode
+
+    \remark reentrant (but each serial port can have only one K8090 connected), thread-safe
 */
 
 // initialization of static member variables
