@@ -396,6 +396,27 @@ This style guide is inspired by the [Google style guide][g_style_guide].
   function defined in a class definition is implicitly inline.
 
 
+## Documentation
+
+- write brief of global and namespace members inside header before declaration.
+- you can write brief of other things inside headers.
+- all other documentation should be in source files except from doxygen bug
+  workarounds (scoped enumeration members with the same name as the member
+	from the other scoped enumeration)
+- place also `\headerfile ""` macro after `\brief` for the non-public classes
+  (classes which are not in headers distributed with the library) to change
+  their include directive in the documentation from <> to "".
+- use doxygen only for public class member documentation. Private stuff
+  document only with comments. Document only the API and implementation
+  consequences for the user, do not document the implementation details using
+  doxygen.
+- create self documenting names and code, do not comment obvious, do not
+  repeat obvious in comments. Comment overview and leading ideas of an
+  implementation.
+- divide documentation into modules only when necessary, do not duplicate
+  namespace structure by modules. Create main module for the whole project.
+
+
 ## References
 
 <a name="Knuth:1996"></a>Donald Knuth's The TeXBook, 1996.
