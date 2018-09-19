@@ -31,32 +31,12 @@
 #include <limits>
 
 namespace sprelay {
-
-/*! \addtogroup Core
-    @{
-*/
-
 namespace core {
-
-/*!
-    \defgroup command_queue CommandQueue module
-    \ingroup Core
-    \brief CommandQueue class and related data structures.
-*/
-
-/*! \addtogroup command_queue
-    @{
-*/
 
 /*!
     \brief Namespace containing CommmandQueue.
 */
 namespace command_queue {
-/*! \addtogroup CommandQueue_implementation CommandQueue implementation
-    \ingroup command_queue
-    \brief Implementation helpers not intended for public use.
-    @{
-*/
 
 /*!
     \namespace sprelay::core::command_queue::impl_
@@ -83,10 +63,6 @@ using namespace impl_;  // NOLINT(build/namespaces)
     \tparam tSize See CommandQueue template class.
     \tparam TList See CommandQueue template class.
     \remark reentrant
-*/
-
-/*!
-    @}
 */
 
 /*!
@@ -409,15 +385,7 @@ void CommandQueue<TCommand, tSize, TList>::updatePriorities(typename TCommand::N
 }
 
 }  // namespace command_queue
-/*!
-    @}
-*/
-
-
 }  // namespace core
-/*!
-    @}
-*/
 }  // namespace sprelay
 
 #endif  // SPRELAY_CORE_COMMAND_QUEUE_TPP_

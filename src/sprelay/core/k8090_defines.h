@@ -24,6 +24,7 @@
 
 /*!
  * \file      k8090_defines.h
+ * \ingroup   group_sprelay_core_public
  * \brief     Public defines related to K8090 class.
 
  * \author    Jakub Klener <lumiksro@centrum.cz>
@@ -116,7 +117,7 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
     \enum sprelay::core::k8090::CommandID
-    \ingroup k8090
+    \ingroup group_sprelay_core_public
     \brief Scoped enumeration listing all commands.
 
     See the Velleman %K8090 card manual.
@@ -176,7 +177,7 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
     \enum sprelay::core::k8090::ResponseID
-    \ingroup k8090
+    \ingroup group_sprelay_core_public
     \brief Scoped enumeration listing all responses.
 
     See the Velleman %K8090 card manual.
@@ -212,7 +213,7 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
     \enum sprelay::core::k8090::RelayID
-    \ingroup k8090
+    \ingroup group_sprelay_core_public
     \brief Scoped enumeration listing all 8 relays.
 
     Bitwise operators are enabled for this enum by overloading k8090::enable_bitmask_operators(RelayID) function
@@ -262,7 +263,7 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
     \fn constexpr bool sprelay::core::k8090::enable_bitmask_operators(RelayID)
-    \ingroup k8090
+    \ingroup group_sprelay_core_public
     \brief Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more
     details.
 
@@ -271,7 +272,7 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
     \fn constexpr RelayID sprelay::core::k8090::from_number(unsigned int number)
-    \ingroup k8090
+    \ingroup group_sprelay_core_public
     \brief Converts number to RelayID scoped enumeration.
 
     \param number The number.
@@ -280,7 +281,7 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
     \fn constexpr std::underlying_type<E> sprelay::core::k8090::as_number(const E e)
-    \ingroup k8090
+    \ingroup group_sprelay_core_public
     \brief Converts enumeration to its underlying type.
 
     \param e Enumerator to be converted.

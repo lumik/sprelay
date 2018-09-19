@@ -35,14 +35,7 @@ namespace core {
 namespace serial_utils {
 
 /*!
-    \defgroup Serial_port_utils Serial port utilities
-    \ingroup Core
-    \brief Utility functions for serial port.
-*/
-
-/*!
     \struct sprelay::core::ComPortParams
-    \ingroup Serial_port_utils
     \brief Structure representing informations about one serial port. Used by the UnifiedSerialPort::availablePorts()
     method.
 */
@@ -70,7 +63,6 @@ namespace serial_utils {
 
 
 /*!
-    \ingroup Serial_port_utils
     \brief Converts hexadecimal string message to its binary representation.
 
     \param msg String message representation. It has to be in format `00 A5 4B`...
@@ -105,7 +97,6 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
 
 
 /*!
-    \ingroup Serial_port_utils
     \brief Converts binary message to its string representation.
 
     \param buffer The buffer with bytes to be converted.
@@ -127,7 +118,6 @@ QString byte_to_hex(const unsigned char *buffer, int n)
 
 /*!
     \struct sprelay::core::MockSerialPortDeleter
-    \ingroup Serial_port_utils
     \brief Deleter needed for forward declaration of sprelay::core::MockSerialPort class.
 
     Example:
@@ -164,4 +154,3 @@ void MockSerialPortDeleter::operator()(MockSerialPort *p)
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
-

@@ -45,24 +45,11 @@
 namespace sprelay {
 namespace core {
 namespace k8090 {
-
-/*!
-    \defgroup k8090_impl K8090 private
-    \ingroup k8090
-    \brief Private utilities of K8090 implementation.
-*/
-
-/*!
-    \namespace sprelay::core::k8090::impl_
-    \ingroup k8090_impl
-    \brief Contains private utilities of K8090 implementation.
-*/
 namespace impl_ {
 
 
 /*!
     \enum sprelay::core::impl_::TimerDelayType
-    \ingroup k8090_impl
     \brief Scoped enumeration listing timer delay types.
 
     See the Velleman %K8090 card manual for more info about timer delay types.
@@ -83,7 +70,6 @@ namespace impl_ {
 
 /*!
     \struct sprelay::core::k8090::impl_::Command
-    \ingroup k8090_impl
     \brief Command representation.
 
     It is used for command comparisons and in command_queue::CommandQueue.
@@ -280,7 +266,6 @@ bool Command::isCompatible(const Command &other) const
 
 
 /*!
-    \ingroup k8090_impl
     \brief Computes checksum of bytes in the msg.
     \param msg C array of bytes.
     \param n The number of the bytes.
@@ -304,7 +289,6 @@ unsigned char check_sum(const unsigned char *msg, int n)
 
 /*!
     \struct sprelay::core::k8090::impl_::CardMessage
-    \ingroup k8090_impl
     \brief Wraps message from or to the Velleman %K8090 relay card.
 */
 

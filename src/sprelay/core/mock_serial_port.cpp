@@ -57,7 +57,6 @@ std::mt19937_64 random_generator(random_device());
 
 /*!
     \class MockSerialPort
-    \ingroup Core
     \brief Class which simulates the behavior of Velleman relay %K8090 card connected through the virtual serial port.
 
     Communication with the card is performed through the ability of windows to make virtual COM port from USB. This

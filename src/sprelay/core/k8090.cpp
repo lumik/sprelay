@@ -40,41 +40,15 @@
 #include "serial_port_utils.h"
 #include "unified_serial_port.h"
 
-/*!
-    \brief Namespace containing sprelay application.
-*/
 namespace sprelay {
-
-/*!
-    \defgroup Core SpRelay core
-    \brief Groups SpRelay core elements.
-*/
-
-/*!
-    \ingroup Core
-    \brief Namespace which contains SpRelay core elements.
-*/
 namespace core {
 
-/*!
-    \defgroup k8090 K8090 module
-    \ingroup Core
-    \brief K8090 class and related data structures.
-*/
-
-/*!
-    \namespace sprelay::core::k8090
-    \ingroup k8090
-    \brief Contains K8090 class and related data structures.
-*/
 namespace k8090 {
 
 
 /*!
     \class K8090
-    \ingroup Core
-    \brief The class that provides the interface for Velleman %K8090 relay card
-    controlling through serial port.
+    \ingroup group_sprelay_core_public
 
     \remark reentrant, thread-safe
 */

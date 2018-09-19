@@ -20,6 +20,19 @@
 **                                                                        **
 ****************************************************************************/
 
+/*!
+ * \file
+ * \ingroup   group_sprelay_core_public
+ * \brief     K8090 class.
+
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2017-03-22
+ * \copyright Copyright (C) 2017 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 #ifndef SPRELAY_CORE_K8090_H_
 #define SPRELAY_CORE_K8090_H_
 
@@ -54,7 +67,7 @@ class ConcurentCommandQueue;
 struct CardMessage;
 }  // namespace impl_
 
-
+/// The class that provides the interface for Velleman %K8090 relay card controlling through serial port.
 class SPRELAY_LIBRARY_EXPORT K8090 : public QObject
 {
     Q_OBJECT

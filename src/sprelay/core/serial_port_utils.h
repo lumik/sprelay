@@ -49,4 +49,3 @@ struct MockSerialPortDeleter
 }  // namespace sprelay
 
 #endif  // SPRELAY_CORE_SERIAL_PORT_UTILS_H_
-

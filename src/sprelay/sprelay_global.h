@@ -24,6 +24,7 @@
 
 /*!
  * \file      sprelay_global.h
+ * \ingroup   group_sprelay_public
  * \brief     Sprelay global staff.
 
  * \author    Jakub Klener <lumiksro@centrum.cz>
@@ -39,6 +40,11 @@
 #define SPRELAY_SPRELAY_GLOBAL_H_
 
 #include <QtCore/QtGlobal>
+
+/*!
+ * \addtogroup group_sprelay_public
+ * @{
+ */
 
 /*!
  * \def SPRELAY_EXPORT
@@ -102,6 +108,7 @@
     #define SPRELAY_LIBRARY_EXPORT Q_DECL_IMPORT
 #endif  // if defined(SPRELAY_BUILD_LIBRARY)
 
+/*! @}*/  // group_sprelay_public
 
 #endif  // SPRELAY_SPRELAY_GLOBAL_H_
 

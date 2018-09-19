@@ -24,6 +24,7 @@
 
 /*!
  * \file      serial_port_defines.h
+ * \ingroup   group_sprelay_core_public
  * \brief     Public defines concerning sprelay::core::UnifiedSerialPort.
 
  * \author    Jakub Klener <lumiksro@centrum.cz>
@@ -46,6 +47,7 @@ namespace serial_utils {
 
 /*!
  * \struct ComPortParams
+ * \ingroup group_sprelay_core_public
  * \brief Structure containing information about COM port.
  */
 struct ComPortParams

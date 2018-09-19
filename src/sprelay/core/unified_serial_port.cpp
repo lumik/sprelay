@@ -38,7 +38,6 @@ namespace core {
 
 /*!
     \class UnifiedSerialPort
-    \ingroup Core
     \brief Class which unifies QSerialPort and sprelay::core::MockSerialPort and can internaly switch between them.
 
     The port can be switched by port name. The mock serial port is used as port with name

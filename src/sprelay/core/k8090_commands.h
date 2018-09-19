@@ -220,10 +220,6 @@ struct ResponseArray_
 template<typename T, T ...Args>
 constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
 
-/*! \addtogroup k8090_impl
-    @{
-*/
-
 /*!
     \brief Array of hexadecimal representation of commands used to control the relay.
 */
@@ -258,10 +254,6 @@ const quint16 kProductID = 32912;
     \brief Vendor id for the automatic port identification.
 */
 const quint16 kVendorID = 4303;
-
-/*!
-    @}
-*/
 
 }  // namespace impl_
 }  // namespace k8090

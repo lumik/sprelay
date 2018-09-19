@@ -43,22 +43,11 @@
 #include <QString>
 
 namespace sprelay {
-
-/*!
- * \defgroup gui SpRelay GUI
- * \brief Groups SpRelay GUI elements.
- */
-
-/*!
- * \ingroup gui
- * \brief Namespace which contains SpRelay GUI elements.
- */
 namespace gui {
 
 // TODO(lumik): improve documentation with examples.
 /*!
  * \class IndicatorLight
- * \ingroup gui
  * \brief The class defining widget which can be used as two state indicator light.
  * \remarks reentrant
  */
@@ -124,7 +113,6 @@ void IndicatorLight::setState(bool state)
 
 /*!
  * \class IndicatorButton
- * \ingroup gui
  * \brief The class defining widget which can be used as two state button with indicator light.
  * \remarks reentrant
  */
