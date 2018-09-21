@@ -114,6 +114,21 @@ endif(SPRELAY_MAKE_TESTS)
 
 # documentation
 if(DOXYGEN_FOUND)
+    # get Qt documentation location
+    get_target_property(qmake_executable Qt5::qmake LOCATION)
+    execute_process(
+        COMMAND ${qmake_executable} -query QT_INSTALL_DOCS
+        RESULT_VARIABLE return_code
+        OUTPUT_VARIABLE qt_docs_dir
+    )
+
+    # link in qts own documentation
+    string(STRIP ${qt_docs_dir} qt_docs_dir)
+    set(qt_core_tags "${qt_docs_dir}/qtcore/qtcore.tags=http://doc.qt.io/qt-5/")
+    set(qt_gui_tags "${qt_docs_dir}/qtgui/qtgui.tags=http://doc.qt.io/qt-5/")
+    set(qt_widgets_tags "${qt_docs_dir}/qtwidgets/qtwidgets.tags=http://doc.qt.io/qt-5/")
+    set(qt_testlib_tags "${qt_docs_dir}/qttestlib/qttestlib.tags=http://doc.qt.io/qt-5/")
+
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
     set(doxy_main_page ${CMAKE_CURRENT_SOURCE_DIR}/src/sprelay/index.md)
