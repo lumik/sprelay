@@ -26,6 +26,7 @@
 
 #include "mock_serial_port.h"
 
+#include <cstdint>
 #include <limits>
 #include <random>
 #include <utility>
@@ -43,16 +44,15 @@ namespace core {
 
 // generator of random numbers which is used throughout the class to produce random undefined responses (active timer
 // delay query when the timer is not active) and random response delays from the card
-namespace {
 
+// random device on MinGW does not work, a seed is always same.
 #ifdef __MINGW32__
-std::mt19937_64 random_generator(std::chrono::system_clock::now().time_since_epoch().count());
+static std::mt19937_64 random_generator{
+    static_cast<std::uint_fast64_t>(std::chrono::system_clock::now().time_since_epoch().count())};
 #else  // ifdef __MINGW32__
-std::random_device random_device;  // random device on MinGW does not work, a seed is always same.
-std::mt19937_64 random_generator(random_device());
+static std::random_device random_device;
+static std::mt19937_64 random_generator{random_device()};
 #endif  // ifdef __MINGW32__
-
-}  // unnamed namespace
 
 
 /*!
