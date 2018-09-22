@@ -35,8 +35,6 @@ namespace core {
 namespace serial_utils {
 
 /*!
-    \brief Converts hexadecimal string message to its binary representation.
-
     \param msg String message representation. It has to be in format `00 A5 4B`...
     \param buffer Pointer where the binary message will be stored.
     \param n Pointer to variable, where the number of bytes will be stored.
@@ -69,8 +67,6 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
 
 
 /*!
-    \brief Converts binary message to its string representation.
-
     \param buffer The buffer with bytes to be converted.
     \param n The number of bytes to be converted.
     \return The string representation of the buffer.
@@ -90,8 +86,6 @@ QString byte_to_hex(const unsigned char *buffer, int n)
 
 /*!
     \struct sprelay::core::MockSerialPortDeleter
-    \brief Deleter needed for forward declaration of sprelay::core::MockSerialPort class.
-
     Example:
     \code
     #include <memory>

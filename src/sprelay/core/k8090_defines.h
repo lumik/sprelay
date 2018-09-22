@@ -97,14 +97,15 @@ enum struct RelayID : unsigned char
 };
 
 
-// this redefinition enables bitwise operator usage
+/// Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more details.
 constexpr bool enable_bitmask_operators(RelayID) { return true; }
 
 
+/// Converts number to RelayID scoped enumeration.
 constexpr RelayID from_number(unsigned int number) { return static_cast<RelayID>(1 << (number)); }
 
 
-// conversion of scoped enum to underlying_type
+/// Converts enumeration to its underlying type.
 template<typename E>
 constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E>>::type::type as_number(const E e)
 {
@@ -144,17 +145,12 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 /*!
     \fn constexpr bool sprelay::core::k8090::enable_bitmask_operators(RelayID)
     \ingroup group_sprelay_core_public
-    \brief Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more
-    details.
-
     \return True to enable bitmask operators.
 */
 
 /*!
     \fn constexpr RelayID sprelay::core::k8090::from_number(unsigned int number)
     \ingroup group_sprelay_core_public
-    \brief Converts number to RelayID scoped enumeration.
-
     \param number The number.
     \return The RelayID enumerator.
 */
@@ -162,8 +158,6 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 /*!
     \fn constexpr std::underlying_type<E> sprelay::core::k8090::as_number(const E e)
     \ingroup group_sprelay_core_public
-    \brief Converts enumeration to its underlying type.
-
     \param e Enumerator to be converted.
     \return The enum value as underlying type.
 */

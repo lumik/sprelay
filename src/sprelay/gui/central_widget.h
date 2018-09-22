@@ -51,6 +51,7 @@ namespace gui {
 class IndicatorButton;
 class IndicatorLight;
 
+/// Widget which controlls Velleman %K8090 card.
 class SPRELAY_EXPORT CentralWidget : public QWidget
 {
     Q_OBJECT

@@ -43,8 +43,6 @@ namespace impl_ {
 
 /*!
     \class ConcurentCommandQueue
-    \brief Thread-safe version of command_queue::CommandQueue adapted for usage in K8090 class.
-
     \remark thread-safe
 */
 

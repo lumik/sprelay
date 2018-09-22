@@ -56,8 +56,6 @@ namespace impl_ {
 
 /*!
     \struct sprelay::core::k8090::impl_::Command
-    \brief Command representation.
-
     It is used for command comparisons and in command_queue::CommandQueue.
 */
 
@@ -252,7 +250,6 @@ bool Command::isCompatible(const Command &other) const
 
 
 /*!
-    \brief Computes checksum of bytes in the msg.
     \param msg C array of bytes.
     \param n The number of the bytes.
     \return The checksum.
@@ -271,12 +268,6 @@ unsigned char check_sum(const unsigned char *msg, int n)
 
     return sum_byte;
 }
-
-
-/*!
-    \struct sprelay::core::k8090::impl_::CardMessage
-    \brief Wraps message from or to the Velleman %K8090 relay card.
-*/
 
 
 /*!

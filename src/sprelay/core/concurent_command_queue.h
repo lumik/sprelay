@@ -48,6 +48,7 @@ namespace core {
 namespace k8090 {
 namespace impl_ {
 
+/// Thread-safe version of command_queue::CommandQueue adapted for usage in K8090 class.
 class ConcurentCommandQueue : private command_queue::CommandQueue<Command, as_number(k8090::CommandID::None)>
 {
     using Predecessor = command_queue::CommandQueue<Command, as_number(k8090::CommandID::None)>;

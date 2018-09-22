@@ -46,6 +46,7 @@ class QLabel;
 namespace sprelay {
 namespace gui {
 
+/// The class defining widget which can be used as two state indicator light.
 class IndicatorLight : public QPushButton
 {
     Q_OBJECT
@@ -70,6 +71,7 @@ private:  // NOLINT(whitespace/indent)
 };
 
 
+/// The class defining widget which can be used as two state button with indicator light.
 class IndicatorButton : public QPushButton
 {
     Q_OBJECT

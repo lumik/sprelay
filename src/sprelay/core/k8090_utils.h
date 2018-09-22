@@ -56,6 +56,7 @@ enum struct TimerDelayType : unsigned char
 };
 
 
+/// %Command representation.
 struct Command
 {
     using IdType = k8090::CommandID;
@@ -91,10 +92,11 @@ struct Command
     bool isCompatible(const Command &other) const;
 };
 
-
+/// Computes checksum of bytes in the msg.
 unsigned char check_sum(const unsigned char *msg, int n);
 
 
+/// Wraps message from or to the Velleman %K8090 relay card.
 struct CardMessage
 {
     CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1, unsigned char param2,

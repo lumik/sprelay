@@ -46,16 +46,12 @@ using namespace impl_;  // NOLINT(build/namespaces)
 
 /*!
     \class sprelay::core::command_queue::impl_::CommandPriority
-    \brief Helper class used for command priorities storage and comparisons.
-
     \tparam TCommand See CommandQueue template class.
     \remark reentrant
 */
 
 /*!
     \class sprelay::core::command_queue::impl_::PendingCommands
-    \brief Helper class for pending commands storage.
-
     The class abuses constant pointer access. You can get from it `TList<const TCommand *>` which is directly
     stored inside but you can also modify stored `TCommand` using `PendingCommands::updateEntry()` method (so the
     `TCommand` is not realy const, only returned list should not be used to modify them because it can distort
@@ -136,8 +132,6 @@ using namespace impl_;  // NOLINT(build/namespaces)
 
 /*!
     \class CommandQueue
-    \brief Queue used for storing command before invokations.
-
     The queue sorts commands according to priority and time stamp. The commands can be inserted in unique mode, where
     old commands are replaced by newer ones but preserving their time stamps or non-unique mode in which more commands
     with the same id can be inserted. See CommandQueue::push() for more details.

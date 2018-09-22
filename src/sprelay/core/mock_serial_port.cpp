@@ -57,8 +57,6 @@ static std::mt19937_64 random_generator{random_device()};
 
 /*!
     \class MockSerialPort
-    \brief Class which simulates the behavior of Velleman relay %K8090 card connected through the virtual serial port.
-
     Communication with the card is performed through the ability of windows to make virtual COM port from USB. This
     class tries to behavior as if it was the real card connected through this virtual COM port interface. The port
     parameters should be set as follows:

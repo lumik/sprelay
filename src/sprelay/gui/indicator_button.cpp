@@ -48,7 +48,6 @@ namespace gui {
 // TODO(lumik): improve documentation with examples.
 /*!
  * \class IndicatorLight
- * \brief The class defining widget which can be used as two state indicator light.
  * \remarks reentrant
  */
 
@@ -113,7 +112,6 @@ void IndicatorLight::setState(bool state)
 
 /*!
  * \class IndicatorButton
- * \brief The class defining widget which can be used as two state button with indicator light.
  * \remarks reentrant
  */
 

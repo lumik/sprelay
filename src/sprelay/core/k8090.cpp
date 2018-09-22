@@ -49,7 +49,6 @@ namespace k8090 {
 /*!
     \class K8090
     \ingroup group_sprelay_core_public
-
     You can see example usage below, where QPushButton for each relay switch on action is created and relay response
     is handled.
 

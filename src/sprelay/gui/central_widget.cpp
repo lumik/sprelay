@@ -45,8 +45,6 @@ namespace gui {
 /*!
  * \class CentralWidget
  * \ingroup group_sprelay_gui_public
- * \brief Widget which controlls Velleman %K8090 card.
- *
  * This widget only creates the GUI, you need also to link to the `sprelay_core` library which implements the
  * programatic interface between the relay card and the widget. Public interface of the `sprelay_core` library is
  * described inside the \ref group_sprelay_core_public module.
