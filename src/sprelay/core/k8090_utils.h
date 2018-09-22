@@ -47,11 +47,12 @@ namespace core {
 namespace k8090 {
 namespace impl_ {
 
+/// Scoped enumeration listing timer delay types.
 enum struct TimerDelayType : unsigned char
 {
-    Total     = 0,
-    Remaining = 1 << 0,
-    All       = 0xff
+    Total     = 0,       ///< Total timer time.
+    Remaining = 1 << 0,  ///< Currently remaining timer time.
+    All       = 0xff     ///< Determines the highest element.
 };
 
 

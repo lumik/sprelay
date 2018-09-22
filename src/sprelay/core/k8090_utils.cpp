@@ -50,21 +50,7 @@ namespace impl_ {
 
 /*!
     \enum sprelay::core::impl_::TimerDelayType
-    \brief Scoped enumeration listing timer delay types.
-
     See the Velleman %K8090 card manual for more info about timer delay types.
-*/
-/*!
-    \var sprelay::core::k8090::impl_::TimerDelayType::Total
-    \brief Total timer time.
-*/
-/*!
-    \var sprelay::core::k8090::impl_::TimerDelayType::Remaining
-    \brief Currently remaining timer time.
-*/
-/*!
-    \var sprelay::core::k8090::impl_::TimerDelayType::All
-    \brief Determines the highest element.
 */
 
 

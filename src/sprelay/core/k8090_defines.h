@@ -49,48 +49,51 @@ namespace sprelay {
 namespace core {
 namespace k8090 {
 
+/// Scoped enumeration listing all commands.
 enum struct CommandID : unsigned int
 {
-    RelayOn,
-    RelayOff,
-    ToggleRelay,
-    QueryRelay,
-    SetButtonMode,
-    ButtonMode,
-    StartTimer,
-    SetTimer,
-    Timer,
-    ResetFactoryDefaults,
-    JumperStatus,
-    FirmwareVersion,
-    None
+    RelayOn,               ///< Switch realy on command.
+    RelayOff,              ///< Switch realy off command.
+    ToggleRelay,           ///< Toggle realy command.
+    QueryRelay,            ///< Query relay status command.
+    SetButtonMode,         ///< Set button mode command.
+    ButtonMode,            ///< Query button mode command.
+    StartTimer,            ///< Start relay timer command.
+    SetTimer,              ///< Set relay timer delay command.
+    Timer,                 ///< Query timer delay command.
+    ResetFactoryDefaults,  ///< Reset factory defaults command.
+    JumperStatus,          ///< Jumper status command.
+    FirmwareVersion,       ///< Firmware version command.
+    None                   ///< The number of all commands represents also none command.
 };
 
 
+/// Scoped enumeration listing all responses.
 enum struct ResponseID : unsigned int
 {
-    ButtonMode,       /*!< Response with button mode. */
-    Timer,             /*!< Response with timer delay. */
-    ButtonStatus,
-    RelayStatus,
-    JumperStatus,     /*!< Response with jumper status. */
-    FirmwareVersion,  /*!< Response with firmware version. */
-    None               /*!< The number of all responses represents also none response. */
+    ButtonMode,       ///< Response with button mode.
+    Timer,            ///< Response with timer delay.
+    ButtonStatus,     ///< Button status event.
+    RelayStatus,      ///< Relay status event.
+    JumperStatus,     ///< Response with jumper status.
+    FirmwareVersion,  ///< Response with firmware version.
+    None              ///< The number of all responses represents also none response.
 };
 
 
+/// Scoped enumeration listing all 8 relays.
 enum struct RelayID : unsigned char
 {
-    None  = 0,  /*!< None relay */
-    One   = 1 << 0,
-    Two   = 1 << 1,
-    Three = 1 << 2,
-    Four  = 1 << 3,
-    Five  = 1 << 4,
-    Six   = 1 << 5,
-    Seven = 1 << 6,
-    Eight = 1 << 7,
-    All   = 0xff
+    None  = 0,       ///< None relay
+    One   = 1 << 0,  ///< First relay.
+    Two   = 1 << 1,  ///< Second relay.
+    Three = 1 << 2,  ///< Third relay.
+    Four  = 1 << 3,  ///< Fourth relay.
+    Five  = 1 << 4,  ///< Fifth relay.
+    Six   = 1 << 5,  ///< Sixth relay.
+    Seven = 1 << 6,  ///< Seventh relay.
+    Eight = 1 << 7,  ///< Eigth relay.
+    All   = 0xff     ///< All relays.
 };
 
 
@@ -118,147 +121,24 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 /*!
     \enum sprelay::core::k8090::CommandID
     \ingroup group_sprelay_core_public
-    \brief Scoped enumeration listing all commands.
 
     See the Velleman %K8090 card manual.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::RelayOn
-    \brief Switch realy on command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::RelayOff
-    \brief Switch realy off command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::ToggleRelay
-    \brief Toggle realy command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::QueryRelay
-    \brief Query relay status command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::SetButtonMode
-    \brief Set button mode command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::ButtonMode
-    \brief Query button mode command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::StartTimer
-    \brief Start relay timer command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::SetTimer
-    \brief Set relay timer delay command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::Timer
-    \brief Query timer delay command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::ResetFactoryDefaults
-    \brief Reset factory defaults command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::JumperStatus
-    \brief Jumper status command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::FirmwareVersion
-    \brief Firmware version command.
-*/
-/*!
-    \var sprelay::core::k8090::CommandID::None
-    \brief The number of all commands represents also none command.
 */
 
 /*!
     \enum sprelay::core::k8090::ResponseID
     \ingroup group_sprelay_core_public
-    \brief Scoped enumeration listing all responses.
 
     See the Velleman %K8090 card manual.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::ButtonMode
-    \brief Response with button mode.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::Timer
-    \brief Response with timer delay.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::RelayStatus
-    \brief Relay status event.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::ButtonStatus
-    \brief Button status event.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::JumperStatus
-    \brief Response with jumper status.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::FirmwareVersion
-    \brief Response with firmware version.
-*/
-/*!
-    \var sprelay::core::k8090::ResponseID::None
-    \brief The number of all responses represents also none response.
 */
 
 /*!
     \enum sprelay::core::k8090::RelayID
     \ingroup group_sprelay_core_public
-    \brief Scoped enumeration listing all 8 relays.
 
     Bitwise operators are enabled for this enum by overloading k8090::enable_bitmask_operators(RelayID) function
     (see enum_flags.h for more details) and so the value of k8090::RelayID type can be also a combination of
     particular relays.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::None
-    \brief None relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::One
-    \brief First relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Two
-    \brief Second relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Three
-    \brief Third relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Four
-    \brief Fourth relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Five
-    \brief Fifth relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Six
-    \brief Sixth relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Seven
-    \brief Seventh relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::Eight
-    \brief Eigth relay.
-*/
-/*!
-    \var sprelay::core::k8090::RelayID::All
-    \brief All relays.
 */
 
 /*!
