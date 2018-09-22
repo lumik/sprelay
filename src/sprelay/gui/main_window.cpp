@@ -30,12 +30,21 @@
 namespace sprelay {
 namespace gui {
 
+/*!
+ * \brief Constructs the MainWindow
+ *
+ * The core of application functionality is inside sprelay::gui::CentralWidget which is created inside the MainWindow.
+ */
 MainWindow::MainWindow()
 {
     central_widget_ = new CentralWidget(nullptr, QString(), this);
     setCentralWidget(central_widget_);
 }
 
+
+/*!
+ * \brief The destructor.
+ */
 MainWindow::~MainWindow()
 {
 }

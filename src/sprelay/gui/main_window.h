@@ -34,6 +34,7 @@ class K8090;
 namespace gui {
 class CentralWidget;
 
+/// The application's main window.
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
