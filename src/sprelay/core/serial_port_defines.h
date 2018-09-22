@@ -45,22 +45,23 @@ namespace sprelay {
 namespace core {
 namespace serial_utils {
 
-/*!
- * \struct ComPortParams
- * \ingroup group_sprelay_core_public
- * \brief Structure containing information about COM port.
- */
+/// Structure representing informations about one serial port. Used by the UnifiedSerialPort::availablePorts() method.
 struct ComPortParams
 {
-    QString port_name;
-    QString description;
-    QString manufacturer;
-    quint16 product_identifier;
-    quint16 vendor_identifier;
+    QString port_name;           ///< Port name.
+    QString description;         ///< Port description.
+    QString manufacturer;        ///< Port manufacturer.
+    quint16 product_identifier;  ///< Port product identifier.
+    quint16 vendor_identifier;   ///< Port vendor identifier.
 };
 
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
+
+/*!
+ * \struct sprelay::core::serial_utils::ComPortParams
+ * \ingroup group_sprelay_core_public
+ */
 
 #endif  // SPRELAY_CORE_SERIAL_PORT_DEFINES_H_

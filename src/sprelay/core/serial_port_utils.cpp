@@ -35,34 +35,6 @@ namespace core {
 namespace serial_utils {
 
 /*!
-    \struct sprelay::core::ComPortParams
-    \brief Structure representing informations about one serial port. Used by the UnifiedSerialPort::availablePorts()
-    method.
-*/
-
-/*!
-    \var ComPortParams::port_name;
-    \brief Port name.
-*/
-/*!
-    \var ComPortParams::description;
-    \brief Port description.
-*/
-/*!
-    \var ComPortParams::manufacturer;
-    \brief Port manufacturer.
-*/
-/*!
-    \var ComPortParams::product_identifier;
-    \brief Port product identifier.
-*/
-/*!
-    \var ComPortParams::vendor_identifier;
-    \brief Port vendor identifier.
-*/
-
-
-/*!
     \brief Converts hexadecimal string message to its binary representation.
 
     \param msg String message representation. It has to be in format `00 A5 4B`...
