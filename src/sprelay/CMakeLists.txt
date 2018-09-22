@@ -46,7 +46,7 @@ if(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
     else()
         add_library(${sprelay_project_name} SHARED
             ${${sprelay_project_name}_src})
-        target_compile_definitions(${sprelay_project_name} PRIVATE SPRELAY_GLOBAL_LIBRARY)
+        target_compile_definitions(${sprelay_project_name} PRIVATE SPRELAY_MAIN_LIBRARY)
     endif(SPRELAY_BUILD_STANDALONE)
     target_link_libraries(${sprelay_project_name}
         Qt5::Core
