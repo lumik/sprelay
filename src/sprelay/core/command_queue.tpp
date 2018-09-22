@@ -56,8 +56,10 @@ using namespace impl_;  // NOLINT(build/namespaces)
     \class sprelay::core::command_queue::impl_::PendingCommands
     \brief Helper class for pending commands storage.
 
-    The class abuses constant pointer access. You can get from it TList<const TCommand *> which is directly stored
-    inside but you can also modify stored TCommand using PendingCommands::updateEntry() method.
+    The class abuses constant pointer access. You can get from it `TList<const TCommand *>` which is directly
+    stored inside but you can also modify stored `TCommand` using `PendingCommands::updateEntry()` method (so the
+    `TCommand` is not realy const, only returned list should not be used to modify them because it can distort
+    integrity of the queue).
 
     \tparam TCommand See CommandQueue template class.
     \tparam tSize See CommandQueue template class.
