@@ -22,9 +22,6 @@
 **                                                                        **
 ****************************************************************************/
 
-#ifndef SPRELAY_CORE_COMMAND_QUEUE_TPP_
-#define SPRELAY_CORE_COMMAND_QUEUE_TPP_
-
 /*!
  * \file      command_queue.tpp
  * \brief     The sprelay::core::command_queue::CommandQueue class and some other related stuff.
@@ -393,5 +390,3 @@ void CommandQueue<TCommand, tSize, TList>::updatePriorities(typename TCommand::N
 }  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
-
-#endif  // SPRELAY_CORE_COMMAND_QUEUE_TPP_

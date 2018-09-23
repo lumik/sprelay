@@ -1991,6 +1991,16 @@ def CheckForHeaderGuard(filename, clean_lines, error):
     error: The function to call with any errors found.
   """
 
+  ##############################################################################
+  # modified : lumik 2018-09-23
+  # Don't check for header guards in tpp files
+  fileinfo_h = FileInfo(filename)
+  h_ext = fileinfo_h.Extension().lstrip('.')
+  if h_ext == "tpp":
+      return
+  # end modified : lumik 2018-03-14
+  ############################################################################
+
   # Don't check for header guards if there are error suppression
   # comments somewhere in this file.
   #
@@ -6016,7 +6026,7 @@ def FlagCxx11Features(filename, clean_lines, linenum, error):
                                       'future',
   ##############################################################################
   # modified : lumik 2018-08-09
-  # search include for template source tpp files
+  # remove unapproved headers
                                       # 'mutex',
   # end modified : lumik 2018-08-09
   ############################################################################
