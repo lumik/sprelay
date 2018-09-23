@@ -120,46 +120,46 @@ constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E
 Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
 /*!
-    \enum sprelay::core::k8090::CommandID
-    \ingroup group_sprelay_core_public
-
-    See the Velleman %K8090 card manual.
-*/
-
-/*!
-    \enum sprelay::core::k8090::ResponseID
-    \ingroup group_sprelay_core_public
-
-    See the Velleman %K8090 card manual.
-*/
+ * \enum sprelay::core::k8090::CommandID
+ * \ingroup group_sprelay_core_public
+ *
+ * See the Velleman %K8090 card manual.
+ */
 
 /*!
-    \enum sprelay::core::k8090::RelayID
-    \ingroup group_sprelay_core_public
-
-    Bitwise operators are enabled for this enum by overloading k8090::enable_bitmask_operators(RelayID) function
-    (see enum_flags.h for more details) and so the value of k8090::RelayID type can be also a combination of
-    particular relays.
-*/
+ * \enum sprelay::core::k8090::ResponseID
+ * \ingroup group_sprelay_core_public
+ *
+ * See the Velleman %K8090 card manual.
+ */
 
 /*!
-    \fn constexpr bool sprelay::core::k8090::enable_bitmask_operators(RelayID)
-    \ingroup group_sprelay_core_public
-    \return True to enable bitmask operators.
-*/
+ * \enum sprelay::core::k8090::RelayID
+ * \ingroup group_sprelay_core_public
+ *
+ * Bitwise operators are enabled for this enum by overloading k8090::enable_bitmask_operators(RelayID) function
+ * (see enum_flags.h for more details) and so the value of k8090::RelayID type can be also a combination of
+ * particular relays.
+ */
 
 /*!
-    \fn constexpr RelayID sprelay::core::k8090::from_number(unsigned int number)
-    \ingroup group_sprelay_core_public
-    \param number The number.
-    \return The RelayID enumerator.
-*/
+ * \fn constexpr bool sprelay::core::k8090::enable_bitmask_operators(RelayID)
+ * \ingroup group_sprelay_core_public
+ * \return True to enable bitmask operators.
+ */
 
 /*!
-    \fn constexpr std::underlying_type<E> sprelay::core::k8090::as_number(const E e)
-    \ingroup group_sprelay_core_public
-    \param e Enumerator to be converted.
-    \return The enum value as underlying type.
-*/
+ * \fn constexpr RelayID sprelay::core::k8090::from_number(unsigned int number)
+ * \ingroup group_sprelay_core_public
+ * \param number The number.
+ * \return The RelayID enumerator.
+ */
+
+/*!
+ * \fn constexpr std::underlying_type<E> sprelay::core::k8090::as_number(const E e)
+ * \ingroup group_sprelay_core_public
+ * \param e Enumerator to be converted.
+ * \return The enum value as underlying type.
+ */
 
 #endif  // SPRELAY_CORE_K8090_DEFINES_H_

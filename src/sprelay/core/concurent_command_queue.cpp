@@ -44,14 +44,14 @@ namespace k8090 {
 namespace impl_ {
 
 /*!
-    \class ConcurentCommandQueue
-    \remark thread-safe
-*/
+ * \class ConcurentCommandQueue
+ * \remark thread-safe
+ */
 
 
 /*!
-    For more details see command_queue::CommandQueue::empty().
-*/
+ * For more details see command_queue::CommandQueue::empty().
+ */
 bool ConcurentCommandQueue::empty() const
 {
     std::lock_guard<std::mutex> lock{global_mutex_};
@@ -60,8 +60,8 @@ bool ConcurentCommandQueue::empty() const
 
 
 /*!
-    For more details see command_queue::CommandQueue::pop().
-*/
+ * For more details see command_queue::CommandQueue::pop().
+ */
 Command ConcurentCommandQueue::pop()
 {
     std::lock_guard<std::mutex> lock{global_mutex_};
@@ -70,8 +70,8 @@ Command ConcurentCommandQueue::pop()
 
 
 /*!
-    For more details see command_queue::CommandQueue::stampCounter().
-*/
+ * For more details see command_queue::CommandQueue::stampCounter().
+ */
 unsigned int ConcurentCommandQueue::stampCounter() const
 {
     std::lock_guard<std::mutex> lock{global_mutex_};
@@ -80,16 +80,16 @@ unsigned int ConcurentCommandQueue::stampCounter() const
 
 // TODO(lumik): Add tests for this method.
 /*!
-    \brief Updates compatible command in queue or pushes the new command if update is not possible.
-    \param command_id Id of a new command.
-    \param mask Mask parameter of the command.
-    \param param1 First parameter of the command.
-    \param param2 Second parameter of the command.
-
-    Tests, if compatible command is already in the queue and if so, the command is updated, otherwise a new command
-    is inserted. It also tests for CommandID::RelayOn and CommandID::RelayOff command oposites and removes possible
-    conflicts from the queue. CommandID::ToggleRelay commands are not subjected to such a test.
-*/
+ * \brief Updates compatible command in queue or pushes the new command if update is not possible.
+ * \param command_id Id of a new command.
+ * \param mask Mask parameter of the command.
+ * \param param1 First parameter of the command.
+ * \param param2 Second parameter of the command.
+ *
+ * Tests, if compatible command is already in the queue and if so, the command is updated, otherwise a new command
+ * is inserted. It also tests for CommandID::RelayOn and CommandID::RelayOff command oposites and removes possible
+ * conflicts from the queue. CommandID::ToggleRelay commands are not subjected to such a test.
+ */
 void ConcurentCommandQueue::updateOrPush(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
     std::lock_guard<std::mutex> lock{global_mutex_};
@@ -125,10 +125,10 @@ void ConcurentCommandQueue::updateOrPush(CommandID command_id, RelayID mask, uns
 
 
 /*!
-    \brief Returns number of commands with a specified id in the queue.
-    \param command_id The command id.
-    \return The number of commands with the id.
-*/
+ * \brief Returns number of commands with a specified id in the queue.
+ * \param command_id The command id.
+ * \return The number of commands with the id.
+ */
 int ConcurentCommandQueue::count(CommandID command_id) const
 {
     std::lock_guard<std::mutex> lock{global_mutex_};

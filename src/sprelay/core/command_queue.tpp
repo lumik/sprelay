@@ -41,168 +41,168 @@ namespace sprelay {
 namespace core {
 
 /*!
-    \brief Namespace containing CommmandQueue.
-*/
+ * \brief Namespace containing CommmandQueue.
+ */
 namespace command_queue {
 
 /*!
-    \namespace sprelay::core::command_queue::impl_
-    \brief Namespace containing implementation details. Not intended for public use.
-*/
+ * \namespace sprelay::core::command_queue::impl_
+ * \brief Namespace containing implementation details. Not intended for public use.
+ */
 using namespace impl_;  // NOLINT(build/namespaces)
 
 /*!
-    \class sprelay::core::command_queue::impl_::CommandPriority
-    \tparam TCommand See CommandQueue template class.
-    \remark reentrant
-*/
+ * \class sprelay::core::command_queue::impl_::CommandPriority
+ * \tparam TCommand See CommandQueue template class.
+ * \remark reentrant
+ */
 
 /*!
-    \class sprelay::core::command_queue::impl_::PendingCommands
-    The class abuses constant pointer access. You can get from it `TList<const TCommand *>` which is directly
-    stored inside but you can also modify stored `TCommand` using `PendingCommands::updateEntry()` method (so the
-    `TCommand` is not realy const, only returned list should not be used to modify them because it can distort
-    integrity of the queue).
-
-    \tparam TCommand See CommandQueue template class.
-    \tparam tSize See CommandQueue template class.
-    \tparam TList See CommandQueue template class.
-    \remark reentrant
-*/
-
-/*!
-    \var CommandPriority::stamp
-    \brief Time stamp for command priority determination.
-
-    See CommandPriority::operator<().
-*/
+ * \class sprelay::core::command_queue::impl_::PendingCommands
+ * The class abuses constant pointer access. You can get from it `TList<const TCommand *>` which is directly
+ * stored inside but you can also modify stored `TCommand` using `PendingCommands::updateEntry()` method (so the
+ * `TCommand` is not realy const, only returned list should not be used to modify them because it can distort
+ * integrity of the queue).
+ *
+ * \tparam TCommand See CommandQueue template class.
+ * \tparam tSize See CommandQueue template class.
+ * \tparam TList See CommandQueue template class.
+ * \remark reentrant
+ */
 
 /*!
-    \var CommandPriority::command
-    \brief Owns command and manages its memory.
-
-    Its member TCommand::priority is used to determine ordering. See
-    CommandPriority::operator<().
-*/
-
-/*!
-    \fn CommandPriority::operator<(const CommandPriority &other) const
-    \brief Defines CommandPriority ordering.
-
-    Ordering is defined according to TCommand::priority and time stamp CommandPriority::stamp. Higher priority and
-    lower time stamp is greater.
-*/
+ * \var CommandPriority::stamp
+ * \brief Time stamp for command priority determination.
+ *
+ * See CommandPriority::operator<().
+ */
 
 /*!
-    \fn CommandPriority::setPriority(int p)
-    \brief Sets contained command priority to p.
-
-    \param p The priority.
-*/
-
-
-/*!
-    \fn PendingCommands::PendingCommands()
-    \brief Default constructor.
-*/
+ * \var CommandPriority::command
+ * \brief Owns command and manages its memory.
+ *
+ * Its member TCommand::priority is used to determine ordering. See
+ * CommandPriority::operator<().
+ */
 
 /*!
-    \fn const TList<const TCommand *> & PendingCommands::operator[](std::size_t id) const
-    \brief Direct constant member access.
-
-    Index id is not controlled for validity.
-
-    \param id Index
-    \return List containing all commands with desired id.
-*/
+ * \fn CommandPriority::operator<(const CommandPriority &other) const
+ * \brief Defines CommandPriority ordering.
+ *
+ * Ordering is defined according to TCommand::priority and time stamp CommandPriority::stamp. Higher priority and
+ * lower time stamp is greater.
+ */
 
 /*!
-    \fn TList<const TCommand *> & PendingCommands::operator[](std::size_t id)
-    \brief Direct member access.
-
-    Index id is not controlled for validity.
-
-    \param id Index
-    \return List containing all commands with desired id.
-*/
-
-/*!
-    \fn void PendingCommands::updateEntry(int idx, const TCommand &command)
-    \brief Enables update of desired command.
-
-    Indices command.id nor idx are not controlled for validity.
-
-    \param idx Index.
-    \param command Command for update.
-*/
+ * \fn CommandPriority::setPriority(int p)
+ * \brief Sets contained command priority to p.
+ *
+ * \param p The priority.
+ */
 
 
 /*!
-    \class CommandQueue
-    The queue sorts commands according to priority and time stamp. The commands can be inserted in unique mode, where
-    old commands are replaced by newer ones but preserving their time stamps or non-unique mode in which more commands
-    with the same id can be inserted. See CommandQueue::push() for more details.
+ * \fn PendingCommands::PendingCommands()
+ * \brief Default constructor.
+ */
 
-    \warning Beware time stamp overflow, see the CommandQueue::push() method description.
+/*!
+ * \fn const TList<const TCommand *> & PendingCommands::operator[](std::size_t id) const
+ * \brief Direct constant member access.
+ *
+ * Index id is not controlled for validity.
+ *
+ * \param id Index
+ * \return List containing all commands with desired id.
+ */
 
-    Commands inside CommandQueue can be also updated using method CommandQueue::updateCommand(). To query stored
-    commands with desired id, you can use CommandQueue::get() method.
+/*!
+ * \fn TList<const TCommand *> & PendingCommands::operator[](std::size_t id)
+ * \brief Direct member access.
+ *
+ * Index id is not controlled for validity.
+ *
+ * \param id Index
+ * \return List containing all commands with desired id.
+ */
 
-    Example usage:
-
-    \code
-    #include "command_queue.h"
-
-    const int N = 10;
-
-    struct Command
-    {
-        using IdType = unsigned int;
-        using NumberType = unsigned int;
-
-        Command() : id(N) {}
-        Command(IdType id) : id(id) {}
-        static NumberType idAsNumber(IdType id) { return id; }
-
-        IdType id;
-        int priority;
-    };
-
-    int main()
-    {
-        using namespace sprelay::core::command_queue;
-        CommandQueue<Command, N> command_queue;
-
-        unsigned int cmd_id1 = 0;
-        unsigned int priority1 = 1;
-        Command cmd1{cmd_id1, priority1};
-        command_queue.push(cmd1);
-        const QList<const * Command> & cmd_list = command_queue.get(cmd_id1);
-        Command cmd2 = *cmd_list[0];
-        cmd2.priority = 2;
-        command_queue.updateCommand(0, cmd2);
-        Command cmd3 = command_queue.pop();
-
-        return 0;
-    }
-    \endcode
-
-    See ConcurentCommandQueue for thread-safe version of CommandQueue.
-
-    \tparam TCommand Command representation, which must containt `IdType` and `NumberType` typedefs, default
-        constructor which initializes id to none value, `id` member of type `IdType`, `int priority` member, static
-        method `static NumberType idAsNumber(IdType)`.
-    \tparam tSize Number of command ids. Command ids `NumberType` should be continuous sequence of numbers, the highest
-        number must be less than `tSize`.
-    \tparam TList Type of container with one template parameter, which stores commands of the same id. Defaults to
-        QList.
-    \remark reentrant
-*/
+/*!
+ * \fn void PendingCommands::updateEntry(int idx, const TCommand &command)
+ * \brief Enables update of desired command.
+ *
+ * Indices command.id nor idx are not controlled for validity.
+ *
+ * \param idx Index.
+ * \param command Command for update.
+ */
 
 
 /*!
-    \brief Default constructor
-*/
+ * \class CommandQueue
+ * The queue sorts commands according to priority and time stamp. The commands can be inserted in unique mode, where
+ * old commands are replaced by newer ones but preserving their time stamps or non-unique mode in which more commands
+ * with the same id can be inserted. See CommandQueue::push() for more details.
+ *
+ * \warning Beware time stamp overflow, see the CommandQueue::push() method description.
+ *
+ * Commands inside CommandQueue can be also updated using method CommandQueue::updateCommand(). To query stored
+ * commands with desired id, you can use CommandQueue::get() method.
+ *
+ * Example usage:
+ *
+ * \code
+ * #include "command_queue.h"
+ *
+ * const int N = 10;
+ *
+ * struct Command
+ * {
+ *     using IdType = unsigned int;
+ *     using NumberType = unsigned int;
+ *
+ *     Command() : id(N) {}
+ *     Command(IdType id) : id(id) {}
+ *     static NumberType idAsNumber(IdType id) { return id; }
+ *
+ *     IdType id;
+ *     int priority;
+ * };
+ *
+ * int main()
+ * {
+ *     using namespace sprelay::core::command_queue;
+ *     CommandQueue<Command, N> command_queue;
+ *
+ *     unsigned int cmd_id1 = 0;
+ *     unsigned int priority1 = 1;
+ *     Command cmd1{cmd_id1, priority1};
+ *     command_queue.push(cmd1);
+ *     const QList<const * Command> & cmd_list = command_queue.get(cmd_id1);
+ *     Command cmd2 = *cmd_list[0];
+ *     cmd2.priority = 2;
+ *     command_queue.updateCommand(0, cmd2);
+ *     Command cmd3 = command_queue.pop();
+ *
+ *     return 0;
+ * }
+ * \endcode
+ *
+ * See ConcurentCommandQueue for thread-safe version of CommandQueue.
+ *
+ * \tparam TCommand Command representation, which must containt `IdType` and `NumberType` typedefs, default
+ *     constructor which initializes id to none value, `id` member of type `IdType`, `int priority` member, static
+ *     method `static NumberType idAsNumber(IdType)`.
+ * \tparam tSize Number of command ids. Command ids `NumberType` should be continuous sequence of numbers, the highest
+ *     number must be less than `tSize`.
+ * \tparam TList Type of container with one template parameter, which stores commands of the same id. Defaults to
+ *     QList.
+ * \remark reentrant
+ */
+
+
+/*!
+ * \brief Default constructor
+ */
 template<typename TCommand, int tSize, template <typename> class TList>
 CommandQueue<TCommand, tSize, TList>::CommandQueue()
     : unique_{true}, none_command_{}, none_list_{&none_command_}, stamp_counter_{0}
@@ -210,35 +210,35 @@ CommandQueue<TCommand, tSize, TList>::CommandQueue()
 
 
 /*!
-    \fn CommandQueue::empty()
-    \return True if the queue is empty.
-*/
+ * \fn CommandQueue::empty()
+ * \return True if the queue is empty.
+ */
 
 
 /*!
-    \fn CommandQueue::size()
-    \return Number of stored items.
-*/
+ * \fn CommandQueue::size()
+ * \return Number of stored items.
+ */
 
 
 /*!
-    \brief Inserts command with given priority to the end of the queue.
-
-    The inserted command also gets time stamp CommandQueue::stamp_counter(), which resolves priority ties. Older
-    commands preceedes new ones.
-
-    Commands can be inserted in two modes. In unique mode, all previously inserted commands with the same id is cleared
-    and the new command with the time stamp of the oldest from the removed commands is inserted instead. If the
-    non-unique mode, the command is inserted without any control for the already inserted commands with the same id.
-
-    \warning Time stamp is `usnigned int`, so beware overflows when there are many commands stored in the queue. The
-    queue is designed to be empty most of the time. When queue is empty, the time stamp is reset to zero but if the
-    queue is never empty, the time stamp increments to infinity and there is overflow risk.
-
-    \param command Command to be inserted.
-    \param unique If the insertion should be unique.
-    \return True if the operation was successful, false otherwise.
-*/
+ * \brief Inserts command with given priority to the end of the queue.
+ *
+ * The inserted command also gets time stamp CommandQueue::stamp_counter(), which resolves priority ties. Older
+ * commands preceedes new ones.
+ *
+ * Commands can be inserted in two modes. In unique mode, all previously inserted commands with the same id is cleared
+ * and the new command with the time stamp of the oldest from the removed commands is inserted instead. If the
+ * non-unique mode, the command is inserted without any control for the already inserted commands with the same id.
+ *
+ * \warning Time stamp is `usnigned int`, so beware overflows when there are many commands stored in the queue. The
+ * queue is designed to be empty most of the time. When queue is empty, the time stamp is reset to zero but if the
+ * queue is never empty, the time stamp increments to infinity and there is overflow risk.
+ *
+ * \param command Command to be inserted.
+ * \param unique If the insertion should be unique.
+ * \return True if the operation was successful, false otherwise.
+ */
 template<typename TCommand, int tSize, template <typename> class TList>
 bool CommandQueue<TCommand, tSize, TList>::push(const TCommand &command, bool unique)
 {
@@ -286,12 +286,12 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand &command, bool un
 
 
 /*!
-    \brief Removes oldest most importat (according to its priority) element from the queue and returns it to the user.
-
-    If the queue is empty, the defalut constructed TCommand is returned.
-
-    \return The oldest most importat element.
-*/
+ * \brief Removes oldest most importat (according to its priority) element from the queue and returns it to the user.
+ *
+ * If the queue is empty, the defalut constructed TCommand is returned.
+ *
+ * \return The oldest most importat element.
+ */
 template<typename TCommand, int tSize, template <typename> class TList>
 TCommand CommandQueue<TCommand, tSize, TList>::pop()
 {
@@ -315,18 +315,18 @@ TCommand CommandQueue<TCommand, tSize, TList>::pop()
 
 
 /*!
-    \brief Gets a list of commands with specified command id.
-
-    If the id is not valid or the command is not in the queue the list to default constructed TCommand is returned. The
-    pointed to commands shouldn't be changed because it can corrupt CommandQueue consistency. You can update command
-    with specific index by calling CommandQueue::updateCommand() method. The pointers in the list are valid only until
-    the command is popped out of the CommandQueue and the indices in list is consistent with the indices, which would
-    be returned by another CommandQueue::get() method call, only until the CommandQueue is modified with the command
-    with the same id. Validity of the returned list also ends with a destruction of CommandQueue.
-
-    \param command_id Command id.
-    \return Requested command or default constructed TCommand.
-*/
+ * \brief Gets a list of commands with specified command id.
+ *
+ * If the id is not valid or the command is not in the queue the list to default constructed TCommand is returned. The
+ * pointed to commands shouldn't be changed because it can corrupt CommandQueue consistency. You can update command
+ * with specific index by calling CommandQueue::updateCommand() method. The pointers in the list are valid only until
+ * the command is popped out of the CommandQueue and the indices in list is consistent with the indices, which would
+ * be returned by another CommandQueue::get() method call, only until the CommandQueue is modified with the command
+ * with the same id. Validity of the returned list also ends with a destruction of CommandQueue.
+ *
+ * \param command_id Command id.
+ * \return Requested command or default constructed TCommand.
+ */
 template<typename TCommand, int tSize, template <typename> class TList>
 const TList<const TCommand *> & CommandQueue<TCommand, tSize, TList>::get(typename TCommand::IdType command_id) const
 {
@@ -340,20 +340,20 @@ const TList<const TCommand *> & CommandQueue<TCommand, tSize, TList>::get(typena
 
 
 /*!
-    \fn CommandQueue::stampCounter
-    \brief Gets current stamp counter.
-    \return Current stamp counter.
+ * \fn CommandQueue::stampCounter
+ * \brief Gets current stamp counter.
+ * \return Current stamp counter.
 */
 
 /*!
-    \brief Enables command inside CommandQueue modification.
-
-    Command is modified according to its valid index which can be determined from the list returned by the
-    CommandQueue::get() method.
-
-    \param idx Index of the command. For more info see CommandQueue::get().
-    \param command Command which replaces the stored command.
-*/
+ * \brief Enables command inside CommandQueue modification.
+ *
+ * Command is modified according to its valid index which can be determined from the list returned by the
+ * CommandQueue::get() method.
+ *
+ * \param idx Index of the command. For more info see CommandQueue::get().
+ * \param command Command which replaces the stored command.
+ */
 template<typename TCommand, int tSize, template <typename> class TList>
 bool CommandQueue<TCommand, tSize, TList>::updateCommand(int idx, const TCommand &command)
 {

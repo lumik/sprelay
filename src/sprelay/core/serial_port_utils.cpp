@@ -47,11 +47,11 @@ namespace core {
 namespace serial_utils {
 
 /*!
-    \param msg String message representation. It has to be in format `00 A5 4B`...
-    \param buffer Pointer where the binary message will be stored.
-    \param n Pointer to variable, where the number of bytes will be stored.
-    \return True if the conversion was successful.
-*/
+ * \param msg String message representation. It has to be in format `00 A5 4B`...
+ * \param buffer Pointer where the binary message will be stored.
+ * \param n Pointer to variable, where the number of bytes will be stored.
+ * \return True if the conversion was successful.
+ */
 bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, int *n)
 {
     // remove white spaces
@@ -79,10 +79,10 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
 
 
 /*!
-    \param buffer The buffer with bytes to be converted.
-    \param n The number of bytes to be converted.
-    \return The string representation of the buffer.
-*/
+ * \param buffer The buffer with bytes to be converted.
+ * \param n The number of bytes to be converted.
+ * \return The string representation of the buffer.
+ */
 QString byte_to_hex(const unsigned char *buffer, int n)
 {
     QString msg;
@@ -97,33 +97,33 @@ QString byte_to_hex(const unsigned char *buffer, int n)
 
 
 /*!
-    \struct sprelay::core::MockSerialPortDeleter
-    Example:
-    \code
-    #include <memory>
-
-    #include "serial_port_utils.h"
-
-    namespace sprelay {
-    namespace core {
-
-    // forward declarations
-    class MockSerialPort;
-
-    }  // namespace core
-    }  // namespace sprelay
-
-    struct Mock {
-        std::unique_ptr<MockSerialPort, MockSerialPortDeleter> mock_serial_port_;
-    };
-    \endcode
-*/
+ * \struct sprelay::core::MockSerialPortDeleter
+ * Example:
+ * \code
+ * #include <memory>
+ *
+ * #include "serial_port_utils.h"
+ *
+ * namespace sprelay {
+ * namespace core {
+ *
+ * // forward declarations
+ * class MockSerialPort;
+ *
+ * }  // namespace core
+ * }  // namespace sprelay
+ *
+ * struct Mock {
+ *     std::unique_ptr<MockSerialPort, MockSerialPortDeleter> mock_serial_port_;
+ * };
+ * \endcode
+ */
 
 /*!
-    \brief Deletes the object.
-
-    \param p Pointer to object to be deleted.
-*/
+ * \brief Deletes the object.
+ *
+ * \param p Pointer to object to be deleted.
+ */
 void MockSerialPortDeleter::operator()(MockSerialPort *p)
 {
     delete p;

@@ -97,7 +97,7 @@ namespace gui {
  * class CentralWidget;
  * }  // namespace gui
  * }  // namespace sprelay
-
+ *
  * class MainWindow : public QMainWindow
  * {
  *     Q_OBJECT

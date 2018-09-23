@@ -58,96 +58,96 @@ namespace k8090 {
 
 
 /*!
-    \class K8090
-    \ingroup group_sprelay_core_public
-    You can see example usage below, where QPushButton for each relay switch on action is created and relay response
-    is handled.
-
-    \code
-    // central_widget.h
-    // ...
-    class CentralWidget : public QWidget
-    {
-        Q_OBJECT
-
-    public:
-        explicit CentralWidget(QWidget *parent = 0);
-    // ...
-
-    private slots:
-    // ...
-        void onRelayOnButtonClicked(int relay);
-        void onRelayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
-            sprelay::core::k8090::RelayID timed);
-    private:
-    // ...
-        sprelay::core::k8090::K8090 *k8090_;
-        // buttons to swith the relay on
-        QPushButton * relay_on_buttons_arr_[8];
-        // signal mappers
-        std::unique_ptr<QSignalMapper> relay_on_mapper_;
-        bool relays_on_[8];
-        bool relays_timed_[8];
-    // ...
-    }
-    \endcode
-    \code
-    // central_widget.cpp
-    // ...
-    CentralWidget::CentralWidget(QWidget *parent) : QWidget{parent}, k8090_{new sprelay::core::k8090::K8090{this}}
-    {
-    // ...
-        // create switch relay on buttons
-        for (int i = 0; i < 8; ++i) {
-            relay_on_buttons_arr_[i] = new QPushButton{this};
-        // create signal mapper which connects all relay on buttons to only one slot
-        relay_on_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
-
-        // create connections
-        for (int i = 0; i < 8; ++i) {
-            connect(&relay_on_buttons_arr_[i], &QPushButton::clicked,
-                relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
-            relay_on_mapper_->setMapping(&relay_on_buttons_arr_[i], i);
-        }
-        connect(relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onRelayOnButtonClicked);
-        connect(k8090_, &sprelay::core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
-    // ...
-    }
-    // ...
-    void CentralWidget::onRelayOnButtonClicked(int relay)
-    {
-        k8090_->switchRelayOn(sprelay::core::k8090::from_number(relay));
-    }
-    // ...
-    void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::RelayID current,
-        core::k8090::RelayID timed)
-    {
-        Q_UNUSED(previous)
-        for (int i = 0; i < 8; ++i) {
-            relays_on_[i] = turestatic_cast<bool>(core::k8090::from_number(i) & current);
-            relays_timed_[i] = static_cast<bool>(core::k8090::from_number(i) & timed)
-        }
-    }
-    // ...
-    \endcode
-
-    \remark reentrant (but each serial port can have only one K8090 connected), thread-safe
-*/
+ * \class K8090
+ * \ingroup group_sprelay_core_public
+ * You can see example usage below, where QPushButton for each relay switch on action is created and relay response
+ * is handled.
+ *
+ * \code
+ * // central_widget.h
+ * // ...
+ * class CentralWidget : public QWidget
+ * {
+ *     Q_OBJECT
+ *
+ * public:
+ *     explicit CentralWidget(QWidget *parent = 0);
+ * // ...
+ *
+ * private slots:
+ * // ...
+ *     void onRelayOnButtonClicked(int relay);
+ *     void onRelayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
+ *         sprelay::core::k8090::RelayID timed);
+ * private:
+ * // ...
+ *     sprelay::core::k8090::K8090 *k8090_;
+ *     // buttons to swith the relay on
+ *     QPushButton * relay_on_buttons_arr_[8];
+ *     // signal mappers
+ *     std::unique_ptr<QSignalMapper> relay_on_mapper_;
+ *     bool relays_on_[8];
+ *     bool relays_timed_[8];
+ * // ...
+ * }
+ * \endcode
+ * \code
+ * // central_widget.cpp
+ * // ...
+ * CentralWidget::CentralWidget(QWidget *parent) : QWidget{parent}, k8090_{new sprelay::core::k8090::K8090{this}}
+ * {
+ * // ...
+ *     // create switch relay on buttons
+ *     for (int i = 0; i < 8; ++i) {
+ *         relay_on_buttons_arr_[i] = new QPushButton{this};
+ *     // create signal mapper which connects all relay on buttons to only one slot
+ *     relay_on_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
+ *
+ *     // create connections
+ *     for (int i = 0; i < 8; ++i) {
+ *         connect(&relay_on_buttons_arr_[i], &QPushButton::clicked,
+ *             relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+ *         relay_on_mapper_->setMapping(&relay_on_buttons_arr_[i], i);
+ *     }
+ *     connect(relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
+ *         this, &CentralWidget::onRelayOnButtonClicked);
+ *     connect(k8090_, &sprelay::core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
+ * // ...
+ * }
+ * // ...
+ * void CentralWidget::onRelayOnButtonClicked(int relay)
+ * {
+ *     k8090_->switchRelayOn(sprelay::core::k8090::from_number(relay));
+ * }
+ * // ...
+ * void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::RelayID current,
+ *     core::k8090::RelayID timed)
+ * {
+ *     Q_UNUSED(previous)
+ *     for (int i = 0; i < 8; ++i) {
+ *         relays_on_[i] = turestatic_cast<bool>(core::k8090::from_number(i) & current);
+ *         relays_timed_[i] = static_cast<bool>(core::k8090::from_number(i) & timed)
+ *     }
+ * }
+ * // ...
+ * \endcode
+ *
+ * \remark reentrant (but each serial port can have only one K8090 connected), thread-safe
+ */
 
 // initialization of static member variables
 
 // public
 /*!
-    \brief Product id for the automatic port identification.
-    \sa K8090::connectK8090()
-*/
+ * \brief Product id for the automatic port identification.
+ * \sa K8090::connectK8090()
+ */
 const quint16 K8090::kProductID = impl_::kProductID;
 
 /*!
-    \brief Vendor id for the automatic port identification.
-    \sa K8090::connectK8090()
-*/
+ * \brief Vendor id for the automatic port identification.
+ * \sa K8090::connectK8090()
+ */
 const quint16 K8090::kVendorID = impl_::kVendorID;
 
 // private
@@ -160,9 +160,9 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
 
 
 /*!
-  \brief Creates a new K8090 instance and sets the default values.
-  \param parent K8090 parent object in Qt ownership system.
-*/
+ * \brief Creates a new K8090 instance and sets the default values.
+ * \param parent K8090 parent object in Qt ownership system.
+ */
 K8090::K8090(QObject *parent) :
     QObject{parent},
     com_port_name_mutex_{new QMutex},
@@ -205,7 +205,7 @@ K8090::K8090(QObject *parent) :
 
 
 /*!
-   \brief Destructor.
+ * \brief Destructor.
  */
 K8090::~K8090()
 {
@@ -214,10 +214,10 @@ K8090::~K8090()
 
 
 /*!
-  \brief Lists available serial ports.
-  \return Available serial ports information list.
-  \remark reentrant, thread-safe.
-*/
+ * \brief Lists available serial ports.
+ * \return Available serial ports information list.
+ * \remark reentrant, thread-safe.
+ */
 QList<serial_utils::ComPortParams> K8090::availablePorts()
 {
     // UnifiedSerialPort::availablePorts is thread safe, so it is safe to call it
@@ -226,11 +226,10 @@ QList<serial_utils::ComPortParams> K8090::availablePorts()
 
 
 /*!
-    \brief Gets current serial port name.
-
-    \return name The port name.
-    \sa K8090::setComPortName(const QString &name)
-*/
+ * \brief Gets current serial port name.
+ * \return name The port name.
+ * \sa K8090::setComPortName(const QString &name)
+ */
 QString K8090::comPortName()
 {
     QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
@@ -239,13 +238,13 @@ QString K8090::comPortName()
 
 
 /*!
-    \brief Sets new serial port name.
-
-    If the new name is different from the previous one, it disconnects and closes serial port. If the object was
-    connected, it also emits signal K8090::notConnected().
-    \param name
-    \sa K8090::comPortName()
-*/
+ * \brief Sets new serial port name.
+ *
+ * If the new name is different from the previous one, it disconnects and closes serial port. If the object was
+ * connected, it also emits signal K8090::notConnected().
+ * \param name
+ * \sa K8090::comPortName()
+ */
 void K8090::setComPortName(const QString &name)
 {
     QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
@@ -258,14 +257,14 @@ void K8090::setComPortName(const QString &name)
 
 
 /*!
-    \brief Sets command delay to msec.
-
-    Command delay is shortest interval in ms from sending one command to sending a new one and is given by hardware
-    limitations. If the commands are sended too close to each other, the virtual serial port communication merges them
-    to one command which is then not recognized by the card.
-
-    \param msec Desired command delay.
-*/
+ * \brief Sets command delay to msec.
+ *
+ * Command delay is shortest interval in ms from sending one command to sending a new one and is given by hardware
+ * limitations. If the commands are sended too close to each other, the virtual serial port communication merges them
+ * to one command which is then not recognized by the card.
+ *
+ * \param msec Desired command delay.
+ */
 void K8090::setCommandDelay(int msec)
 {
     QMutexLocker command_delay_locker{command_delay_mutex_.get()};
@@ -275,14 +274,14 @@ void K8090::setCommandDelay(int msec)
 
 
 /*!
-    \brief Sets failure delay to msec.
-
-    Failure delay is maximal time in ms to wait for a response. If the card doesn't response until failure delay
-    elapses, the failure counter is increased. If the number of consecutive failures overflows max failure count (see
-    K8090::setMaxFailureCount()), the K8090::connectionFailed() signal is emited.
-
-    \param msec Desired command delay.
-*/
+ * \brief Sets failure delay to msec.
+ *
+ * Failure delay is maximal time in ms to wait for a response. If the card doesn't response until failure delay
+ * elapses, the failure counter is increased. If the number of consecutive failures overflows max failure count (see
+ * K8090::setMaxFailureCount()), the K8090::connectionFailed() signal is emited.
+ *
+ * \param msec Desired command delay.
+ */
 void K8090::setFailureDelay(int msec)
 {
     QMutexLocker failure_delay_locker{failure_delay_mutex_.get()};
@@ -290,13 +289,13 @@ void K8090::setFailureDelay(int msec)
 }
 
 /*!
-    \brief Sets max failure count.
-
-    If the number of consecutive failures overflows max failure count, the K8090::connectionFailed() signal is emited.
-
-    \param count The failure count.
-    \sa K8090::setFailureDelay().
-*/
+ * \brief Sets max failure count.
+ *
+ * If the number of consecutive failures overflows max failure count, the K8090::connectionFailed() signal is emited.
+ *
+ * \param count The failure count.
+ * \sa K8090::setFailureDelay().
+ */
 void K8090::setMaxFailureCount(int count)
 {
     QMutexLocker failure_max_count_locker{failure_max_count_mutex_.get()};
@@ -305,9 +304,9 @@ void K8090::setMaxFailureCount(int count)
 
 
 /*!
-    \brief Test if the relay is connected.
-    \return True if connected.
-*/
+ * \brief Test if the relay is connected.
+ * \return True if connected.
+ */
 bool K8090::isConnected()
 {
     QMutexLocker connected_locker{connected_mutex_.get()};
@@ -316,10 +315,10 @@ bool K8090::isConnected()
 
 
 /*!
-    \brief Gets a number of commands waiting for execution in queue.
-    \param id Queried command.
-    \return The number of commands in queue.(
-*/
+ * \brief Gets a number of commands waiting for execution in queue.
+ * \param id Queried command.
+ * \return The number of commands in queue.(
+ */
 int K8090::pendingCommandCount(CommandID id)
 {
     // TODO(lumik): Replace this hack. Pending commands unique_ptr is reseted in doDisconnect method when
@@ -331,139 +330,139 @@ int K8090::pendingCommandCount(CommandID id)
 
 // public signals
 /*!
-    \fn void K8090::relayStatus(k8090::RelayID previous, k8090::RelayID current,
-            k8090::RelayID timed)
-    \brief Emited when the Relay status event comes from the card.
-
-    The Relay status event can come when the status of one or more ralays changes. The status can change because of
-    button push or release or in the reaction to K8090::switchRelayOn(), K8090::switchRelayOff(), K8090::toggleRelay(),
-    K8090::startTimer() or when the timer times out.
-
-    You can get currently switched on or off relays for example by issuing these expressions:
-    \code
-    k8090::RelayID switched_on = (previous ^ current) & current;
-    k8090::RelayID switched_off = (previous ^ current) & previous;
-    \endcode
-
-    See the Velleman %K8090 card manual for more details.
-
-    \param previous Relays which were previously switched on.
-    \param current Relays which are currently switched on.
-    \param timed Timed relays.
-*/
+ * \fn void K8090::relayStatus(k8090::RelayID previous, k8090::RelayID current,
+ *         k8090::RelayID timed)
+ * \brief Emited when the Relay status event comes from the card.
+ *
+ * The Relay status event can come when the status of one or more ralays changes. The status can change because of
+ * button push or release or in the reaction to K8090::switchRelayOn(), K8090::switchRelayOff(), K8090::toggleRelay(),
+ * K8090::startTimer() or when the timer times out.
+ *
+ * You can get currently switched on or off relays for example by issuing these expressions:
+ * \code
+ * k8090::RelayID switched_on = (previous ^ current) & current;
+ * k8090::RelayID switched_off = (previous ^ current) & previous;
+ * \endcode
+ *
+ * See the Velleman %K8090 card manual for more details.
+ *
+ * \param previous Relays which were previously switched on.
+ * \param current Relays which are currently switched on.
+ * \param timed Timed relays.
+ */
 /*!
-    \fn void K8090::buttonStatus(k8090::RelayID state, k8090::RelayID pressed,
-            k8090::RelayID released)
-    \brief Emited when the button is physically pressed or released.
-
-    See the Velleman %K8090 card manual for more details.
-
-    \param state Buttons which are pressed.
-    \param pressed Buttons currently pressed.
-    \param released Buttons currently released.
-*/
+ * \fn void K8090::buttonStatus(k8090::RelayID state, k8090::RelayID pressed,
+ *         k8090::RelayID released)
+ * \brief Emited when the button is physically pressed or released.
+ *
+ * See the Velleman %K8090 card manual for more details.
+ *
+ * \param state Buttons which are pressed.
+ * \param pressed Buttons currently pressed.
+ * \param released Buttons currently released.
+ */
 /*!
-    \fn void K8090::totalTimerDelay(k8090::RelayID relay, quint16 delay)
-    \brief Reports total timer delay.
-
-    This signal is emited as the reaction to the K8090::queryTotalTimerDelay(). If more relays is queried, the signal
-    is emited for each relay separately. See the Velleman %K8090 card manual for more details.
-
-    \param relay The relay.
-    \param delay The delay.
-*/
+ * \fn void K8090::totalTimerDelay(k8090::RelayID relay, quint16 delay)
+ * \brief Reports total timer delay.
+ *
+ * This signal is emited as the reaction to the K8090::queryTotalTimerDelay(). If more relays is queried, the signal
+ * is emited for each relay separately. See the Velleman %K8090 card manual for more details.
+ *
+ * \param relay The relay.
+ * \param delay The delay.
+ */
 /*!
-    \fn void K8090::remainingTimerDelay(k8090::RelayID relay, quint16 delay)
-    \brief Reports current remaining timer delay.
-
-    This signal is emited as the reaction to the K8090::queryRemainingTimerDelay(). If more relays is queried, the
-    signal is emited for each relay separately. See the Velleman %K8090 card manual for more details.
-
-    \param relay The relay.
-    \param delay The delay.
-*/
+ * \fn void K8090::remainingTimerDelay(k8090::RelayID relay, quint16 delay)
+ * \brief Reports current remaining timer delay.
+ *
+ * This signal is emited as the reaction to the K8090::queryRemainingTimerDelay(). If more relays is queried, the
+ * signal is emited for each relay separately. See the Velleman %K8090 card manual for more details.
+ *
+ * \param relay The relay.
+ * \param delay The delay.
+ */
 /*!
-    \fn void K8090::buttonModes(k8090::RelayID momentary, k8090::RelayID toggle,
-            k8090::RelayID timed)
-    \brief Reports button modes.
-
-    This signal is emited as the reaction to the K8090::queryButtonModes(). See the Velleman %K8090 card manual for
-    more details.
-
-    \param momentary Relays in momentary mode.
-    \param toggle Relays in toggle mode.
-    \param timed Relays in timed mode.
-*/
+ * \fn void K8090::buttonModes(k8090::RelayID momentary, k8090::RelayID toggle,
+ *         k8090::RelayID timed)
+ * \brief Reports button modes.
+ *
+ * This signal is emited as the reaction to the K8090::queryButtonModes(). See the Velleman %K8090 card manual for
+ * more details.
+ *
+ * \param momentary Relays in momentary mode.
+ * \param toggle Relays in toggle mode.
+ * \param timed Relays in timed mode.
+ */
 /*!
-    \fn void K8090::jumperStatus(bool on)
-    \brief Reports jumper status.
-
-    This signal is emited as the reaction to the K8090::queryJumperStatus(). If jumper is set on, pushing of the
-    physical buttons no longer interacts with the relays but the button events are still emited. See the Velleman
-    %K8090 card manual for more details.
-
-    \param on True if the jumper is switched on.
-*/
+ * \fn void K8090::jumperStatus(bool on)
+ * \brief Reports jumper status.
+ *
+ * This signal is emited as the reaction to the K8090::queryJumperStatus(). If jumper is set on, pushing of the
+ * physical buttons no longer interacts with the relays but the button events are still emited. See the Velleman
+ * %K8090 card manual for more details.
+ *
+ * \param on True if the jumper is switched on.
+ */
 /*!
-    \fn void K8090::firmwareVersion(int year, int week)
-    \brief Reports firmware version.
-
-    This signal is emited as the reaction to the K8090::queryFirmwareVersion(). It reports the year and week of
-    firmware compilation. See the Velleman %K8090 card manual for more details.
-
-    \param year The year.
-    \param week The week.
-*/
+ * \fn void K8090::firmwareVersion(int year, int week)
+ * \brief Reports firmware version.
+ *
+ * This signal is emited as the reaction to the K8090::queryFirmwareVersion(). It reports the year and week of
+ * firmware compilation. See the Velleman %K8090 card manual for more details.
+ *
+ * \param year The year.
+ * \param week The week.
+ */
 /*!
-    \fn void K8090::connected()
-    \brief Reports if the communication with the card was successfuly established.
-
-    This signal is emited as the reaction to the K8090::connectK8090().
-*/
+ * \fn void K8090::connected()
+ * \brief Reports if the communication with the card was successfuly established.
+ *
+ * This signal is emited as the reaction to the K8090::connectK8090().
+ */
 /*!
-    \fn void K8090::connectionFailed()
-    \brief Reports communication failure after 3 consecutive unsuccessful trials.
-*/
+ * \fn void K8090::connectionFailed()
+ * \brief Reports communication failure after 3 consecutive unsuccessful trials.
+ */
 /*!
-    \fn void K8090::notConnected()
-    \brief Emited when you try to issue command on unconnected K8090 object.
-*/
+ * \fn void K8090::notConnected()
+ * \brief Emited when you try to issue command on unconnected K8090 object.
+ */
 /*!
-    \fn void K8090::disconnected()
-    \brief This signal is emited as the reaction to the K8090::disconnect().
-*/
+ * \fn void K8090::disconnected()
+ * \brief This signal is emited as the reaction to the K8090::disconnect().
+ */
 /*!
-    \fn void K8090::doDisconnect(bool failure)
-    \brief A signal for internal usage to disconnect in K8090's thread.
-*/
+ * \fn void K8090::doDisconnect(bool failure)
+ * \brief A signal for internal usage to disconnect in K8090's thread.
+ */
 /*!
-    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id)
-    \brief A signal for internal usage to enqueueCommand in K8090's thread.
-*/
+ * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id)
+ * \brief A signal for internal usage to enqueueCommand in K8090's thread.
+ */
 /*!
-    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask)
-    \brief A signal for internal usage to enqueueCommand in K8090's thread.
-*/
+ * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask)
+ * \brief A signal for internal usage to enqueueCommand in K8090's thread.
+ */
 /*!
-    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
-        unsigned char param1)
-    \brief A signal for internal usage to enqueueCommand in K8090's thread.
-*/
+ * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
+ *     unsigned char param1)
+ * \brief A signal for internal usage to enqueueCommand in K8090's thread.
+ */
 /*!
-    \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
-        unsigned char param1, unsigned char param2)
-    \brief A signal for internal usage to enqueueCommand in K8090's thread.
-*/
+ * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
+ *     unsigned char param1, unsigned char param2)
+ * \brief A signal for internal usage to enqueueCommand in K8090's thread.
+ */
 
 
 // public slots
 /*!
-    \brief Connects to the relay card.
-
-    It emits K8090::connected() signal if the connection is established. It also gets initial relay state, emiting
-    K8090::relayStatus(), K8090::buttonModes(), K8090::totalTimerDelay(), K8090::remainingTimerDelay(),
-    K8090::jumperStatus() and K8090::firmwareVersion() signals.
-*/
+ * \brief Connects to the relay card.
+ *
+ * It emits K8090::connected() signal if the connection is established. It also gets initial relay state, emiting
+ * K8090::relayStatus(), K8090::buttonModes(), K8090::totalTimerDelay(), K8090::remainingTimerDelay(),
+ * K8090::jumperStatus() and K8090::firmwareVersion() signals.
+ */
 void K8090::connectK8090()
 {
     QMutexLocker connected_locker{connected_mutex_.get()};
@@ -519,10 +518,10 @@ void K8090::connectK8090()
 
 
 /*!
-    \brief Disconnects card.
-
-    The method disconnects card, releases serial port and emits K8090::disconnected().
-*/
+ * \brief Disconnects card.
+ *
+ * The method disconnects card, releases serial port and emits K8090::disconnected().
+ */
 void K8090::disconnect()
 {
     emit doDisconnect(false);
@@ -530,11 +529,11 @@ void K8090::disconnect()
 
 
 /*!
-    \brief Refreshes info about card and relay states.
-
-    Emitins K8090::relayStatus(), K8090::buttonModes(), K8090::totalTimerDelay(), K8090::remainingTimerDelay(),
-    K8090::jumperStatus() and K8090::firmwareVersion() signals.
-*/
+ * \brief Refreshes info about card and relay states.
+ *
+ * Emitins K8090::relayStatus(), K8090::buttonModes(), K8090::totalTimerDelay(), K8090::remainingTimerDelay(),
+ * K8090::jumperStatus() and K8090::firmwareVersion() signals.
+ */
 void K8090::refreshRelaysInfo()
 {
     emit enqueueCommand(CommandID::QueryRelay);
@@ -547,15 +546,15 @@ void K8090::refreshRelaysInfo()
 
 
 /*!
-    \brief Switches specified relays on.
-
-    If some button states is modified, the K8090::relayStatus() signal will be emited. If some
-    k8090::CommandID::RelayOff command is pending for execution, the relays required by this command are
-    excluded from it.
-
-    \param relays The relays.
-    \sa K8090::relayStatus(), K8090::startRelayTimer()
-*/
+ * \brief Switches specified relays on.
+ *
+ * If some button states is modified, the K8090::relayStatus() signal will be emited. If some
+ * k8090::CommandID::RelayOff command is pending for execution, the relays required by this command are
+ * excluded from it.
+ *
+ * \param relays The relays.
+ * \sa K8090::relayStatus(), K8090::startRelayTimer()
+ */
 void K8090::switchRelayOn(RelayID relays)
 {
     sendCommand(CommandID::RelayOn, relays);
@@ -563,15 +562,15 @@ void K8090::switchRelayOn(RelayID relays)
 
 
 /*!
-    \brief Switches specified relays off.
-
-    If some button states is modified, the K8090::relayStatus() signal will be emited. If some
-    k8090::CommandID::RelayOn command is pending for execution, the relays required by this command are
-    excluded from it.
-
-    \param relays The relays.
-    \sa K8090::relayStatus(), K8090::startRelayTimer()
-*/
+ * \brief Switches specified relays off.
+ *
+ * If some button states is modified, the K8090::relayStatus() signal will be emited. If some
+ * k8090::CommandID::RelayOn command is pending for execution, the relays required by this command are
+ * excluded from it.
+ *
+ * \param relays The relays.
+ * \sa K8090::relayStatus(), K8090::startRelayTimer()
+ */
 void K8090::switchRelayOff(RelayID relays)
 {
     sendCommand(CommandID::RelayOff, relays);
@@ -579,13 +578,13 @@ void K8090::switchRelayOff(RelayID relays)
 
 
 /*!
-    \brief Toggles specified relays.
-
-    The K8090::relayStatus() signal will be emited after command execution.
-
-    \param relays The relays.
-    \sa K8090::relayStatus(), K8090::startRelayTimer()
-*/
+ * \brief Toggles specified relays.
+ *
+ * The K8090::relayStatus() signal will be emited after command execution.
+ *
+ * \param relays The relays.
+ * \sa K8090::relayStatus(), K8090::startRelayTimer()
+ */
 void K8090::toggleRelay(RelayID relays)
 {
     sendCommand(CommandID::ToggleRelay, relays);
@@ -593,21 +592,21 @@ void K8090::toggleRelay(RelayID relays)
 
 
 /*!
-    \brief Sets button modes.
-
-    Configures the modes of each button. Available modes are momentary, toggle, timed. In case of duplicate assignments
-    momentary mode has priority over toggle mode, and toggle mode has priority over timed mode. See the Velleman %K8090
-    card manual for more details. There is also feature which is not documented in Velleman %K8090 card manual. If you
-    don't set any mode for the given button, the physical button is disabled. For example, if you set
-    `momentary = k8090::RelayID::One`, `toggle = k8090::RelayID::None` and
-    `timed = k8090::RelayID::None`, the physical button one will be in momentary mode and all the other buttons
-    will be disabled.
-
-    \param momentary Relays to be set to momentary mode.
-    \param toggle Relays to be set to toggle mode.
-    \param timed Relays to be set to timed mode.
-    \sa K8090::queryButtonModes(), K8090::buttonModes().
-*/
+ * \brief Sets button modes.
+ *
+ * Configures the modes of each button. Available modes are momentary, toggle, timed. In case of duplicate assignments
+ * momentary mode has priority over toggle mode, and toggle mode has priority over timed mode. See the Velleman %K8090
+ * card manual for more details. There is also feature which is not documented in Velleman %K8090 card manual. If you
+ * don't set any mode for the given button, the physical button is disabled. For example, if you set
+ * `momentary = k8090::RelayID::One`, `toggle = k8090::RelayID::None` and
+ * `timed = k8090::RelayID::None`, the physical button one will be in momentary mode and all the other buttons
+ * will be disabled.
+ *
+ * \param momentary Relays to be set to momentary mode.
+ * \param toggle Relays to be set to toggle mode.
+ * \param timed Relays to be set to timed mode.
+ * \sa K8090::queryButtonModes(), K8090::buttonModes().
+ */
 void K8090::setButtonMode(RelayID momentary, RelayID toggle, RelayID timed)
 {
     sendCommand(CommandID::SetButtonMode, momentary, as_number(toggle), as_number(timed));
@@ -615,21 +614,21 @@ void K8090::setButtonMode(RelayID momentary, RelayID toggle, RelayID timed)
 
 
 /*!
-    \brief Starts timers for specified relays.
-
-    When the timer starts, the specified relays are switched on, when it elapses they are switched off. The timer is
-    aborted when some other action influences the relay. If it is another timer, the timer is restarted from the
-    beginning. If this command changes state of some relay, the K8090::relayStatus() signal is emited. The remaining
-    delay can be queried by K8090::queryRemainingTimerDelay(). If the delay is set to zero, the default delay will be
-    used (see K8090::setRelayTimerDelay()). See the Velleman %K8090 card manual for more details.
-
-    \note If a timer is started immediately after the timer ellapse, its timeout time is usually usually shorter (the
-    difference can be as high as 0.5 sec).
-
-    \param relays The relays.
-    \param delay Required delay in seconds or 0 for default delay.
-    \sa K8090::setRelayTimerDelay(), K8090::relayStatus().
-*/
+ * \brief Starts timers for specified relays.
+ *
+ * When the timer starts, the specified relays are switched on, when it elapses they are switched off. The timer is
+ * aborted when some other action influences the relay. If it is another timer, the timer is restarted from the
+ * beginning. If this command changes state of some relay, the K8090::relayStatus() signal is emited. The remaining
+ * delay can be queried by K8090::queryRemainingTimerDelay(). If the delay is set to zero, the default delay will be
+ * used (see K8090::setRelayTimerDelay()). See the Velleman %K8090 card manual for more details.
+ *
+ * \note If a timer is started immediately after the timer ellapse, its timeout time is usually usually shorter (the
+ * difference can be as high as 0.5 sec).
+ *
+ * \param relays The relays.
+ * \param delay Required delay in seconds or 0 for default delay.
+ * \sa K8090::setRelayTimerDelay(), K8090::relayStatus().
+ */
 void K8090::startRelayTimer(RelayID relays, quint16 delay)
 {
     sendCommand(CommandID::StartTimer, relays, highByte(delay), lowByte(delay));
@@ -637,11 +636,11 @@ void K8090::startRelayTimer(RelayID relays, quint16 delay)
 
 
 /*!
-    \brief Sets the default timer delays.
-    \param relays The influenced relays.
-    \param delay Required delay in seconds.
-    \sa K8090::startRelayTimer().
-*/
+ * \brief Sets the default timer delays.
+ * \param relays The influenced relays.
+ * \param delay Required delay in seconds.
+ * \sa K8090::startRelayTimer().
+ */
 void K8090::setRelayTimerDelay(RelayID relays, quint16 delay)
 {
     sendCommand(CommandID::SetTimer, relays, highByte(delay), lowByte(delay));
@@ -649,13 +648,13 @@ void K8090::setRelayTimerDelay(RelayID relays, quint16 delay)
 
 
 /*!
-    \brief Queries relay statuses.
-
-    The K8090::relayStatus() signal is emited as the reaction.
-
-    \sa K8090::refreshRelaysInfo(), K8090::switchRelayOn(), K8090::switchRelayOff(), K8090::toggleRelay()
-    K8090::startRelayTimer()
-*/
+ * \brief Queries relay statuses.
+ *
+ * The K8090::relayStatus() signal is emited as the reaction.
+ *
+ * \sa K8090::refreshRelaysInfo(), K8090::switchRelayOn(), K8090::switchRelayOff(), K8090::toggleRelay()
+ * K8090::startRelayTimer()
+ */
 void K8090::queryRelayStatus()
 {
     sendCommand(CommandID::QueryRelay);
@@ -663,13 +662,13 @@ void K8090::queryRelayStatus()
 
 
 /*!
-    \brief Queries total timer delays.
-
-    The K8090::totalTimerDelay() signal is emited for each queried relay.
-
-    \param relays The queried relays.
-    \sa K8090::startRelayTimer(), K8090::queryRemainingTimerDelay()
-*/
+ * \brief Queries total timer delays.
+ *
+ * The K8090::totalTimerDelay() signal is emited for each queried relay.
+ *
+ * \param relays The queried relays.
+ * \sa K8090::startRelayTimer(), K8090::queryRemainingTimerDelay()
+ */
 void K8090::queryTotalTimerDelay(RelayID relays)
 {
     sendCommand(CommandID::Timer, relays, as_number(impl_::TimerDelayType::Total));
@@ -677,13 +676,13 @@ void K8090::queryTotalTimerDelay(RelayID relays)
 
 
 /*!
-    \brief Queries remaining timer delays.
-
-    The K8090::remainingTimerDelay() signal is emited for each queried relay.
-
-    \param relays The queried relays.
-    \sa K8090::startRelayTimer(), K8090::queryTotalTimerDelay()
-*/
+ * \brief Queries remaining timer delays.
+ *
+ * The K8090::remainingTimerDelay() signal is emited for each queried relay.
+ *
+ * \param relays The queried relays.
+ * \sa K8090::startRelayTimer(), K8090::queryTotalTimerDelay()
+ */
 void K8090::queryRemainingTimerDelay(RelayID relays)
 {
     sendCommand(CommandID::Timer, relays, as_number(impl_::TimerDelayType::Remaining));
@@ -691,12 +690,12 @@ void K8090::queryRemainingTimerDelay(RelayID relays)
 
 
 /*!
-    \brief Queries button modes.
-
-    The K8090::buttonModes() signal with button is emited after the response from the card is received.
-
-    \sa K8090::setButtonMode()
-*/
+ * \brief Queries button modes.
+ *
+ * The K8090::buttonModes() signal with button is emited after the response from the card is received.
+ *
+ * \sa K8090::setButtonMode()
+ */
 void K8090::queryButtonModes()
 {
     sendCommand(CommandID::ButtonMode);
@@ -704,13 +703,13 @@ void K8090::queryButtonModes()
 
 
 /*!
-    \brief Resets card to factory defaults.
-
-    Sets all buttons off and to toggle mode and all timer delays to 5 seconds. If some button states is modified, the
-    K8090::relayStatus() signal will be emited.
-
-    \sa K8090::setButtonMode() \sa K8090::setRelayTimerDelay()
-*/
+ * \brief Resets card to factory defaults.
+ *
+ * Sets all buttons off and to toggle mode and all timer delays to 5 seconds. If some button states is modified, the
+ * K8090::relayStatus() signal will be emited.
+ *
+ * \sa K8090::setButtonMode() \sa K8090::setRelayTimerDelay()
+ */
 void K8090::resetFactoryDefaults()
 {
     sendCommand(CommandID::ResetFactoryDefaults);
@@ -718,10 +717,10 @@ void K8090::resetFactoryDefaults()
 
 
 /*!
-    \brief Queries jumper status.
-
-    The K8090::jumperStatus() signal with ‘event’ jumper is emited after the response from the card is received.
-*/
+ * \brief Queries jumper status.
+ *
+ * The K8090::jumperStatus() signal with ‘event’ jumper is emited after the response from the card is received.
+ */
 void K8090::queryJumperStatus()
 {
     sendCommand(CommandID::JumperStatus);
@@ -729,10 +728,10 @@ void K8090::queryJumperStatus()
 
 
 /*!
-    \brief Queries firmware version.
-
-    The K8090::firmwareVersion() signal with firmware version is emited after the response from the card is received.
-*/
+ * \brief Queries firmware version.
+ *
+ * The K8090::firmwareVersion() signal with firmware version is emited after the response from the card is received.
+ */
 void K8090::queryFirmwareVersion()
 {
     sendCommand(CommandID::FirmwareVersion);

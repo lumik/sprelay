@@ -67,56 +67,56 @@ static std::mt19937_64 random_generator{random_device()};
 
 
 /*!
-    \class MockSerialPort
-    Communication with the card is performed through the ability of windows to make virtual COM port from USB. This
-    class tries to behavior as if it was the real card connected through this virtual COM port interface. The port
-    parameters should be set as follows:
-    parameter     | value
-    ------------- | ----------------------------
-    port name     | redundant, can be anything
-    baud rate     | `QSerialPort::Baud19200`
-    data bits     | `QSerialPort::Data8`
-    parity        | `QSerialPort::NoParity`
-    stop bits     | `QSerialPort::OneStop`
-    flow control  | `QSerialPort::NoFlowControl`
-
-    The class is used in the same way as the `QSerialPort` class, so you have to MockSerialPort::open() the port before
-    you can MockSerialPort::write() data to it. When simulated data comes from the port, the
-    MockSerialPort::readyRead() signal is emited. You can read the data by MockSerialPort::readAll() method then. The
-    port can be tested, if it is open by MockSerialPort::isOpen() method and when the communication with the port ends,
-    the port can be closed by MockSerialPort::close() method.
-
-    The communication is event-driven, polling is not necessary. The communication packets are 7 bytes in size, but due
-    to delays in communication received packets can accumulate so the response from the card can be multiples of 7
-    bytes long. See the Velleman relay %K8090 card manual for more information about communication packes scheme and
-    form of patricular commands.
-
-    Some commands can trigger response from the card. To simulate real card, these responses are randomly delayed
-    between 5 and 25 ms. If you start timer on the real card right after the timer elapsed, the timers timeout is less
-    than the required about 500ms. This behavior is not mimicked in this mock class. Command also cant be sended too
-    close to each other in the real card. For different commands, the required delay is different but rough upper
-    estimate is 50 ms. This behavior is also not implemented in the mock class.
-
-    When the timers has approximately same time of timeout, their timeout is merged together. This behavior of rela
-    card is used also here. When all timers with timeouts less then 100 ms in the time some timer times out are also
-    timed out in one step with the currently timed out timer.
-
-    \remark reentrant
-    \sa MockSerialPort::setBaudRate(), MockSerialPort::setDataBits(), MockSerialPort::setParity(),
-    MockSerialPort::setStopBits(), MockSerialPort::setFlowControl()
-*/
+ * \class MockSerialPort
+ * Communication with the card is performed through the ability of windows to make virtual COM port from USB. This
+ * class tries to behavior as if it was the real card connected through this virtual COM port interface. The port
+ * parameters should be set as follows:
+ * parameter     | value
+ * ------------- | ----------------------------
+ * port name     | redundant, can be anything
+ * baud rate     | `QSerialPort::Baud19200`
+ * data bits     | `QSerialPort::Data8`
+ * parity        | `QSerialPort::NoParity`
+ * stop bits     | `QSerialPort::OneStop`
+ * flow control  | `QSerialPort::NoFlowControl`
+ *
+ * The class is used in the same way as the `QSerialPort` class, so you have to MockSerialPort::open() the port before
+ * you can MockSerialPort::write() data to it. When simulated data comes from the port, the
+ * MockSerialPort::readyRead() signal is emited. You can read the data by MockSerialPort::readAll() method then. The
+ * port can be tested, if it is open by MockSerialPort::isOpen() method and when the communication with the port ends,
+ * the port can be closed by MockSerialPort::close() method.
+ *
+ * The communication is event-driven, polling is not necessary. The communication packets are 7 bytes in size, but due
+ * to delays in communication received packets can accumulate so the response from the card can be multiples of 7
+ * bytes long. See the Velleman relay %K8090 card manual for more information about communication packes scheme and
+ * form of patricular commands.
+ *
+ * Some commands can trigger response from the card. To simulate real card, these responses are randomly delayed
+ * between 5 and 25 ms. If you start timer on the real card right after the timer elapsed, the timers timeout is less
+ * than the required about 500ms. This behavior is not mimicked in this mock class. Command also cant be sended too
+ * close to each other in the real card. For different commands, the required delay is different but rough upper
+ * estimate is 50 ms. This behavior is also not implemented in the mock class.
+ *
+ * When the timers has approximately same time of timeout, their timeout is merged together. This behavior of rela
+ * card is used also here. When all timers with timeouts less then 100 ms in the time some timer times out are also
+ * timed out in one step with the currently timed out timer.
+ *
+ * \remark reentrant
+ * \sa MockSerialPort::setBaudRate(), MockSerialPort::setDataBits(), MockSerialPort::setParity(),
+ * MockSerialPort::setStopBits(), MockSerialPort::setFlowControl()
+ */
 
 // initialization of static member variables
 
 // public
 /*!
-    \brief Product id for port identification. Taken from real card obtained at FUUK.
-*/
+ * \brief Product id for port identification. Taken from real card obtained at FUUK.
+ */
 const quint16 MockSerialPort::kProductID = k8090::impl_::kProductID;
 
 /*!
-    \brief Vendor id for port identification. Taken from real card obtained at FUUK.
-*/
+ * \brief Vendor id for port identification. Taken from real card obtained at FUUK.
+ */
 const quint16 MockSerialPort::kVendorID = k8090::impl_::kVendorID;
 
 // private
@@ -137,9 +137,9 @@ const int MockSerialPort::kTimerDeltaMs_ = 100;
 
 
 /*!
-    \brief The constructor.
-    \param parent Parent object in Qt ownership system.
-*/
+ * \brief The constructor.
+ * \param parent Parent object in Qt ownership system.
+ */
 MockSerialPort::MockSerialPort(QObject *parent)
     : QObject{parent},
       baud_rate_{QSerialPort::Baud9600},
@@ -177,26 +177,26 @@ MockSerialPort::MockSerialPort(QObject *parent)
 
 
 /*!
-    \brief Sets the port name.
-
-    The port name is not taken in account. The method exists only because of compatibility with real QSerialPort
-    interface.
-
-    \param com_port_name The port name.
-*/
+ * \brief Sets the port name.
+ *
+ * The port name is not taken in account. The method exists only because of compatibility with real QSerialPort
+ * interface.
+ *
+ * \param com_port_name The port name.
+ */
 void MockSerialPort::setPortName(const QString &com_port_name)
 {
     Q_UNUSED(com_port_name)
 }
 
 /*!
-    \brief Sets baud rate.
-
-    The default value of baud rate is `QSerialPort::Baud9600`.
-
-    \param baud_rate The baud rate.
-    \return True if successful.
-*/
+ * \brief Sets baud rate.
+ *
+ * The default value of baud rate is `QSerialPort::Baud9600`.
+ *
+ * \param baud_rate The baud rate.
+ * \return True if successful.
+ */
 bool MockSerialPort::setBaudRate(qint32 baud_rate)
 {
     baud_rate_ = baud_rate;
@@ -205,13 +205,13 @@ bool MockSerialPort::setBaudRate(qint32 baud_rate)
 
 
 /*!
-    \brief Sets data bits.
-
-    The default value for data bits is `QSerialPort::Data8`.
-
-    \param data_bits The data bits.
-    \return True if successful.
-*/
+ * \brief Sets data bits.
+ *
+ * The default value for data bits is `QSerialPort::Data8`.
+ *
+ * \param data_bits The data bits.
+ * \return True if successful.
+ */
 bool MockSerialPort::setDataBits(QSerialPort::DataBits data_bits)
 {
     data_bits_ = data_bits;
@@ -220,13 +220,13 @@ bool MockSerialPort::setDataBits(QSerialPort::DataBits data_bits)
 
 
 /*!
-    \brief Sets parity.
-
-    The default value for parity is `QSerialPort::NoParity`.
-
-    \param parity The parity
-    \return True if successful.
-*/
+ * \brief Sets parity.
+ *
+ * The default value for parity is `QSerialPort::NoParity`.
+ *
+ * \param parity The parity
+ * \return True if successful.
+ */
 bool MockSerialPort::setParity(QSerialPort::Parity parity)
 {
     parity_ = parity;
@@ -235,13 +235,13 @@ bool MockSerialPort::setParity(QSerialPort::Parity parity)
 
 
 /*!
-    \brief Sets stop bits.
-
-    The default value for stop bits is `QSerialPort::OneStop`.
-
-    \param stop_bits The stop bits.
-    \return True if successful.
-*/
+ * \brief Sets stop bits.
+ *
+ * The default value for stop bits is `QSerialPort::OneStop`.
+ *
+ * \param stop_bits The stop bits.
+ * \return True if successful.
+ */
 bool MockSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 {
     stop_bits_ = stop_bits;
@@ -250,13 +250,13 @@ bool MockSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 
 
 /*!
-    \brief Sets flow control.
-
-    The default value for flow control is `QSerialPort::NoFlowControl`.
-
-    \param flow_control The flow control.
-    \return True if successful.
-*/
+ * \brief Sets flow control.
+ *
+ * The default value for flow control is `QSerialPort::NoFlowControl`.
+ *
+ * \param flow_control The flow control.
+ * \return True if successful.
+ */
 bool MockSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
 {
     flow_control_ = flow_control;
@@ -265,10 +265,10 @@ bool MockSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
 
 
 /*!
-    \brief Tests if the port is open.
-    \return True if open.
-    \sa MockSerialPort::open(), MockSerialPort::close()
-*/
+ * \brief Tests if the port is open.
+ * \return True if open.
+ * \sa MockSerialPort::open(), MockSerialPort::close()
+ */
 bool MockSerialPort::isOpen()
 {
     return open_;
@@ -276,11 +276,11 @@ bool MockSerialPort::isOpen()
 
 
 /*!
-    \brief Opens the port.
-    \param mode Open mode.
-    \return True if successful.
-    \sa MockSerialPort::isOpen(), MockSerialPort::close()
-*/
+ * \brief Opens the port.
+ * \param mode Open mode.
+ * \return True if successful.
+ * \sa MockSerialPort::isOpen(), MockSerialPort::close()
+ */
 bool MockSerialPort::open(QIODevice::OpenMode mode)
 {
     mode_ = mode;
@@ -290,9 +290,9 @@ bool MockSerialPort::open(QIODevice::OpenMode mode)
 
 
 /*!
-    \brief Closes the port.
-    \sa MockSerialPort::open()
-*/
+ * \brief Closes the port.
+ * \sa MockSerialPort::open()
+ */
 void MockSerialPort::close()
 {
     open_ = false;
@@ -301,14 +301,14 @@ void MockSerialPort::close()
 
 
 /*!
-    \brief Reads all data in buffer.
-
-    The communication is asynchronous. When data is ready to read, the MockSerialPort::readyRead() signal is emited.
-    Then you can read the data. Data comes in multiples of 7 bytes. The serial port has to be opened with
-    `QSerialPort::ReadOnly` or `QSerialPort::ReadWrite` mode.
-
-    \return The data.
-*/
+ * \brief Reads all data in buffer.
+ *
+ * The communication is asynchronous. When data is ready to read, the MockSerialPort::readyRead() signal is emited.
+ * Then you can read the data. Data comes in multiples of 7 bytes. The serial port has to be opened with
+ * `QSerialPort::ReadOnly` or `QSerialPort::ReadWrite` mode.
+ *
+ * \return The data.
+ */
 QByteArray MockSerialPort::readAll()
 {
     if (open_ && mode_ & QIODevice::ReadOnly) {
@@ -320,15 +320,15 @@ QByteArray MockSerialPort::readAll()
 
 
 /*!
-    \brief Writes data to serial port.
-
-    The data should be multiples of 7 bytes. The communication protocol is described in Vellemna %K8090 relay card
-    manual. The serial port has to be opened with `QSerialPort::WriteOnly` or `QSerialPort::ReadWrite` mode.
-
-    \param data The data.
-    \param max_size The size of data.
-    \return The number of written bytes or -1 in the case of error.
-*/
+ * \brief Writes data to serial port.
+ *
+ * The data should be multiples of 7 bytes. The communication protocol is described in Vellemna %K8090 relay card
+ * manual. The serial port has to be opened with `QSerialPort::WriteOnly` or `QSerialPort::ReadWrite` mode.
+ *
+ * \param data The data.
+ * \param max_size The size of data.
+ * \return The number of written bytes or -1 in the case of error.
+ */
 qint64 MockSerialPort::write(const char *data, qint64 max_size)
 {
     if (open_ && error_ == QSerialPort::NoError) {
@@ -343,13 +343,13 @@ qint64 MockSerialPort::write(const char *data, qint64 max_size)
 
 
 /*!
-    \brief Flushes the buffer.
-
-    Now, the data writing is treated as synchronous, so it always returns false.
-
-    \return True if any data was written.
-    \sa MockSerialPort::write()
-*/
+ * \brief Flushes the buffer.
+ *
+ * Now, the data writing is treated as synchronous, so it always returns false.
+ *
+ * \return True if any data was written.
+ * \sa MockSerialPort::write()
+ */
 bool MockSerialPort::flush()
 {
     return false;
@@ -357,10 +357,10 @@ bool MockSerialPort::flush()
 
 
 /*!
-    \brief Holds the error status of the serial port.
-    \return The error code.
-    \sa MockSerialPort::clearError()
-*/
+ * \brief Holds the error status of the serial port.
+ * \return The error code.
+ * \sa MockSerialPort::clearError()
+ */
 QSerialPort::SerialPortError MockSerialPort::error()
 {
     return error_;
@@ -368,9 +368,9 @@ QSerialPort::SerialPortError MockSerialPort::error()
 
 
 /*!
-    \brief Clears error.
-    \sa MockSerialPort::error()
-*/
+ * \brief Clears error.
+ * \sa MockSerialPort::error()
+ */
 void MockSerialPort::clearError()
 {
     error_ = QSerialPort::NoError;
@@ -378,11 +378,11 @@ void MockSerialPort::clearError()
 
 
 /*!
-    \fn MockSerialPort::readyRead()
-    \brief Emited, when some data comes through serial port.
-
-    The data can be readed with MockSerialPort::readAll() method.
-*/
+ * \fn MockSerialPort::readyRead()
+ * \brief Emited, when some data comes through serial port.
+ *
+ * The data can be readed with MockSerialPort::readAll() method.
+ */
 
 
 // helper method which moves data from queue with responses to the buffer after timeout of response_timer_. The timer

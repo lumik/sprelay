@@ -221,38 +221,38 @@ template<typename T, T ...Args>
 constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
 
 /*!
-    \brief Array of hexadecimal representation of commands used to control the relay.
-*/
+ * \brief Array of hexadecimal representation of commands used to control the relay.
+ */
 constexpr const unsigned char *kCommands = CommandArray_<as_number(CommandID::None)>::Commands::kValues;
 
 /*!
-    \brief Array of default priorities used to command scheduling.
-*/
+ * \brief Array of default priorities used to command scheduling.
+ */
 constexpr const int *kPriorities = CommandArray_<as_number(CommandID::None)>::Priorities::kValues;
 
 /*!
-    \brief Array of hexadecimal representation of responses sended by the relay.
-*/
+ * \brief Array of hexadecimal representation of responses sended by the relay.
+ */
 constexpr const unsigned char *kResponses = ResponseArray_<as_number(ResponseID::None)>::Responses::kValues;
 
 /*!
-    \brief Start delimiting command byte.
-*/
+ * \brief Start delimiting command byte.
+ */
 constexpr unsigned char kStxByte = 0x04;
 
 /*!
-    \brief End delimiting command byte.
-*/
+ * \brief End delimiting command byte.
+ */
 
 constexpr unsigned char kEtxByte = 0x0f;
 
 /*!
-    \brief Product id for the automatic port identification.
-*/
+ * \brief Product id for the automatic port identification.
+ */
 const quint16 kProductID = 32912;
 /*!
-    \brief Vendor id for the automatic port identification.
-*/
+ * \brief Vendor id for the automatic port identification.
+ */
 const quint16 kVendorID = 4303;
 
 }  // namespace impl_

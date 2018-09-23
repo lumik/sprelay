@@ -49,30 +49,30 @@ namespace core {
 
 
 /*!
-    \class UnifiedSerialPort
-    The port can be switched by port name. The mock serial port is used as port with name
-    UnifiedSerialPort::kMockPortName. The mock port is added to the list of available serial ports which can be
-    obtained by the UnifiedSerialPort::availablePorts() method.
-
-    Parameters, as port name, baud rate, data bits, parity, stop bits and flow control are set to port only if some
-    port is openned. Otherwise, they are stored only for later use when the port is opened. When the port is switched
-    from real to mock or other way, the parameters are moved to the new one. More information about the methods can be
-    obtained from QSerialPort documentation.
-
-    \remark reentrant, thread-safe
-*/
+ * \class UnifiedSerialPort
+ * The port can be switched by port name. The mock serial port is used as port with name
+ * UnifiedSerialPort::kMockPortName. The mock port is added to the list of available serial ports which can be
+ * obtained by the UnifiedSerialPort::availablePorts() method.
+ *
+ * Parameters, as port name, baud rate, data bits, parity, stop bits and flow control are set to port only if some
+ * port is openned. Otherwise, they are stored only for later use when the port is opened. When the port is switched
+ * from real to mock or other way, the parameters are moved to the new one. More information about the methods can be
+ * obtained from QSerialPort documentation.
+ *
+ * \remark reentrant, thread-safe
+ */
 
 
 /*!
-    \brief The name of mock com port.
-*/
+ * \brief The name of mock com port.
+ */
 const char *UnifiedSerialPort::kMockPortName = "MOCKCOM";
 
 
 /*!
-    \brief Returns a list of available serial ports extended with mock serial port.
-    \return The ports list.
-    \remark reentrant, thread-safe
+ * \brief Returns a list of available serial ports extended with mock serial port.
+ * \return The ports list.
+ * \remark reentrant, thread-safe
  */
 QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
 {
@@ -101,9 +101,9 @@ QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
 
 
 /*!
-    \brief Constructor.
-    \param parent Parent object in Qt ownership system.
-*/
+ * \brief Constructor.
+ * \param parent Parent object in Qt ownership system.
+ */
 UnifiedSerialPort::UnifiedSerialPort(QObject *parent)
     : QObject{parent},
       serial_port_mutex_{new QMutex},
@@ -118,19 +118,19 @@ UnifiedSerialPort::UnifiedSerialPort(QObject *parent)
 
 
 /*!
-    \brief Destructor.
-
-    Defined to enable forward declarations.
-*/
+ * \brief Destructor.
+ *
+ * Defined to enable forward declarations.
+ */
 UnifiedSerialPort::~UnifiedSerialPort()
 {
 }
 
 
 /*!
-    \brief Sets port name.
-    \param port_name The port name.
-*/
+ * \brief Sets port name.
+ * \param port_name The port name.
+ */
 void UnifiedSerialPort::setPortName(const QString &port_name)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -145,10 +145,10 @@ void UnifiedSerialPort::setPortName(const QString &port_name)
 
 
 /*!
-    \brief Sets baud rate.
-    \param baud_rate The baud rate.
-    \return True if successful.
-*/
+ * \brief Sets baud rate.
+ * \param baud_rate The baud rate.
+ * \return True if successful.
+ */
 bool UnifiedSerialPort::setBaudRate(qint32 baud_rate)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -165,10 +165,10 @@ bool UnifiedSerialPort::setBaudRate(qint32 baud_rate)
 
 
 /*!
-    \brief Sets data bits.
-    \param data_bits The data bits.
-    \return True if successful.
-*/
+ * \brief Sets data bits.
+ * \param data_bits The data bits.
+ * \return True if successful.
+ */
 bool UnifiedSerialPort::setDataBits(QSerialPort::DataBits data_bits)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -185,10 +185,10 @@ bool UnifiedSerialPort::setDataBits(QSerialPort::DataBits data_bits)
 
 
 /*!
-    \brief Sets parity.
-    \param parity The parity
-    \return True if successful.
-*/
+ * \brief Sets parity.
+ * \param parity The parity
+ * \return True if successful.
+ */
 bool UnifiedSerialPort::setParity(QSerialPort::Parity parity)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -205,10 +205,10 @@ bool UnifiedSerialPort::setParity(QSerialPort::Parity parity)
 
 
 /*!
-    \brief Sets stop bits.
-    \param stop_bits The stop bits.
-    \return True if successful.
-*/
+ * \brief Sets stop bits.
+ * \param stop_bits The stop bits.
+ * \return True if successful.
+ */
 bool UnifiedSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -225,10 +225,10 @@ bool UnifiedSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
 
 
 /*!
-    \brief Sets flow control.
-    \param flow_control The flow control.
-    \return True if successful.
-*/
+ * \brief Sets flow control.
+ * \param flow_control The flow control.
+ * \return True if successful.
+ */
 bool UnifiedSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -245,9 +245,9 @@ bool UnifiedSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
 
 
 /*!
-    \brief Tests if the port is open.
-    \return True if open.
-*/
+ * \brief Tests if the port is open.
+ * \return True if open.
+ */
 bool UnifiedSerialPort::isOpen()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -262,14 +262,14 @@ bool UnifiedSerialPort::isOpen()
 
 
 /*!
-    \brief Opens the port.
-
-    Port type selection between real and mock serial port is done according to the port name.
-
-    \param mode Open mode.
-    \return True if successful.
-    \sa UnifiedSerialPort::setPortName()
-*/
+ * \brief Opens the port.
+ *
+ * Port type selection between real and mock serial port is done according to the port name.
+ *
+ * \param mode Open mode.
+ * \return True if successful.
+ * \sa UnifiedSerialPort::setPortName()
+ */
 bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
 {
     // until now, serial port has been connected and its name changes
@@ -306,8 +306,8 @@ bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
 
 
 /*!
-    \brief Closes the port.
-*/
+ * \brief Closes the port.
+ */
 void UnifiedSerialPort::close()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -320,11 +320,11 @@ void UnifiedSerialPort::close()
 
 
 /*!
-    \brief Reads all data in buffer.
-    \return The data.
-
-    \sa UnifiedSerialPort::readyRead()
-*/
+ * \brief Reads all data in buffer.
+ * \return The data.
+ *
+ * \sa UnifiedSerialPort::readyRead()
+ */
 QByteArray UnifiedSerialPort::readAll()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -339,11 +339,11 @@ QByteArray UnifiedSerialPort::readAll()
 
 
 /*!
-    \brief Writes data to serial port.
-    \param data The data.
-    \param max_size The size of data.
-    \return The number of written bytes or -1 in the case of error.
-*/
+ * \brief Writes data to serial port.
+ * \param data The data.
+ * \param max_size The size of data.
+ * \return The number of written bytes or -1 in the case of error.
+ */
 qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -358,10 +358,10 @@ qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
 
 
 /*!
-    \brief Nonblockingly flushes the buffer.
-    \return True if any data was written.
-    \sa UnifiedSerialPort::write(), UnifiedSerialPort::waitForBytesWritten()
-*/
+ * \brief Nonblockingly flushes the buffer.
+ * \return True if any data was written.
+ * \sa UnifiedSerialPort::write(), UnifiedSerialPort::waitForBytesWritten()
+ */
 bool UnifiedSerialPort::flush()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -375,10 +375,10 @@ bool UnifiedSerialPort::flush()
 }
 
 /*!
-    \brief Holds the error status of the serial port.
-    \return The error code.
-    \sa UnifiedSerialPort::clearError()
-*/
+ * \brief Holds the error status of the serial port.
+ * \return The error code.
+ * \sa UnifiedSerialPort::clearError()
+ */
 QSerialPort::SerialPortError UnifiedSerialPort::error()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -392,9 +392,9 @@ QSerialPort::SerialPortError UnifiedSerialPort::error()
 
 
 /*!
-    \brief Clears error.
-    \sa UnifiedSerialPort::error()
-*/
+ * \brief Clears error.
+ * \sa UnifiedSerialPort::error()
+ */
 void UnifiedSerialPort::clearError()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -407,13 +407,13 @@ void UnifiedSerialPort::clearError()
 
 
 /*!
-    \brief Tests if the serial port is mock now.
-
-    The port can be mock only when some port is created with UnifiedSerialPort::open() method.
-
-    \return True if mock.
-    \sa UnifiedSerialPort::isReal()
-*/
+ * \brief Tests if the serial port is mock now.
+ *
+ * The port can be mock only when some port is created with UnifiedSerialPort::open() method.
+ *
+ * \return True if mock.
+ * \sa UnifiedSerialPort::isReal()
+ */
 bool UnifiedSerialPort::isMock()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -422,13 +422,13 @@ bool UnifiedSerialPort::isMock()
 
 
 /*!
-    \brief Tests if the serial port is real now.
-
-    The port can be real only when some port is created with UnifiedSerialPort::open() method.
-
-    \return True if real.
-    \sa UnifiedSerialPort::isMock()
-*/
+ * \brief Tests if the serial port is real now.
+ *
+ * The port can be real only when some port is created with UnifiedSerialPort::open() method.
+ *
+ * \return True if real.
+ * \sa UnifiedSerialPort::isMock()
+ */
 bool UnifiedSerialPort::isReal()
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
@@ -437,11 +437,11 @@ bool UnifiedSerialPort::isReal()
 
 
 /*!
-    \fn UnifiedSerialPort::readyRead()
-    \brief Emited, when some data comes through serial port.
-
-    The data can be readed with UnifiedSerialPort::readAll() method.
-*/
+ * \fn UnifiedSerialPort::readyRead()
+ * \brief Emited, when some data comes through serial port.
+ *
+ * The data can be readed with UnifiedSerialPort::readAll() method.
+ */
 
 
 // isMock() mplementation
@@ -456,14 +456,6 @@ bool UnifiedSerialPort::isRealImpl()
 {
     return serial_port_ != nullptr;
 }
-
-
-/*!
-    \fn UnifiedSerialPort::readyRead()
-    \brief Emited, when some data comes through serial port.
-
-    The data can be readed with UnifiedSerialPort::readAll() method.
-*/
 
 
 // helper method which resets private variables to represent real serial port

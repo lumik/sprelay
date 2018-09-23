@@ -49,91 +49,91 @@ namespace impl_ {
 
 
 /*!
-    \enum sprelay::core::impl_::TimerDelayType
-    See the Velleman %K8090 card manual for more info about timer delay types.
-*/
+ * \enum sprelay::core::impl_::TimerDelayType
+ * See the Velleman %K8090 card manual for more info about timer delay types.
+ */
 
 
 /*!
-    \struct sprelay::core::k8090::impl_::Command
-    It is used for command comparisons and in command_queue::CommandQueue.
-*/
+ * \struct sprelay::core::k8090::impl_::Command
+ * It is used for command comparisons and in command_queue::CommandQueue.
+ */
 
 /*!
-    \typedef Command::IdType
-    \brief Typename of id
-
-    Required by command_queue::CommandQueue API.
-*/
-
-/*!
-    \typedef Command::NumberType
-    \brief Underlying typename of id
-
-    Required by command_queue::CommandQueue API.
-*/
+ * \typedef Command::IdType
+ * \brief Typename of id
+ *
+ * Required by command_queue::CommandQueue API.
+ */
 
 /*!
-    \fn Command::Command()
-    \brief Default constructor.
-
-    Initializes its id member to k8090::CommandID::None so the Command can be used as return value indicating failure.
-*/
-
-/*!
-    \fn explicit Command::Command(IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0,
-    unsigned char param2 = 0)
-    \brief Initializes Command.
-*/
+ * \typedef Command::NumberType
+ * \brief Underlying typename of id
+ *
+ * Required by command_queue::CommandQueue API.
+ */
 
 /*!
-    \fn static NumberType Command::idAsNumber(IdType id)
-    \brief Converts id to its underlying type.
-
-    Required by command_queue::CommandQueue API.
-
-    \param id Command id.
-    \return Underlying type representation of the id.
-*/
+ * \fn Command::Command()
+ * \brief Default constructor.
+ *
+ * Initializes its id member to k8090::CommandID::None so the Command can be used as return value indicating failure.
+ */
 
 /*!
-    \var Command::id
-    \brief Command id.
-
-    Required by command_queue::CommandQueue API.
-*/
-
-/*!
-    \var Command::priority
-    \brief Command priority.
-
-    Required by command_queue::CommandQueue API.
-*/
+ * \fn explicit Command::Command(IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0,
+ * unsigned char param2 = 0)
+ * \brief Initializes Command.
+ */
 
 /*!
-    \var Command::params
-    \brief Stores command parameters.
-*/
+ * \fn static NumberType Command::idAsNumber(IdType id)
+ * \brief Converts id to its underlying type.
+ *
+ * Required by command_queue::CommandQueue API.
+ *
+ * \param id Command id.
+ * \return Underlying type representation of the id.
+ */
+
+/*!
+ * \var Command::id
+ * \brief Command id.
+ *
+ * Required by command_queue::CommandQueue API.
+ */
+
+/*!
+ * \var Command::priority
+ * \brief Command priority.
+ *
+ * Required by command_queue::CommandQueue API.
+ */
+
+/*!
+ * \var Command::params
+ * \brief Stores command parameters.
+ */
 
 
 /*!
-    \brief Merges the other Command.
-
-    If the other command is k8090::CommandID::RelayON and is merged to k8090::CommandID::RelayOff or the
-    oposite, the negation is merged. XOR is applied to k8090::CommandID::ToggleRelay and for
-    k8090::CommandID::SetButtonMode and duplicate assignments, the command is merged according to precedence
-    stated in Velleman %K8090 card manual (momentary mode, toggle mode, timed mode from most important to less). The
-    parameters of k8090::CommandID::StartTimer, k8090::CommandID::SetTimer and k8090::CommandID::Timer are not
-    merged, only the affected relays are updated. Check, if that makes sense, is up to class user.
-
-    The other commands are merged naturally as _or assignment_ operator to their members.
-
-    The compatibility of commands is not checked inside the method. This method enables you to merge commands with
-    different ids. The compatibility can be checked for example by the Command::isCompatible() method.
-
-    \param other The other command.
-    \return Merged command.
-*/
+ * \brief Merges the other Command.
+ *
+ * If the other command is k8090::CommandID::RelayON and is merged to k8090::CommandID::RelayOff or the
+ * oposite, the negation is merged. XOR is applied to k8090::CommandID::ToggleRelay and for
+ * k8090::CommandID::SetButtonMode and duplicate assignments, the command is merged according to precedence
+ * stated in Velleman %K8090 card manual (momentary mode, toggle mode, timed mode from most important to less). The
+ * parameters of k8090::CommandID::StartTimer, k8090::CommandID::SetTimer and k8090::CommandID::Timer are not
+ * merged, only the affected relays are updated. Check, if that makes sense, is up to class user.
+ *
+ * The other commands are merged naturally as _or assignment_ operator to their members.
+ *
+ * The compatibility of commands is not checked inside the method. This method enables you to merge commands with
+ * different ids. The compatibility can be checked for example by the Command::isCompatible() method.
+ *
+ * \param other The other command.
+ * \return Merged command.
+ */
 Command & Command::operator|=(const Command &other) {
     // TODO(lumik): enable merging into none command
     switch (id) {
@@ -180,30 +180,30 @@ Command & Command::operator|=(const Command &other) {
 }
 
 /*!
-    \fn bool Command::operator==(const Command &other) const
-    \brief Compares two commands for equality.
-
-    \param other The command to be compared.
-    \return True if the commands are the same.
-*/
-
-/*!
-    \fn bool Command::operator!=(const Command &other) const
-    \brief Compares two commands for non-equality.
-
-    \param other The command to be compared.
-    \return True if the commands are different.
-*/
-
+ * \fn bool Command::operator==(const Command &other) const
+ * \brief Compares two commands for equality.
+ *
+ * \param other The command to be compared.
+ * \return True if the commands are the same.
+ */
 
 /*!
-    \brief Tests, if commands are compatible.
+ * \fn bool Command::operator!=(const Command &other) const
+ * \brief Compares two commands for non-equality.
+ *
+ * \param other The command to be compared.
+ * \return True if the commands are different.
+ */
 
-    Compatible commands can be merget by the Command::operator|=() operator.
 
-    \param other The command to be stested.
-    \return True if the commands are compatible.
-*/
+/*!
+ * \brief Tests, if commands are compatible.
+ *
+ * Compatible commands can be merget by the Command::operator|=() operator.
+ *
+ * \param other The command to be stested.
+ * \return True if the commands are compatible.
+ */
 bool Command::isCompatible(const Command &other) const
 {
     // ids are not equal
@@ -250,12 +250,12 @@ bool Command::isCompatible(const Command &other) const
 
 
 /*!
-    \param msg C array of bytes.
-    \param n The number of the bytes.
-    \return The checksum.
-
-    The checksum is bit inversion of sum of all bytes plus 1.
-*/
+ * \param msg C array of bytes.
+ * \param n The number of the bytes.
+ * \return The checksum.
+ *
+ * The checksum is bit inversion of sum of all bytes plus 1.
+ */
 unsigned char check_sum(const unsigned char *msg, int n)
 {
     unsigned int sum = 0u;
@@ -271,15 +271,15 @@ unsigned char check_sum(const unsigned char *msg, int n)
 
 
 /*!
-    \brief Constructor directly from data.
-    \param stx STX byte.
-    \param cmd Command byte.
-    \param mask Mask byte.
-    \param param1 1st parameter byte.
-    \param param2 2nd parameter byte.
-    \param chk Checksum byte.
-    \param etx ETX byte.
-*/
+ * \brief Constructor directly from data.
+ * \param stx STX byte.
+ * \param cmd Command byte.
+ * \param mask Mask byte.
+ * \param param1 1st parameter byte.
+ * \param param2 2nd parameter byte.
+ * \param chk Checksum byte.
+ * \param etx ETX byte.
+ */
 CardMessage::CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1,
     unsigned char param2, unsigned char chk, unsigned char etx)
     : data{stx, cmd, mask, param1, param2, chk, etx}
@@ -288,11 +288,11 @@ CardMessage::CardMessage(unsigned char stx, unsigned char cmd, unsigned char mas
 
 
 /*!
-    \brief The constructor from the response acquired from QSerialPort.
-    \param begin The begin iterator.
-    \param end The end iterator.
-    \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
-*/
+ * \brief The constructor from the response acquired from QSerialPort.
+ * \param begin The begin iterator.
+ * \param end The end iterator.
+ * \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
+ */
 CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_iterator end)
 {
     if (std::distance(begin, end) != 7) {
@@ -306,11 +306,11 @@ CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_ite
 
 
 /*!
-    \brief The constructor unsigned char message.
-    \param begin The pointer to the beginning of the message.
-    \param end The pointer to one after the end of the message.
-    \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
-*/
+ * \brief The constructor unsigned char message.
+ * \param begin The pointer to the beginning of the message.
+ * \param end The pointer to one after the end of the message.
+ * \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
+ */
 CardMessage::CardMessage(const unsigned char *begin, const unsigned char *end)
 {
     if (std::distance(begin, end) != 7) {
@@ -324,9 +324,9 @@ CardMessage::CardMessage(const unsigned char *begin, const unsigned char *end)
 
 
 /*!
-    \brief Sets the checksum byte to the message checksum
-    \sa check_sum
-*/
+ * \brief Sets the checksum byte to the message checksum
+ * \sa check_sum
+ */
 void CardMessage::checksumMessage()
 {
     data[5] = check_sum(data, 5);
@@ -334,9 +334,9 @@ void CardMessage::checksumMessage()
 
 
 /*!
-    \brief Validates the response from card for formal requirements.
-    \return True if the response is valid.
-*/
+ * \brief Validates the response from card for formal requirements.
+ * \return True if the response is valid.
+ */
 bool CardMessage::isValid() const
 {
     if (data[0] != kStxByte)
@@ -350,9 +350,9 @@ bool CardMessage::isValid() const
 }
 
 /*!
-    \brief Returns the byte identifying the response type
-    \return The id byte.
-*/
+ * \brief Returns the byte identifying the response type
+ * \return The id byte.
+ */
 unsigned char CardMessage::commandByte() const
 {
     return data[1];
@@ -360,9 +360,9 @@ unsigned char CardMessage::commandByte() const
 
 
 /*!
-    \var CardMessage::data
-    \brief The message data.
-*/
+ * \var CardMessage::data
+ * \brief The message data.
+ */
 
 }  // namespace impl_
 }  // namespace k8090
