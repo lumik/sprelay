@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -24,9 +26,17 @@
 #define SPRELAY_CORE_COMMAND_QUEUE_TPP_
 
 /*!
-    \file command_queue.tpp
-    \brief CommandQueue class.
-*/
+ * \file      command_queue.tpp
+ * \brief     The sprelay::core::command_queue::CommandQueue class and some other related stuff.
+ *
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2018-03-07
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 
 #include <limits>
 

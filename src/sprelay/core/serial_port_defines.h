@@ -26,7 +26,7 @@
  * \file      serial_port_defines.h
  * \ingroup   group_sprelay_core_public
  * \brief     Public defines concerning sprelay::core::UnifiedSerialPort.
-
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-09
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

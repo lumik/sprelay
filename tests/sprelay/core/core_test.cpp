@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -19,6 +21,19 @@
 **  If not, see https://opensource.org/licenses/                          **
 **                                                                        **
 ****************************************************************************/
+
+/*!
+ * \file      core_test.cpp
+ * \brief     Entry point for sprelay core tests.
+ *
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2018-03-07
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 
 #include <QCoreApplication>
 #include "lumik/qtest_suite/qtest_suite.h"

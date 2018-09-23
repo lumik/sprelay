@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -21,8 +23,18 @@
 ****************************************************************************/
 
 /*!
-    \file unified_serial_port.cpp
-*/
+ * \file      unified_serial_port.cpp
+ * \brief     The sprelay::core::UnifiedSerialPort class which combines together real and simulated connection to
+ *            %K8090 relay card.
+ *
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2018-04-10
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 
 #include "unified_serial_port.h"
 

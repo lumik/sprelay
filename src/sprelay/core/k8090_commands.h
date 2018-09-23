@@ -25,7 +25,7 @@
 /*!
  * \file      k8090_commands.h
  * \brief     Command binary representations and other constants for Veleman %K8090 card.
-
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-16
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

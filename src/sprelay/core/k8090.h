@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -21,10 +23,10 @@
 ****************************************************************************/
 
 /*!
- * \file
+ * \file      k8090.h
  * \ingroup   group_sprelay_core_public
- * \brief     K8090 class.
-
+ * \brief     The sprelay::core::k8090::K8090 class which provides API to control the relay card.
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2017-03-22
  * \copyright Copyright (C) 2017 Jakub Klener. All rights reserved.

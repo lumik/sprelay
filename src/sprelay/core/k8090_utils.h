@@ -24,8 +24,8 @@
 
 /*!
  * \file      k8090_utils.h
- * \brief     Utility functions and data structures for K8090 class implementation.
-
+ * \brief     Utility functions and data structures for sprelay::core::k8090::K8090 class implementation.
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-16
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

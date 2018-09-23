@@ -25,8 +25,8 @@
 /*!
  * \file      k8090_defines.h
  * \ingroup   group_sprelay_core_public
- * \brief     Public defines related to K8090 class.
-
+ * \brief     Public defines related to sprelay::core::k8090::K8090 class.
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-16
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

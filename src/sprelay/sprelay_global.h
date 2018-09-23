@@ -26,7 +26,7 @@
  * \file      sprelay_global.h
  * \ingroup   group_sprelay_public
  * \brief     Sprelay global staff.
-
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-03
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

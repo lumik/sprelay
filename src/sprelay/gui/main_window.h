@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -19,6 +21,19 @@
 **  If not, see https://opensource.org/licenses/                          **
 **                                                                        **
 ****************************************************************************/
+
+/*!
+ * \file      main_window.h
+ * \brief     The sprelay::gui::MainWindow class which implements main application window.
+ *
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2017-03-22
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 
 #ifndef SPRELAY_GUI_MAIN_WINDOW_H_
 #define SPRELAY_GUI_MAIN_WINDOW_H_

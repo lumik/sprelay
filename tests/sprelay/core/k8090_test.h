@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -19,6 +21,19 @@
 **  If not, see https://opensource.org/licenses/                          **
 **                                                                        **
 ****************************************************************************/
+
+/*!
+ * \file      k8090_test.h
+ * \brief     The sprelay::core::k8090::K8090Test class which implements tests for sprelay::core::k8090::K8090.
+ *
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2017-03-21
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 
 #ifndef SPRELAY_CORE_K8090_TEST_H_
 #define SPRELAY_CORE_K8090_TEST_H_

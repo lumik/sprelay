@@ -24,8 +24,10 @@
 
 /*!
  * \file      concurent_command_queue.cpp
- * \brief     Command queue for usage in K8090 class in multithreaded applications.
-
+ * \brief     The sprelay::core::k8090::impl_::ConcurentCommandQueue class which specializes
+ *            sprelay::core::command_queue::CommandQueue for usage in sprelay::core::k8090::K8090 class in
+ *            multithreaded applications.
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-09-11
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

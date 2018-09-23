@@ -24,8 +24,9 @@
 
 /*!
  * \file      indicator_button.cpp
- * \brief     Indicator button and indicator light widgets which indicates their state by their color.
-
+ * \brief     The sprelay::gui::IndicatorButton and sprelay::gui::IndicatorLight widgets which indicates their state by
+ *            their color.
+ *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-06-26
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.

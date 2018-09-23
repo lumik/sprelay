@@ -1,3 +1,5 @@
+// -*-c++-*-
+
 /***************************************************************************
 **                                                                        **
 **  Controlling interface for K8090 8-Channel Relay Card from Velleman    **
@@ -19,6 +21,20 @@
 **  If not, see https://opensource.org/licenses/                          **
 **                                                                        **
 ****************************************************************************/
+
+/*!
+ * \file      central_widget.h
+ * \ingroup   group_sprelay_gui_public
+ * \brief     The sprelay::gui::CentralWidget class which provides means to control the relay card through GUI.
+ *
+ * \author    Jakub Klener <lumiksro@centrum.cz>
+ * \date      2018-03-07
+ * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
+ *
+ * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
+ *            BSD License along with this program. If not, see https://opensource.org/licenses/.
+ */
+
 
 #ifndef SPRELAY_GUI_CENTRAL_WIDGET_H_
 #define SPRELAY_GUI_CENTRAL_WIDGET_H_
