@@ -73,6 +73,7 @@ if(DOXYGEN_FOUND)
     set(${sprelay_project_name}_doc_src
         ${PROJECT_SOURCE_DIR}/index.md
         ${PROJECT_SOURCE_DIR}/overview.md
+        ${PROJECT_SOURCE_DIR}/style_guide.md
         ${PROJECT_SOURCE_DIR}/sprelay.dox)
     target_sources(${sprelay_project_name} PRIVATE ${${sprelay_project_name}_doc_src})
     set_source_files_properties(${${sprelay_project_name}_doc_src} PROPERTIES HEADER_FILE_ONLY TRUE)

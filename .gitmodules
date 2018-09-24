@@ -4,3 +4,6 @@
 [submodule "tests/external/qtest_suite"]
 	path = tests/external/qtest_suite
 	url = https://github.com/lumik/qtest_suite.git
+[submodule "src/external/lumik/cpp_style_guide"]
+	path = src/external/lumik/cpp_style_guide
+	url = https://github.com/lumik/cpp_style_guide.git
