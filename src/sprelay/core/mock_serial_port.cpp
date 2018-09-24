@@ -500,13 +500,13 @@ void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
             queryButtonMode();
             break;
         case k8090::impl_::kCommands[as_number(k8090::CommandID::StartTimer)] :
-            startTimer(std::move(command));
+            startRelayTimer(std::move(command));
             break;
         case k8090::impl_::kCommands[as_number(k8090::CommandID::SetTimer)] :
-            setTimer(std::move(command));
+            setRelayTimer(std::move(command));
             break;
         case k8090::impl_::kCommands[as_number(k8090::CommandID::Timer)] :
-            queryTimer(std::move(command));
+            queryRelayTimer(std::move(command));
             break;
         case k8090::impl_::kCommands[as_number(k8090::CommandID::QueryRelay)] :
             queryRelay();
@@ -658,7 +658,7 @@ void MockSerialPort::queryButtonMode()
 
 
 // starts timers
-void MockSerialPort::startTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
+void MockSerialPort::startRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     int delay_ms = (command->data[3] * 256 + command->data[4]) * 1000;
     int local_delay_ms;  // delay of each timer, changes inside the loop
@@ -699,7 +699,7 @@ void MockSerialPort::startTimer(std::unique_ptr<k8090::impl_::CardMessage> comma
 
 
 // sets default timer timeouts
-void MockSerialPort::setTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
+void MockSerialPort::setRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command->data[2])};
     quint16 delay = 256 * command->data[3] + command->data[4];
@@ -712,7 +712,7 @@ void MockSerialPort::setTimer(std::unique_ptr<k8090::impl_::CardMessage> command
 
 
 // query actual or default timer timeouts
-void MockSerialPort::queryTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
+void MockSerialPort::queryRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command->data[2])};
     for (unsigned int i = 0; i < 8; ++i) {

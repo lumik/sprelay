@@ -120,9 +120,9 @@ private:  // NOLINT(whitespace/indent)
     void toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> command);
     void setButtonMode(std::unique_ptr<k8090::impl_::CardMessage> command);
     void queryButtonMode();
-    void startTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
-    void setTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
-    void queryTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void startRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void setRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
+    void queryRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> command);
     void queryRelay();
     void factoryDefaults();
     void jumperStatus();
