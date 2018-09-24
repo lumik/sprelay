@@ -136,37 +136,37 @@ private:  // NOLINT(whitespace/indent)
 
     // GUI elements
     // port settings
-    std::unique_ptr<IndicatorButton> connect_button_;
-    std::unique_ptr<QPushButton> refresh_ports_button_;
-    std::unique_ptr<QComboBox> ports_combo_box_;
+    IndicatorButton *connect_button_;
+    QPushButton *refresh_ports_button_;
+    QComboBox *ports_combo_box_;
 
     // relays
     // relays globals
-    std::unique_ptr<QGroupBox> relays_globals_box_;
-    std::unique_ptr<QPushButton> refresh_relays_button_;
-    std::unique_ptr<QPushButton> reset_factory_defaults_button_;
-    std::unique_ptr<QLabel> firmware_version_label_;
-    std::unique_ptr<IndicatorLight> jumper_status_light_;
+    QGroupBox *relays_globals_box_;
+    QPushButton *refresh_relays_button_;
+    QPushButton *reset_factory_defaults_button_;
+    QLabel *firmware_version_label_;
+    IndicatorLight *jumper_status_light_;
     // relay button status
-    std::unique_ptr<QGroupBox> relay_button_status_settings_box_;
-    std::unique_ptr<IndicatorLight> pushed_indicators_arr_[kNRelays];
+    QGroupBox *relay_button_status_settings_box_;
+    IndicatorLight * pushed_indicators_arr_[kNRelays];
     // power settings
-    std::unique_ptr<QGroupBox> relay_power_settings_box_;
-    std::unique_ptr<IndicatorButton> relay_on_buttons_arr_[kNRelays];
-    std::unique_ptr<QPushButton> relay_off_buttons_arr_[kNRelays];
-    std::unique_ptr<QPushButton> toggle_relay_buttons_arr_[kNRelays];
+    QGroupBox *relay_power_settings_box_;
+    IndicatorButton * relay_on_buttons_arr_[kNRelays];
+    QPushButton * relay_off_buttons_arr_[kNRelays];
+    QPushButton * toggle_relay_buttons_arr_[kNRelays];
     // mode settings
-    std::unique_ptr<QGroupBox> relay_mode_settings_box_;
-    std::unique_ptr<IndicatorButton> momentary_buttons_arr_[kNRelays];
-    std::unique_ptr<IndicatorButton> toggle_mode_buttons_arr_[kNRelays];
-    std::unique_ptr<IndicatorButton> timed_buttons_arr_[kNRelays];
+    QGroupBox *relay_mode_settings_box_;
+    IndicatorButton * momentary_buttons_arr_[kNRelays];
+    IndicatorButton * toggle_mode_buttons_arr_[kNRelays];
+    IndicatorButton * timed_buttons_arr_[kNRelays];
     // timer settings
-    std::unique_ptr<QGroupBox> relay_timers_settings_box_;
-    std::unique_ptr<QLabel> default_timer_labels_arr_[kNRelays];
-    std::unique_ptr<QLabel> remaining_time_labels_arr_[kNRelays];
-    std::unique_ptr<QPushButton> set_default_timer_buttons_arr_[kNRelays];
-    std::unique_ptr<IndicatorButton> start_timer_buttons_arr_[kNRelays];
-    std::unique_ptr<QSpinBox> timer_spin_box_arr_[kNRelays];
+    QGroupBox *relay_timers_settings_box_;
+    QLabel * default_timer_labels_arr_[kNRelays];
+    QLabel * remaining_time_labels_arr_[kNRelays];
+    QPushButton * set_default_timer_buttons_arr_[kNRelays];
+    IndicatorButton * start_timer_buttons_arr_[kNRelays];
+    QSpinBox * timer_spin_box_arr_[kNRelays];
 
     // signal mappers
     std::unique_ptr<QSignalMapper> relay_on_mapper_;

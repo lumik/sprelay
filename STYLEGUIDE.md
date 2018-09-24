@@ -394,6 +394,11 @@ This style guide is inspired by the [Google style guide][g_style_guide].
   ```
 * don’t use `inline` when defining a function in a class definition	– A member
   function defined in a class definition is implicitly inline.
+* use Qt's parent system and raw pointers as ownership management for widgets
+  and things that can be inserted into Qt's layouts (Qt's parenting system
+	can clash with `std::unique_ptr` and dangling pointers can be left). Prefere
+	`std::unique_ptr` in other situations because the lifetime of the managed
+	object with `std::unique_ptr` is more obvious.
 
 
 ## Documentation
