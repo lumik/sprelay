@@ -677,7 +677,7 @@ void MockSerialPort::startRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
         }
     }
     unsigned char previous = on_;
-    on_ ^= command->data[2];
+    on_ |= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
