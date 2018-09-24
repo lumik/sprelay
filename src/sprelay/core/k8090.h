@@ -172,8 +172,7 @@ private:  // NOLINT(whitespace/indent)
     std::unique_ptr<QMutex> com_port_name_mutex_;
     std::unique_ptr<UnifiedSerialPort> serial_port_;
 
-    std::unique_ptr<impl_::ConcurentCommandQueue>
-        pending_commands_;
+    std::unique_ptr<impl_::ConcurentCommandQueue> pending_commands_;
     std::unique_ptr<k8090::impl_::Command> current_command_;
     std::unique_ptr<QTimer> command_timer_;
     std::unique_ptr<QTimer> failure_timer_;
