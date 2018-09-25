@@ -97,7 +97,7 @@ QString byte_to_hex(const unsigned char *buffer, int n)
 
 
 /*!
- * \struct sprelay::core::MockSerialPortDeleter
+ * \struct sprelay::core::serial_utils::MockSerialPortDeleter
  * Example:
  * \code
  * #include <memory>
@@ -106,15 +106,18 @@ QString byte_to_hex(const unsigned char *buffer, int n)
  *
  * namespace sprelay {
  * namespace core {
+ * namespace serial_utils {
  *
  * // forward declarations
  * class MockSerialPort;
  *
+ * }  // namespace serial_utils
  * }  // namespace core
  * }  // namespace sprelay
  *
- * struct Mock {
- *     std::unique_ptr<MockSerialPort, MockSerialPortDeleter> mock_serial_port_;
+ * struct MyStruct {
+ *     std::unique_ptr<sprelay::core::MockSerialPort, sprelay::core::serial_utils::MockSerialPortDeleter>
+ *         mock_serial_port_;
  * };
  * \endcode
  */
