@@ -3,7 +3,7 @@
 Sperelay application provides means to controll Velleman %K8090 relay card. It can be compiled as a standalone
 application or as a library (see @ref index "sprelay index page" for more details about compilation).
 
-If you want to contribute, please follow the @ref style_guide "coding style guide".
+If you want to contribute, please follow the @subpage style_guide "coding style guide".
 
 
 ## Standalone application
