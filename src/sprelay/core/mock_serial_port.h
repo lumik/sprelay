@@ -61,7 +61,8 @@ struct CardMessage;
 }  // namespace impl_
 }
 
-/// Class which simulates the behavior of Velleman relay %K8090 card connected through the virtual serial port.
+/// \brief Class which simulates the behavior of Velleman relay %K8090 card connected through the virtual serial port.
+/// \headerfile ""
 class MockSerialPort : public QObject
 {
     Q_OBJECT

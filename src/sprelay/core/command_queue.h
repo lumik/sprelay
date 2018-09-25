@@ -52,7 +52,8 @@ namespace command_queue {
 
 namespace impl_ {
 
-/// Helper class used for command priorities storage and comparisons.
+/// \brief Helper class used for command priorities storage and comparisons.
+/// \headerfile ""
 template<typename TCommand>
 struct CommandPriority
 {
@@ -74,7 +75,9 @@ struct CommandPriority
     }
 };
 
-/// Helper class for pending commands storage.
+
+/// \brief Helper class for pending commands storage.
+/// \headerfile ""
 template<typename TCommand, int tSize, template <typename> class TList = QList>
 class PendingCommands
 {
@@ -93,7 +96,8 @@ private:  // NOLINT(whitespace/indent)
 
 }  // namespace impl_
 
-/// Queue used for storing command before invokations.
+/// \brief Queue used for storing command before invokations.
+/// \headerfile ""
 template<typename TCommand, int tSize, template <typename> class TList = QList>
 class CommandQueue : private std::priority_queue<impl_::CommandPriority<TCommand>>
 {

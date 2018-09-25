@@ -49,7 +49,8 @@ class K8090;
 namespace gui {
 class CentralWidget;
 
-/// The application's main window.
+/// \brief The application's main window.
+/// \headerfile ""
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

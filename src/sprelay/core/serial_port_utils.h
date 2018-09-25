@@ -57,7 +57,8 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
 /// Converts binary message to its string representation.
 QString byte_to_hex(const unsigned char *buffer, int n);
 
-/// Deleter needed for forward declaration of sprelay::core::MockSerialPort class.
+/// \brief Deleter needed for forward declaration of sprelay::core::MockSerialPort class.
+/// \headerfile ""
 struct MockSerialPortDeleter
 {
     void operator()(MockSerialPort *p);

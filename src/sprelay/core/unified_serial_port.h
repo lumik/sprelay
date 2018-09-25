@@ -62,7 +62,8 @@ namespace core {
 class MockSerialPort;
 
 
-/// Class which unifies QSerialPort and sprelay::core::MockSerialPort and can internaly switch between them.
+/// \brief Class which unifies QSerialPort and sprelay::core::MockSerialPort and can internaly switch between them.
+/// \headerfile ""
 class UnifiedSerialPort : public QObject
 {
     Q_OBJECT

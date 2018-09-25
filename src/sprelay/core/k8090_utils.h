@@ -56,7 +56,8 @@ enum struct TimerDelayType : unsigned char
 };
 
 
-/// %Command representation.
+/// \brief %Command representation.
+/// \headerfile ""
 struct Command
 {
     using IdType = k8090::CommandID;
@@ -96,7 +97,8 @@ struct Command
 unsigned char check_sum(const unsigned char *msg, int n);
 
 
-/// Wraps message from or to the Velleman %K8090 relay card.
+/// \brief Wraps message from or to the Velleman %K8090 relay card.
+/// \headerfile ""
 struct CardMessage
 {
     CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1, unsigned char param2,
