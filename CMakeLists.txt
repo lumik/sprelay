@@ -83,31 +83,8 @@ find_package(Doxygen)
 find_package(PythonInterp)
 
 
-# enum flags #
-# ---------- #
-
-# import enum_flags
-# TODO(lumik): devise more general way to do that
-set(enum_flags_target enum_flags)
-add_library(${enum_flags_target} INTERFACE)
-target_include_directories(${enum_flags_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
-target_include_directories(${enum_flags_target} INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/external/enum_flags/src>)
-if(NOT SPRELAY_BUILD_STANDALONE)
-    install(TARGETS ${enum_flags_target} EXPORT ${enum_flags_target}Config
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(EXPORT ${enum_flags_target}Config DESTINATION share/${enum_flags_target}/cmake)
-    export(TARGETS ${enum_flags_target} FILE ${enum_flags_target}Config.cmake)
-    if(SPRELAY_INSTALL_ENUM_FLAGS)
-        install(FILES "${PROJECT_SOURCE_DIR}/src/external/enum_flags/src/enum_flags/enum_flags.h"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/enum_flags")
-    endif(SPRELAY_INSTALL_ENUM_FLAGS)
-endif(NOT SPRELAY_BUILD_STANDALONE)
-
 # execute all parts of projects placed in subdirectories
-add_subdirectory(src)
+include(src/CMakeLists.txt)
 if(SPRELAY_MAKE_TESTS)
     add_subdirectory(tests)
 endif(SPRELAY_MAKE_TESTS)

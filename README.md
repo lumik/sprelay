@@ -79,7 +79,12 @@ cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug ^
 -DSPRELAY_INSTALL_ENUM_FLAGS=ON -DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=OFF
 ```
 When `SPRELAY_INSTALL_ENUM_FLAGS` is omited or set to `OFF`, the `enum_flags` are not installed along the `sprelay`
-library.
+library. The `enum_flags` library should then be installed somewhere in the system path or you have to point
+cmake to it for example by specifying the `CMAKE_PREFIX_PATH`. For example if you have `enum_flags` installed
+at `c:\libraries\enum_flags`, you should invoke
+```
+cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=c:\libraries
+```
 
 Then run your `make` command, for example (`-j` flag enables compilation paralelization)
 ```

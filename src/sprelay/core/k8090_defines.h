@@ -41,9 +41,9 @@
 
 #include <QMetaType>
 
-#include <type_traits>
+#include <lumik/enum_flags/enum_flags.h>
 
-#include "enum_flags/enum_flags.h"
+#include <type_traits>
 
 namespace sprelay {
 namespace core {
@@ -97,10 +97,6 @@ enum struct RelayID : unsigned char
 };
 
 
-/// Function overload which enables bitwise operators for RelayID enumeration. See enum_flags.h for more details.
-constexpr bool enable_bitmask_operators(RelayID) { return true; }
-
-
 /// Converts number to RelayID scoped enumeration.
 constexpr RelayID from_number(unsigned int number) { return static_cast<RelayID>(1 << (number)); }
 
@@ -116,6 +112,23 @@ constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+
+
+namespace lumik {
+namespace enum_flags {
+
+/// \ingroup group_sprelay_core_public
+/// \brief Struct specialization which enables bitwise operators for sprelay::core::k8090::RelayID enumeration. See
+/// the `enum_flags` documentation for more details.
+template<>
+struct EnableBitmaskOperators<sprelay::core::k8090::RelayID> {
+    static constexpr bool value = true;  ///< The `true` value enables bitmask operators on
+                                         ///< sprelay::core::k8090::RelayID
+};
+
+}  // namespace enum_flags
+}  // namespace lumik
+
 
 Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
 
@@ -137,15 +150,10 @@ Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
  * \enum sprelay::core::k8090::RelayID
  * \ingroup group_sprelay_core_public
  *
- * Bitwise operators are enabled for this enum by overloading k8090::enable_bitmask_operators(RelayID) function
- * (see enum_flags.h for more details) and so the value of k8090::RelayID type can be also a combination of
- * particular relays.
- */
-
-/*!
- * \fn constexpr bool sprelay::core::k8090::enable_bitmask_operators(RelayID)
- * \ingroup group_sprelay_core_public
- * \return True to enable bitmask operators.
+ * Bitwise operators are enabled for this enum by specializing
+ * lumik::enum_flags::EnableBitmaskOperators<sprelay::core::k8090::RelayID> structure
+ * (see `enum_flags` documentation for more details) and so the value of k8090::RelayID type can be also a combination
+ * of particular relays.
  */
 
 /*!

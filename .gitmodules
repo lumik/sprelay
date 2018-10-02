@@ -1,5 +1,5 @@
-[submodule "third_party/enum_flags"]
-	path = src/external/enum_flags
+[submodule "src/external/lumik/enum_flags"]
+	path = src/external/lumik/enum_flags
 	url = https://github.com/lumik/enum_flags.git
 [submodule "tests/external/qtest_suite"]
 	path = tests/external/qtest_suite

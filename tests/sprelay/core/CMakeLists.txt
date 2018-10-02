@@ -115,7 +115,7 @@ else()
         Qt5::Core
         Qt5::SerialPort
         Qt5::Test
-        enum_flags
+        lumik::enum_flags::enum_flags
         qtest_suite
         sprelay_global
         sprelay_core)

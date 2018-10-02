@@ -54,7 +54,7 @@ if(use_object_targets)
         Qt5::Core
         Qt5::SerialPort
         Threads::Threads
-        enum_flags
+        lumik::enum_flags::enum_flags
         sprelay_global)
     target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
     target_include_directories(${${PROJECT_NAME}_private_target} PUBLIC $<BUILD_INTERFACE:${sprelay_source_dir}>)
@@ -89,7 +89,7 @@ if(use_object_targets)
 #        Qt5::Core
 #        Qt5::SerialPort
 #        Threads::Threads
-#        enum_flags
+#        lumik::enum_flags::enum_flags
 #        sprelay_global)
 #    target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 #    target_include_directories(${${PROJECT_NAME}_private_target} INTERFACE $<BUILD_INTERFACE:${sprelay_source_dir}>)
@@ -118,7 +118,7 @@ if(use_object_targets)
     target_link_libraries(${PROJECT_NAME}
         Qt5::Core Qt5::SerialPort
         Threads::Threads
-        enum_flags
+        lumik::enum_flags::enum_flags
         sprelay_global
         ${${PROJECT_NAME}_private_target})
 else()
@@ -136,7 +136,7 @@ else()
 #    target_link_libraries(${PROJECT_NAME}
 #        Qt5::Core Qt5::SerialPort
 #        Threads::Threads
-#        enum_flags
+#        lumik::enum_flags::enum_flags
 #        sprelay_global
 #        ${${PROJECT_NAME}_private_target})
     add_library(${PROJECT_NAME} SHARED
@@ -155,7 +155,7 @@ else()
         Qt5::Core
         Qt5::SerialPort
         Threads::Threads
-        enum_flags
+        lumik::enum_flags::enum_flags
         sprelay_global)
 endif(use_object_targets)
 

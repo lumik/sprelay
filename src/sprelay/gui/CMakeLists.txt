@@ -64,7 +64,7 @@ if(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
         Qt5::Gui
         Qt5::Widgets
         Threads::Threads
-        enum_flags
+        lumik::enum_flags::enum_flags
         sprelay_global
         sprelay_core)
 
