@@ -18,7 +18,6 @@ if(SPRELAY_INSTALL_ENUM_FLAGS)
     if(result)
         message(FATAL_ERROR "CMake step for enum_flags failed: ${result}")
     endif()
-
     # The following commands uses ExternalProject_add through at configure time invoked cmake project.
 #    configure_file(
 #        ${CMAKE_CURRENT_LIST_DIR}/enum_flags.CMakeLists.txt.in
@@ -40,9 +39,25 @@ if(SPRELAY_INSTALL_ENUM_FLAGS)
 #    if(result)
 #        message(FATAL_ERROR "Build step for enum_flags failed: ${result}")
 #    endif()
-
     install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/enum_flagsBuild)")
+
+    if (DOXYGEN_FOUND)
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/enum_flagsBuild/enum_flags.tags
+            COMMAND ${CMAKE_COMMAND} --build . --target doc
+            # copy the enum_flags documentation inside main build folder to make it discoverable also before
+            # installation
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_CURRENT_BINARY_DIR}/enum_flagsBuild/doc
+                ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_DATAROOTDIR}/doc/enum_flags
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/enum_flagsBuild
+            COMMENT "Building enum_flags documentation...")
+        add_custom_target(enum_flags_tag_file DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/enum_flagsBuild/enum_flags.tags)
+        set_property(TARGET enum_flags_tag_file
+            PROPERTY TAG_FILE ${CMAKE_CURRENT_BINARY_DIR}/enum_flagsBuild/enum_flags.tags)
+    endif()
+
 endif(SPRELAY_INSTALL_ENUM_FLAGS)
 
 

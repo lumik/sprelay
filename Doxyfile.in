@@ -2104,7 +2104,8 @@ SKIP_FUNCTION_MACROS   = YES
 TAGFILES               = @qt_core_tags@ \
                          @qt_gui_tags@ \
                          @qt_widgets_tags@ \
-                         @qt_testlib_tags@
+                         @qt_testlib_tags@ \
+                         @enum_flags_tags@
 
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
