@@ -130,9 +130,9 @@ endif(DOXYGEN_FOUND)
 
 # Other tests
 if(PYTHONINTERP_FOUND)
-    add_test(NAME pylint
+    add_test(NAME cpplint
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMAND ${PYTHON_EXECUTABLE}
-            third_party/cpplint-1.3.0/cpplint.py
+            external/cpplint-1.3.0/cpplint.py
             --extensions=cpp,h,tpp --headers=h,tpp --recursive src/sprelay tests/sprelay)
 endif(PYTHONINTERP_FOUND)
