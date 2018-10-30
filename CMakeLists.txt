@@ -71,9 +71,15 @@ include(GNUInstallDirs)
 
 # enable running program from build directory by copying all binary staff into bin subdirectory
 if(WIN32)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_BINDIR}")
+    if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
+    endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+    if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
+    endif(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_BINDIR}")
+    endif(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()
 
 # check for Doxygen
