@@ -6,4 +6,4 @@ set(sprelay_source_dir ${CMAKE_CURRENT_LIST_DIR})
 include(${CMAKE_CURRENT_LIST_DIR}/external/CMakeLists.txt)
 
 # sprelay
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/sprelay)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/biomolecules/sprelay)

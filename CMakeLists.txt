@@ -117,7 +117,7 @@ if(DOXYGEN_FOUND)
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-    set(doxy_main_page ${CMAKE_CURRENT_SOURCE_DIR}/src/sprelay/index.md)
+    set(doxy_main_page ${CMAKE_CURRENT_SOURCE_DIR}/src/biomolecules/sprelay/index.md)
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
     add_custom_target(doc
@@ -135,5 +135,5 @@ if(PYTHONINTERP_FOUND)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMAND ${PYTHON_EXECUTABLE}
             external/cpplint-1.3.0/cpplint.py
-            --extensions=cpp,h,tpp --headers=h,tpp --recursive src/sprelay tests/sprelay)
+            --extensions=cpp,h,tpp --headers=h,tpp --recursive src/biomolecules/sprelay tests/biomolecules/sprelay)
 endif(PYTHONINTERP_FOUND)

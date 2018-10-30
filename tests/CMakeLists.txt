@@ -14,4 +14,4 @@ target_include_directories(${qtest_suite_target}
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tests/external/qtest_suite/include>)
 
 # build tests
-add_subdirectory(sprelay)
+add_subdirectory(biomolecules/sprelay)
