@@ -113,6 +113,7 @@ if(DOXYGEN_FOUND)
     set(qt_testlib_tags "${qt_docs_dir}/qttestlib/qttestlib.tags=http://doc.qt.io/qt-5/")
     get_target_property(enum_flags_tags enum_flags_tag_file TAG_FILE)
     set(enum_flags_tags "${enum_flags_tags}=../../${CMAKE_INSTALL_DATAROOTDIR}/doc/enum_flags/html/")
+    get_filename_component(sprelay_parent_dir ${sprelay_global_source_dir} DIRECTORY)
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
