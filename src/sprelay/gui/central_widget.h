@@ -39,13 +39,13 @@
 #ifndef SPRELAY_GUI_CENTRAL_WIDGET_H_
 #define SPRELAY_GUI_CENTRAL_WIDGET_H_
 
+#include <memory>
+
 #include <QString>
 #include <QWidget>
 
-#include <memory>
-
-#include "sprelay/sprelay_global.h"
 #include "sprelay/core/k8090.h"
+#include "sprelay/sprelay_global.h"
 
 // forward declarations
 class QComboBox;

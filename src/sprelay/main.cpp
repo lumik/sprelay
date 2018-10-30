@@ -37,8 +37,8 @@
 
 #include <QApplication>
 
-#include "sprelay_global.h"
 #include "sprelay/gui/main_window.h"
+#include "sprelay_global.h"
 
 
 /// Creates application entry point.

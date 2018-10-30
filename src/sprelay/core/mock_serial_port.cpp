@@ -46,8 +46,8 @@
 #include <chrono>
 #endif
 
-#include "k8090_utils.h"
 #include "k8090_commands.h"
+#include "k8090_utils.h"
 
 namespace sprelay {
 namespace core {

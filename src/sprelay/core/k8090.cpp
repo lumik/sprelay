@@ -37,12 +37,12 @@
 
 #include "k8090.h"
 
+#include <stdexcept>
+#include <utility>
+
 #include <QMutex>
 #include <QStringBuilder>
 #include <QTimer>
-
-#include <stdexcept>
-#include <utility>
 
 #include "command_queue.h"
 #include "concurent_command_queue.h"

@@ -39,9 +39,9 @@
 #ifndef SPRELAY_CORE_SERIAL_PORT_UTILS_H_
 #define SPRELAY_CORE_SERIAL_PORT_UTILS_H_
 
-#include <QString>
-
 #include <memory>
+
+#include <QString>
 
 namespace sprelay {
 namespace core {

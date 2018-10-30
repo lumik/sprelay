@@ -38,6 +38,10 @@
 #ifndef SPRELAY_CORE_MOCK_SERIAL_PORT_H_
 #define SPRELAY_CORE_MOCK_SERIAL_PORT_H_
 
+#include <memory>
+#include <queue>
+#include <vector>
+
 #include <QByteArray>
 #include <QIODevice>
 #include <QObject>
@@ -45,10 +49,6 @@
 #include <QSignalMapper>
 #include <QString>
 #include <QTimer>
-
-#include <memory>
-#include <queue>
-#include <vector>
 
 
 namespace sprelay {

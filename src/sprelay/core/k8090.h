@@ -38,16 +38,16 @@
 #ifndef SPRELAY_CORE_K8090_H_
 #define SPRELAY_CORE_K8090_H_
 
-#include <QList>
-#include <QObject>
-
 #include <memory>
 #include <queue>
 
-#include "k8090_defines.h"
-#include "serial_port_defines.h"
+#include <QList>
+#include <QObject>
 
 #include "sprelay/sprelay_global.h"
+
+#include "k8090_defines.h"
+#include "serial_port_defines.h"
 
 // forward declarations
 class QMutex;

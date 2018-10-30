@@ -38,13 +38,13 @@
 #ifndef SPRELAY_CORE_COMMAND_QUEUE_H_
 #define SPRELAY_CORE_COMMAND_QUEUE_H_
 
-#include <QList>
-
 #include <cstddef>
 #include <limits>
 #include <memory>
 #include <mutex>
 #include <queue>
+
+#include <QList>
 
 namespace sprelay {
 namespace core {

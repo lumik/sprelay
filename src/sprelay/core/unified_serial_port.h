@@ -39,13 +39,13 @@
 #ifndef SPRELAY_CORE_UNIFIED_SERIAL_PORT_H_
 #define SPRELAY_CORE_UNIFIED_SERIAL_PORT_H_
 
+#include <memory>
+
 #include <QByteArray>
 #include <QIODevice>
 #include <QObject>
 #include <QSerialPort>
 #include <QString>
-
-#include <memory>
 
 #include "serial_port_defines.h"
 #include "serial_port_utils.h"

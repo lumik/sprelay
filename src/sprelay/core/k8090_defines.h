@@ -39,11 +39,11 @@
 #ifndef SPRELAY_CORE_K8090_DEFINES_H_
 #define SPRELAY_CORE_K8090_DEFINES_H_
 
+#include <type_traits>
+
 #include <QMetaType>
 
 #include <lumik/enum_flags/enum_flags.h>
-
-#include <type_traits>
 
 namespace sprelay {
 namespace core {

@@ -34,12 +34,11 @@
  *            BSD License along with this program. If not, see https://opensource.org/licenses/.
  */
 
-#include "k8090_utils.h"
-
 #include <iterator>
 #include <stdexcept>
 
 #include "k8090_commands.h"
+#include "k8090_utils.h"
 
 
 namespace sprelay {

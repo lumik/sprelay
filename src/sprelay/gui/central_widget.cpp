@@ -37,6 +37,9 @@
 
 #include "central_widget.h"
 
+#include <cstdint>
+#include <limits>
+
 #include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
@@ -47,9 +50,6 @@
 #include <QSpinBox>
 #include <QStringBuilder>
 #include <QTimer>
-
-#include <limits>
-#include <cstdint>
 
 #include "indicator_button.h"
 
