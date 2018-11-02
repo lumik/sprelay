@@ -24,9 +24,9 @@
 
 /*!
  * \file      concurent_command_queue.cpp
- * \brief     The sprelay::core::k8090::impl_::ConcurentCommandQueue class which specializes
- *            sprelay::core::command_queue::CommandQueue for usage in sprelay::core::k8090::K8090 class in
- *            multithreaded applications.
+ * \brief     The biomolecules::sprelay::core::k8090::impl_::ConcurentCommandQueue class which specializes
+ *            biomolecules::sprelay::core::command_queue::CommandQueue for usage in
+ *            biomolecules::sprelay::core::k8090::K8090 class in multithreaded applications.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-09-11
@@ -38,6 +38,7 @@
 
 #include "concurent_command_queue.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -164,3 +165,4 @@ bool ConcurentCommandQueue::updateCommandImpl(CommandID command_id, const Comman
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

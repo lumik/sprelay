@@ -24,7 +24,7 @@
 
 /*!
  * \file      k8090_utils.cpp
- * \brief     Utility functions and data structures for sprelay::core::k8090::K8090 class implementation.
+ * \brief     Utility functions and data structures for biomolecules::sprelay::core::k8090::K8090 class implementation.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-16
@@ -41,6 +41,7 @@
 #include "k8090_utils.h"
 
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -48,13 +49,13 @@ namespace impl_ {
 
 
 /*!
- * \enum sprelay::core::impl_::TimerDelayType
+ * \enum biomolecules::sprelay::core::impl_::TimerDelayType
  * See the Velleman %K8090 card manual for more info about timer delay types.
  */
 
 
 /*!
- * \struct sprelay::core::k8090::impl_::Command
+ * \struct biomolecules::sprelay::core::k8090::impl_::Command
  * It is used for command comparisons and in command_queue::CommandQueue.
  */
 
@@ -367,3 +368,4 @@ unsigned char CardMessage::commandByte() const
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

@@ -24,7 +24,8 @@
 
 /*!
  * \file      mock_serial_port_test.cpp
- * \brief     The sprelay::core::MockSerialPortTest class which implements tests for sprelay::core::MockSerialPort.
+ * \brief     The biomolecules::sprelay::core::MockSerialPortTest class which implements tests for
+ *            biomolecules::sprelay::core::MockSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-24
@@ -56,7 +57,7 @@
 
 #include "core_test_utils.h"
 
-
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -64,7 +65,7 @@ const int MockSerialPortTest::kCommandTimeoutMs = 50;
 const int MockSerialPortTest::kDelayBetweenCommandsMs = 20;
 
 
-void sprelay::core::MockSerialPortTest::init()
+void biomolecules::sprelay::core::MockSerialPortTest::init()
 {
     mock_serial_port_.reset(new MockSerialPort);
     mock_serial_port_->setPortName("MOCKCOM");
@@ -952,3 +953,4 @@ bool MockSerialPortTest::measureCommandWithResponse(MockSerialPort *serial_port,
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

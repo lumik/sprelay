@@ -24,7 +24,7 @@
 
 /*!
  * \file      k8090_utils.h
- * \brief     Utility functions and data structures for sprelay::core::k8090::K8090 class implementation.
+ * \brief     Utility functions and data structures for biomolecules::sprelay::core::k8090::K8090 class implementation.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-16
@@ -42,6 +42,7 @@
 
 #include "k8090_defines.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -116,5 +117,6 @@ struct CardMessage
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_H_

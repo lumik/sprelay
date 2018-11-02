@@ -39,6 +39,7 @@
 
 #include "k8090_defines.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -259,5 +260,6 @@ const quint16 kVendorID = 4303;
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_K8090_COMMANDS_H_

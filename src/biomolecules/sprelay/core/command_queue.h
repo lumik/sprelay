@@ -24,7 +24,7 @@
 
 /*!
  * \file      command_queue.h
- * \brief     The sprelay::core::command_queue::CommandQueue class and some other related stuff.
+ * \brief     The biomolecules::sprelay::core::command_queue::CommandQueue class and some other related stuff.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-03-07
@@ -46,6 +46,7 @@
 
 #include <QList>
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace command_queue {
@@ -126,6 +127,7 @@ private:  // NOLINT(whitespace/indent)
 }  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #include "command_queue.tpp"
 

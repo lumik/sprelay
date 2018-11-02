@@ -24,7 +24,8 @@
 
 /*!
  * \file      mock_serial_port_test.h
- * \brief     The sprelay::core::MockSerialPortTest class which implements tests for sprelay::core::MockSerialPort.
+ * \brief     The biomolecules::sprelay::core::MockSerialPortTest class which implements tests for
+ *            biomolecules::sprelay::core::MockSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-24
@@ -47,7 +48,7 @@
 
 #include "biomolecules/sprelay/core/mock_serial_port.h"
 
-
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -87,5 +88,6 @@ ADD_TEST(MockSerialPortTest)
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_

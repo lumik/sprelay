@@ -24,8 +24,8 @@
 
 /*!
  * \file      k8090_defines.h
- * \ingroup   group_sprelay_core_public
- * \brief     Public defines related to sprelay::core::k8090::K8090 class.
+ * \ingroup   group_biomolecules_sprelay_core_public
+ * \brief     Public defines related to biomolecules::sprelay::core::k8090::K8090 class.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-16
@@ -45,6 +45,7 @@
 
 #include <lumik/enum_flags/enum_flags.h>
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -112,60 +113,61 @@ constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 
 namespace lumik {
 namespace enum_flags {
 
-/// \ingroup group_sprelay_core_public
-/// \brief Struct specialization which enables bitwise operators for sprelay::core::k8090::RelayID enumeration. See
-/// the `enum_flags` documentation for more details.
+/// \ingroup group_biomolecules_sprelay_core_public
+/// \brief Struct specialization which enables bitwise operators for biomolecules::sprelay::core::k8090::RelayID
+/// enumeration. See the \ref group_enum_flags "enum_flags" documentation for more details.
 template<>
-struct EnableBitmaskOperators<sprelay::core::k8090::RelayID> {
+struct EnableBitmaskOperators<biomolecules::sprelay::core::k8090::RelayID> {
     static constexpr bool value = true;  ///< The `true` value enables bitmask operators on
-                                         ///< sprelay::core::k8090::RelayID
+                                         ///< biomolecules::sprelay::core::k8090::RelayID
 };
 
 }  // namespace enum_flags
 }  // namespace lumik
 
 
-Q_DECLARE_METATYPE(sprelay::core::k8090::RelayID)
+Q_DECLARE_METATYPE(biomolecules::sprelay::core::k8090::RelayID)
 
 /*!
- * \enum sprelay::core::k8090::CommandID
- * \ingroup group_sprelay_core_public
+ * \enum biomolecules::sprelay::core::k8090::CommandID
+ * \ingroup group_biomolecules_sprelay_core_public
  *
  * See the Velleman %K8090 card manual.
  */
 
 /*!
- * \enum sprelay::core::k8090::ResponseID
- * \ingroup group_sprelay_core_public
+ * \enum biomolecules::sprelay::core::k8090::ResponseID
+ * \ingroup group_biomolecules_sprelay_core_public
  *
  * See the Velleman %K8090 card manual.
  */
 
 /*!
- * \enum sprelay::core::k8090::RelayID
- * \ingroup group_sprelay_core_public
+ * \enum biomolecules::sprelay::core::k8090::RelayID
+ * \ingroup group_biomolecules_sprelay_core_public
  *
  * Bitwise operators are enabled for this enum by specializing
- * lumik::enum_flags::EnableBitmaskOperators<sprelay::core::k8090::RelayID> structure
+ * lumik::enum_flags::EnableBitmaskOperators<biomolecules::sprelay::core::k8090::RelayID> structure
  * (see `enum_flags` documentation for more details) and so the value of k8090::RelayID type can be also a combination
  * of particular relays.
  */
 
 /*!
- * \fn constexpr RelayID sprelay::core::k8090::from_number(unsigned int number)
- * \ingroup group_sprelay_core_public
+ * \fn constexpr RelayID biomolecules::sprelay::core::k8090::from_number(unsigned int number)
+ * \ingroup group_biomolecules_sprelay_core_public
  * \param number The number.
  * \return The RelayID enumerator.
  */
 
 /*!
- * \fn constexpr std::underlying_type<E> sprelay::core::k8090::as_number(const E e)
- * \ingroup group_sprelay_core_public
+ * \fn constexpr std::underlying_type<E> biomolecules::sprelay::core::k8090::as_number(const E e)
+ * \ingroup group_biomolecules_sprelay_core_public
  * \param e Enumerator to be converted.
  * \return The enum value as underlying type.
  */

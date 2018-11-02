@@ -24,7 +24,8 @@
 
 /*!
  * \file      serial_port_utils_test.h
- * \brief     The sprelay::core::SerialPortUtilsTest class which implements tests for serial port utilities.
+ * \brief     The biomolecules::sprelay::core::SerialPortUtilsTest class which implements tests for serial port
+ *            utilities.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -42,6 +43,7 @@
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace serial_utils {
@@ -58,5 +60,6 @@ ADD_TEST(SerialPortUtilsTest)
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_

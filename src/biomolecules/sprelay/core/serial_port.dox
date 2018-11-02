@@ -1,4 +1,4 @@
 /*!
- * \namespace sprelay::core::serial_utils
+ * \namespace biomolecules::sprelay::core::serial_utils
  * \brief Utility functions for serial port.
  */

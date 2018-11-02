@@ -24,8 +24,8 @@
 
 /*!
  * \file      serial_port_utils.cpp
- * \brief     Utility functions and data structures for sprelay::core::UnifiedSerialPort and
- *            sprelay::core::MockSerialPort.
+ * \brief     Utility functions and data structures for biomolecules::sprelay::core::UnifiedSerialPort and
+ *            biomolecules::sprelay::core::MockSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -42,6 +42,7 @@
 
 #include "mock_serial_port.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace serial_utils {
@@ -97,7 +98,7 @@ QString byte_to_hex(const unsigned char *buffer, int n)
 
 
 /*!
- * \struct sprelay::core::serial_utils::MockSerialPortDeleter
+ * \struct biomolecules::sprelay::core::serial_utils::MockSerialPortDeleter
  * Example:
  * \code
  * #include <memory>
@@ -116,7 +117,8 @@ QString byte_to_hex(const unsigned char *buffer, int n)
  * }  // namespace sprelay
  *
  * struct MyStruct {
- *     std::unique_ptr<sprelay::core::MockSerialPort, sprelay::core::serial_utils::MockSerialPortDeleter>
+ *     std::unique_ptr<biomolecules::sprelay::core::MockSerialPort,
+ *             biomolecules::sprelay::core::serial_utils::MockSerialPortDeleter>
  *         mock_serial_port_;
  * };
  * \endcode
@@ -135,3 +137,4 @@ void MockSerialPortDeleter::operator()(MockSerialPort *p)
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

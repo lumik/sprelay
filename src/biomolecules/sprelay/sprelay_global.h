@@ -24,7 +24,7 @@
 
 /*!
  * \file      sprelay_global.h
- * \ingroup   group_sprelay_public
+ * \ingroup   group_biomolecules_sprelay_public
  * \brief     Sprelay global staff.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
@@ -61,7 +61,7 @@
 
 // Documentation
 /*!
- * \addtogroup group_sprelay_public
+ * \addtogroup group_biomolecules_sprelay_public
  * @{
  */
 
@@ -94,7 +94,7 @@
  * \sa SPRELAY_EXPORT
  */
 
-/*! @}*/  // group_sprelay_public
+/*! @}*/  // group_biomolecules_sprelay_public
 
 #if defined(DOXYGEN)
     #define SPRELAY_STANDALONE

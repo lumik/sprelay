@@ -24,7 +24,7 @@
 
 /*!
  * \file      mock_serial_port.cpp
- * \brief     The sprelay::core::MockSerialPort class which implements the simulated relay card.
+ * \brief     The biomolecules::sprelay::core::MockSerialPort class which implements the simulated relay card.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -49,6 +49,7 @@
 #include "k8090_commands.h"
 #include "k8090_utils.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -839,3 +840,4 @@ void MockSerialPort::firmwareVersion()
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

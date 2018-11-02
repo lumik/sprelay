@@ -24,8 +24,8 @@
 
 /*!
  * \file      unified_serial_port.cpp
- * \brief     The sprelay::core::UnifiedSerialPort class which combines together real and simulated connection to
- *            %K8090 relay card.
+ * \brief     The biomolecules::sprelay::core::UnifiedSerialPort class which combines together real and simulated
+ *            connection to %K8090 relay card.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -44,6 +44,7 @@
 
 #include "mock_serial_port.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -519,3 +520,4 @@ bool UnifiedSerialPort::setupPort(TSerialPort *serial_port)
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

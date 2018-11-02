@@ -42,11 +42,11 @@
 
 
 /// Creates application entry point.
-/// \ingroup group_sprelay_main
+/// \ingroup group_biomolecules_sprelay_main
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    sprelay::gui::MainWindow w;
+    biomolecules::sprelay::gui::MainWindow w;
     w.show();
 
     return a.exec();

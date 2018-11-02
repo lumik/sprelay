@@ -24,7 +24,8 @@
 
 /*!
  * \file      k8090_utils_test.cpp
- * \brief     Tests for utility functions and data structures for sprelay::core::k8090::K8090 class implementation.
+ * \brief     Tests for utility functions and data structures for biomolecules::sprelay::core::k8090::K8090 class
+ *            implementation.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-17
@@ -44,8 +45,9 @@
 #include "biomolecules/sprelay/core/k8090_defines.h"
 #include "biomolecules/sprelay/core/k8090_utils.h"
 
-Q_DECLARE_METATYPE(sprelay::core::k8090::impl_::Command)
+Q_DECLARE_METATYPE(biomolecules::sprelay::core::k8090::impl_::Command)
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -754,3 +756,4 @@ void CardMessageTest::commandByte()
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

@@ -24,8 +24,8 @@
 
 /*!
  * \file      serial_port_utils.h
- * \brief     Utility functions and data structures for sprelay::core::UnifiedSerialPort and
- *            sprelay::core::MockSerialPort.
+ * \brief     Utility functions and data structures for biomolecules::sprelay::core::UnifiedSerialPort and
+ *            biomolecules::sprelay::core::MockSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -43,6 +43,7 @@
 
 #include <QString>
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -57,7 +58,7 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
 /// Converts binary message to its string representation.
 QString byte_to_hex(const unsigned char *buffer, int n);
 
-/// \brief Deleter needed for forward declaration of sprelay::core::MockSerialPort class.
+/// \brief Deleter needed for forward declaration of biomolecules::sprelay::core::MockSerialPort class.
 /// \headerfile ""
 struct MockSerialPortDeleter
 {
@@ -67,5 +68,6 @@ struct MockSerialPortDeleter
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_SERIAL_PORT_UTILS_H_

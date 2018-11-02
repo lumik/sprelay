@@ -16,12 +16,12 @@ important parts of the application is commented in the chapter describing [dynam
 
 Sprelay consists of two dynamic libraries:
 - `sprelay_core` library which provides programatic control over the relay card and is summarized in the
-  @ref group_sprelay_core_public module. Most of the functionality is provided by the
-  @ref sprelay::core::k8090::K8090 class.
+  @ref group_biomolecules_sprelay_core_public module. Most of the functionality is provided by the
+  @ref biomolecules::sprelay::core::k8090::K8090 class.
 - `sprelay` library which contains dialog window which can be used to construct GUI and is summarized in the
-@ref group_sprelay_gui_public module.
+@ref group_biomolecules_sprelay_gui_public module.
 
-The public interface of the library is gathered in @ref group_sprelay_public module. Usage example could be seen in the
-@ref sprelay::gui::CentralWidget class documentation.
+The public interface of the library is gathered in @ref group_biomolecules_sprelay_public module. Usage example could
+be seen in the @ref biomolecules::sprelay::gui::CentralWidget class documentation.
 
 @warning If you want to use sprelay library you have to enable `c++11` standard inside your project.

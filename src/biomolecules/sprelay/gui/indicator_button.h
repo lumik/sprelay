@@ -24,8 +24,8 @@
 
 /*!
  * \file      indicator_button.h
- * \brief     The sprelay::gui::IndicatorButton and sprelay::gui::IndicatorLight widgets which indicates their state by
- *            their color.
+ * \brief     The biomolecules::sprelay::gui::IndicatorButton and biomolecules::sprelay::gui::IndicatorLight widgets
+ *            which indicates their state by their color.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-06-26
@@ -44,6 +44,7 @@
 // forward declarations
 class QLabel;
 
+namespace biomolecules {
 namespace sprelay {
 namespace gui {
 
@@ -109,5 +110,6 @@ private:  // NOLINT(whitespace/indent)
 
 }  // namespace gui
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_GUI_INDICATOR_BUTTON_H_

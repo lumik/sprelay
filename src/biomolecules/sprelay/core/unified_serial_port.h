@@ -24,8 +24,8 @@
 
 /*!
  * \file      unified_serial_port.h
- * \brief     The sprelay::core::UnifiedSerialPort class which combines together real and simulated connection to
- *            %K8090 relay card.
+ * \brief     The biomolecules::sprelay::core::UnifiedSerialPort class which combines together real and simulated
+ *            connection to %K8090 relay card.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -55,6 +55,7 @@
 class QMutex;
 
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -62,7 +63,8 @@ namespace core {
 class MockSerialPort;
 
 
-/// \brief Class which unifies QSerialPort and sprelay::core::MockSerialPort and can internaly switch between them.
+/// \brief Class which unifies QSerialPort and biomolecules::sprelay::core::MockSerialPort and can internaly switch
+/// between them.
 /// \headerfile ""
 class UnifiedSerialPort : public QObject
 {
@@ -127,5 +129,6 @@ private:  // NOLINT(whitespace/indent)
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_UNIFIED_SERIAL_PORT_H_

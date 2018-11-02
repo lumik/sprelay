@@ -24,8 +24,9 @@
 
 /*!
  * \file      central_widget.h
- * \ingroup   group_sprelay_gui_public
- * \brief     The sprelay::gui::CentralWidget class which provides means to control the relay card through GUI.
+ * \ingroup   group_biomolecules_sprelay_gui_public
+ * \brief     The biomolecules::sprelay::gui::CentralWidget class which provides means to control the relay card
+ *            through GUI.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-03-07
@@ -56,6 +57,7 @@ class QSignalMapper;
 class QSpinBox;
 class QTimer;
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 // forward declarations of serial_utils classes
@@ -101,14 +103,14 @@ private slots:  // NOLINT(whitespace/indent)
 
 private slots:  // NOLINT(whitespace/indent)
     // reactions to signals from the relay
-    void onRelayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
-        sprelay::core::k8090::RelayID timed);
-    void onButtonStatus(sprelay::core::k8090::RelayID state, sprelay::core::k8090::RelayID pressed,
-        sprelay::core::k8090::RelayID released);
-    void onTotalTimerDelay(sprelay::core::k8090::RelayID relay, quint16 delay);
-    void onRemainingTimerDelay(sprelay::core::k8090::RelayID relay, quint16 delay);
-    void onButtonModes(sprelay::core::k8090::RelayID momentary, sprelay::core::k8090::RelayID toggle,
-       sprelay::core::k8090::RelayID timed);
+    void onRelayStatus(biomolecules::sprelay::core::k8090::RelayID previous,
+        biomolecules::sprelay::core::k8090::RelayID current, biomolecules::sprelay::core::k8090::RelayID timed);
+    void onButtonStatus(biomolecules::sprelay::core::k8090::RelayID state,
+        biomolecules::sprelay::core::k8090::RelayID pressed, biomolecules::sprelay::core::k8090::RelayID released);
+    void onTotalTimerDelay(biomolecules::sprelay::core::k8090::RelayID relay, quint16 delay);
+    void onRemainingTimerDelay(biomolecules::sprelay::core::k8090::RelayID relay, quint16 delay);
+    void onButtonModes(biomolecules::sprelay::core::k8090::RelayID momentary,
+        biomolecules::sprelay::core::k8090::RelayID toggle, biomolecules::sprelay::core::k8090::RelayID timed);
     void onJumperStatus(bool on);
     void onFirmwareVersion(int year, int week);
     void onConnected();
@@ -184,5 +186,6 @@ private:  // NOLINT(whitespace/indent)
 
 }  // namespace gui
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_GUI_CENTRAL_WIDGET_H_

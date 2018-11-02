@@ -24,8 +24,8 @@
 
 /*!
  * \file      indicator_button.cpp
- * \brief     The sprelay::gui::IndicatorButton and sprelay::gui::IndicatorLight widgets which indicates their state by
- *            their color.
+ * \brief     The biomolecules::sprelay::gui::IndicatorButton and biomolecules::sprelay::gui::IndicatorLight widgets
+ *            which indicates their state by their color.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-06-26
@@ -43,6 +43,7 @@
 #include <QSize>
 #include <QString>
 
+namespace biomolecules {
 namespace sprelay {
 namespace gui {
 
@@ -244,3 +245,4 @@ void IndicatorButton::initialize(const QString &text)
 
 }  // namespace gui
 }  // namespace sprelay
+}  // namespace biomolecules

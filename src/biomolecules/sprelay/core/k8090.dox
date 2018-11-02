@@ -1,12 +1,12 @@
 /*!
- * \namespace sprelay::core::k8090
+ * \namespace biomolecules::sprelay::core::k8090
  * \brief Contains K8090 class and related data structures.
  *
- * The main functionality is provided by the sprelay::core::k8090::K8090 class. Its documentation also provides some
- * examples of usage.
+ * The main functionality is provided by the biomolecules::sprelay::core::k8090::K8090 class. Its documentation also
+ * provides some examples of usage.
  */
 
 /*!
- * \namespace sprelay::core::k8090::impl_
+ * \namespace biomolecules::sprelay::core::k8090::impl_
  * \brief Contains private utilities of K8090 implementation.
  */

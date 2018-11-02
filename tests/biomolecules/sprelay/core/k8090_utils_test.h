@@ -24,7 +24,8 @@
 
 /*!
  * \file      k8090_utils_test.h
- * \brief     Tests for utility functions and data structures for sprelay::core::k8090::K8090 class implementation.
+ * \brief     Tests for utility functions and data structures for biomolecules::sprelay::core::k8090::K8090 class
+ *            implementation.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-17
@@ -42,6 +43,7 @@
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -95,5 +97,6 @@ ADD_TEST(CardMessageTest)
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_TEST_H_

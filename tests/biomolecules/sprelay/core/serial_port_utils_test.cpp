@@ -24,7 +24,8 @@
 
 /*!
  * \file      serial_port_utils_test.cpp
- * \brief     The sprelay::core::SerialPortUtilsTest class which implements tests for serial port utilities.
+ * \brief     The biomolecules::sprelay::core::SerialPortUtilsTest class which implements tests for serial port
+ *            utilities.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -43,6 +44,7 @@
 
 #include "biomolecules/sprelay/core/serial_port_utils.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace serial_utils {
@@ -70,3 +72,4 @@ void SerialPortUtilsTest::hexToByteTestCase()
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

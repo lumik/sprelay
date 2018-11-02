@@ -24,8 +24,8 @@
 
 /*!
  * \file      serial_port_defines.h
- * \ingroup   group_sprelay_core_public
- * \brief     Public defines concerning sprelay::core::UnifiedSerialPort.
+ * \ingroup   group_biomolecules_sprelay_core_public
+ * \brief     Public defines concerning biomolecules::sprelay::core::UnifiedSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-07-09
@@ -41,6 +41,7 @@
 
 #include <QString>
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace serial_utils {
@@ -58,10 +59,11 @@ struct ComPortParams
 }  // namespace serial_utils
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 /*!
- * \struct sprelay::core::serial_utils::ComPortParams
- * \ingroup group_sprelay_core_public
+ * \struct biomolecules::sprelay::core::serial_utils::ComPortParams
+ * \ingroup group_biomolecules_sprelay_core_public
  */
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_SERIAL_PORT_DEFINES_H_

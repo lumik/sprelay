@@ -24,8 +24,8 @@
 
 /*!
  * \file      k8090.h
- * \ingroup   group_sprelay_core_public
- * \brief     The sprelay::core::k8090::K8090 class which provides API to control the relay card.
+ * \ingroup   group_biomolecules_sprelay_core_public
+ * \brief     The biomolecules::sprelay::core::k8090::K8090 class which provides API to control the relay card.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2017-03-22
@@ -53,6 +53,7 @@
 class QMutex;
 class QTimer;
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -91,14 +92,14 @@ public:  // NOLINT(whitespace/indent)
     int pendingCommandCount(k8090::CommandID id);
 
 signals:  // NOLINT(whitespace/indent)
-    void relayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
-        sprelay::core::k8090::RelayID timed);
-    void buttonStatus(sprelay::core::k8090::RelayID state, sprelay::core::k8090::RelayID pressed,
-        sprelay::core::k8090::RelayID released);
-    void totalTimerDelay(sprelay::core::k8090::RelayID relay, quint16 delay);
-    void remainingTimerDelay(sprelay::core::k8090::RelayID relay, quint16 delay);
-    void buttonModes(sprelay::core::k8090::RelayID momentary, sprelay::core::k8090::RelayID toggle,
-       sprelay::core::k8090::RelayID timed);
+    void relayStatus(biomolecules::sprelay::core::k8090::RelayID previous,
+        biomolecules::sprelay::core::k8090::RelayID current, biomolecules::sprelay::core::k8090::RelayID timed);
+    void buttonStatus(biomolecules::sprelay::core::k8090::RelayID state,
+        biomolecules::sprelay::core::k8090::RelayID pressed, biomolecules::sprelay::core::k8090::RelayID released);
+    void totalTimerDelay(biomolecules::sprelay::core::k8090::RelayID relay, quint16 delay);
+    void remainingTimerDelay(biomolecules::sprelay::core::k8090::RelayID relay, quint16 delay);
+    void buttonModes(biomolecules::sprelay::core::k8090::RelayID momentary,
+       biomolecules::sprelay::core::k8090::RelayID toggle, biomolecules::sprelay::core::k8090::RelayID timed);
     void jumperStatus(bool on);
     void firmwareVersion(int year, int week);
     void connected();
@@ -106,29 +107,30 @@ signals:  // NOLINT(whitespace/indent)
     void notConnected();
     void disconnected();
     void doDisconnect(bool failure);
-    void enqueueCommand(sprelay::core::k8090::CommandID command_id);
-    void enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask);
-    void enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
-        unsigned char param1);
-    void enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
-        unsigned char param1, unsigned char param2);
+    void enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id);
+    void enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
+        biomolecules::sprelay::core::k8090::RelayID mask);
+    void enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
+        biomolecules::sprelay::core::k8090::RelayID mask, unsigned char param1);
+    void enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
+        biomolecules::sprelay::core::k8090::RelayID mask, unsigned char param1, unsigned char param2);
 
 public slots:  // NOLINT(whitespace/indent)
     void connectK8090();
     void disconnect();
     void refreshRelaysInfo();
-    void switchRelayOn(sprelay::core::k8090::RelayID relays);
-    void switchRelayOff(sprelay::core::k8090::RelayID relays);
-    void toggleRelay(sprelay::core::k8090::RelayID relays);
-    void setButtonMode(sprelay::core::k8090::RelayID momentary, sprelay::core::k8090::RelayID toggle,
-        sprelay::core::k8090::RelayID timed);
+    void switchRelayOn(biomolecules::sprelay::core::k8090::RelayID relays);
+    void switchRelayOff(biomolecules::sprelay::core::k8090::RelayID relays);
+    void toggleRelay(biomolecules::sprelay::core::k8090::RelayID relays);
+    void setButtonMode(biomolecules::sprelay::core::k8090::RelayID momentary,
+        biomolecules::sprelay::core::k8090::RelayID toggle, biomolecules::sprelay::core::k8090::RelayID timed);
     // TODO(lumik): add method to toggle button mode of specified buttons which treats buttons with no mode set as
     // buttons, the mode of which would not be modified.
-    void startRelayTimer(sprelay::core::k8090::RelayID relays, quint16 delay = 0);
-    void setRelayTimerDelay(sprelay::core::k8090::RelayID relays, quint16 delay);
+    void startRelayTimer(biomolecules::sprelay::core::k8090::RelayID relays, quint16 delay = 0);
+    void setRelayTimerDelay(biomolecules::sprelay::core::k8090::RelayID relays, quint16 delay);
     void queryRelayStatus();
-    void queryTotalTimerDelay(sprelay::core::k8090::RelayID relays);
-    void queryRemainingTimerDelay(sprelay::core::k8090::RelayID relays);
+    void queryTotalTimerDelay(biomolecules::sprelay::core::k8090::RelayID relays);
+    void queryRemainingTimerDelay(biomolecules::sprelay::core::k8090::RelayID relays);
     void queryButtonModes();
     void resetFactoryDefaults();
     void queryJumperStatus();
@@ -192,5 +194,6 @@ private:  // NOLINT(whitespace/indent)
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_K8090_H_

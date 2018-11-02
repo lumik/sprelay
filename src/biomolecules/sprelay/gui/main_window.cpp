@@ -24,7 +24,7 @@
 
 /*!
  * \file      main_window.cpp
- * \brief     The sprelay::gui::MainWindow class which implements main application window.
+ * \brief     The biomolecules::sprelay::gui::MainWindow class which implements main application window.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2017-03-22
@@ -41,14 +41,15 @@
 
 #include "central_widget.h"
 
-
+namespace biomolecules {
 namespace sprelay {
 namespace gui {
 
 /*!
  * \brief Constructs the MainWindow
  *
- * The core of application functionality is inside sprelay::gui::CentralWidget which is created inside the MainWindow.
+ * The core of application functionality is inside biomolecules::sprelay::gui::CentralWidget which is created inside
+ * the MainWindow.
  */
 MainWindow::MainWindow()
 {
@@ -66,3 +67,4 @@ MainWindow::~MainWindow()
 
 }  // namespace gui
 }  // namespace sprelay
+}  // namespace biomolecules

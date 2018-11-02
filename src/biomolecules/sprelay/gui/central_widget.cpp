@@ -24,7 +24,8 @@
 
 /*!
  * \file      central_widget.cpp
- * \brief     The sprelay::gui::CentralWidget class which provides means to control the relay card through GUI.
+ * \brief     The biomolecules::sprelay::gui::CentralWidget class which provides means to control the relay card
+ *            through GUI.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-03-07
@@ -53,16 +54,16 @@
 
 #include "indicator_button.h"
 
-
+namespace biomolecules {
 namespace sprelay {
 namespace gui {
 
 /*!
  * \class CentralWidget
- * \ingroup group_sprelay_gui_public
+ * \ingroup group_biomolecules_sprelay_gui_public
  * This widget only creates the GUI, you need also to link to the `sprelay_core` library which implements the
  * programatic interface between the relay card and the widget. Public interface of the `sprelay_core` library is
- * described inside the \ref group_sprelay_core_public module.
+ * described inside the \ref group_biomolecules_sprelay_core_public module.
  *
  * Below is an example, how to create simple application from the widget. You have to compile the `sprelay` application
  * as a library (not as a standalone application) and install `enum_flags` with it and set the install prefix inside
@@ -87,6 +88,7 @@ namespace gui {
  * #include <memory>
  *
  * // forward declarations
+ * namespace biomolecules {
  * namespace sprelay {
  * namespace core {
  * namespace k8090 {
@@ -97,6 +99,7 @@ namespace gui {
  * class CentralWidget;
  * }  // namespace gui
  * }  // namespace sprelay
+ * }  // namespace biomolecules
  *
  * class MainWindow : public QMainWindow
  * {
@@ -107,8 +110,8 @@ namespace gui {
  *     ~MainWindow() override;
  *
  * private:
- *     std::unique_ptr<sprelay::core::k8090::K8090> k8090_;
- *     std::unique_ptr<sprelay::gui::CentralWidget> central_widget_;
+ *     std::unique_ptr<biomolecules::sprelay::core::k8090::K8090> k8090_;
+ *     std::unique_ptr<biomolecules::sprelay::gui::CentralWidget> central_widget_;
  * };
  *
  * #endif  // MAIN_WINDOW_H_
@@ -121,11 +124,11 @@ namespace gui {
  * #include <biomolecules/sprelay/gui/central_widget.h>
  *
  * MainWindow::MainWindow()
- *     : k8090_{new sprelay::core::k8090::K8090},
+ *     : k8090_{new biomolecules::sprelay::core::k8090::K8090},
  *       // if you create central widget with external K8090 object, you can then
  *       // connect signals to it inside your class or controll the card as you
  *       // want programatically.
- *       central_widget_{new sprelay::gui::CentralWidget(k8090_.get(), QString(), this)}
+ *       central_widget_{new biomolecules::sprelay::gui::CentralWidget(k8090_.get(), QString(), this)}
  * {
  *     setCentralWidget(central_widget_.get());
  *     // you can connect signals to k8090_.get() here and controll it programatically
@@ -138,7 +141,7 @@ namespace gui {
  * \endcode
  *
  * \remarks reentrant
- * \sa sprelay::core::k8090::K8090
+ * \sa biomolecules::sprelay::core::k8090::K8090
  */
 
 /*!
@@ -825,3 +828,4 @@ void CentralWidget::connectionStatusChanged()
 
 }  // namespace gui
 }  // namespace sprelay
+}  // namespace biomolecules

@@ -24,8 +24,8 @@
 
 /*!
  * \file      command_queue_test.h
- * \brief     The sprelay::core::command_queue::CommandQueueTest class which implements tests for
- *            sprelay::core::command_queue::CommandQueue.
+ * \brief     The biomolecules::sprelay::core::command_queue::CommandQueueTest class which implements tests for
+ *            biomolecules::sprelay::core::command_queue::CommandQueue.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-03-07
@@ -43,6 +43,7 @@
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace command_queue {
@@ -61,6 +62,7 @@ ADD_TEST(CommandQueueTest)
 }  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
 

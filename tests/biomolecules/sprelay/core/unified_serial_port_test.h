@@ -24,8 +24,8 @@
 
 /*!
  * \file      unified_serial_port_test.h
- * \brief     The sprelay::core::UnifiedSerialPortTest class which implements tests for
- *            sprelay::core::UnifiedSerialPort.
+ * \brief     The biomolecules::sprelay::core::UnifiedSerialPortTest class which implements tests for
+ *            biomolecules::sprelay::core::UnifiedSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -46,7 +46,7 @@
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
-
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -91,5 +91,6 @@ ADD_TEST(UnifiedSerialPortTest)
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_UNIFIED_SERIAL_PORT_TEST_H_

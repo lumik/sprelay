@@ -24,8 +24,8 @@
 
 /*!
  * \file      unified_serial_port_test.cpp
- * \brief     The sprelay::core::UnifiedSerialPortTest class which implements tests for
- *            sprelay::core::UnifiedSerialPort.
+ * \brief     The biomolecules::sprelay::core::UnifiedSerialPortTest class which implements tests for
+ *            biomolecules::sprelay::core::UnifiedSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-04-10
@@ -58,6 +58,7 @@
 
 #include "core_test_utils.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -1195,3 +1196,4 @@ bool UnifiedSerialPortTest::measureCommandWithResponse(UnifiedSerialPort *serial
 
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

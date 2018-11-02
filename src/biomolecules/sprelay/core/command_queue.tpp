@@ -24,7 +24,7 @@
 
 /*!
  * \file      command_queue.tpp
- * \brief     The sprelay::core::command_queue::CommandQueue class and some other related stuff.
+ * \brief     The biomolecules::sprelay::core::command_queue::CommandQueue class and some other related stuff.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-03-07
@@ -37,6 +37,7 @@
 
 #include <limits>
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 
@@ -46,19 +47,19 @@ namespace core {
 namespace command_queue {
 
 /*!
- * \namespace sprelay::core::command_queue::impl_
+ * \namespace biomolecules::sprelay::core::command_queue::impl_
  * \brief Namespace containing implementation details. Not intended for public use.
  */
 using namespace impl_;  // NOLINT(build/namespaces)
 
 /*!
- * \class sprelay::core::command_queue::impl_::CommandPriority
+ * \class biomolecules::sprelay::core::command_queue::impl_::CommandPriority
  * \tparam TCommand See CommandQueue template class.
  * \remark reentrant
  */
 
 /*!
- * \class sprelay::core::command_queue::impl_::PendingCommands
+ * \class biomolecules::sprelay::core::command_queue::impl_::PendingCommands
  * The class abuses constant pointer access. You can get from it `TList<const TCommand *>` which is directly
  * stored inside but you can also modify stored `TCommand` using `PendingCommands::updateEntry()` method (so the
  * `TCommand` is not realy const, only returned list should not be used to modify them because it can distort
@@ -170,7 +171,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
  *
  * int main()
  * {
- *     using namespace sprelay::core::command_queue;
+ *     using namespace biomolecules::sprelay::core::command_queue;
  *     CommandQueue<Command, N> command_queue;
  *
  *     unsigned int cmd_id1 = 0;
@@ -390,3 +391,4 @@ void CommandQueue<TCommand, tSize, TList>::updatePriorities(typename TCommand::N
 }  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

@@ -24,8 +24,8 @@
 
 /*!
  * \file      command_queue_test.cpp
- * \brief     The sprelay::core::command_queue::CommandQueueTest class which implements tests for
- *            sprelay::core::command_queue::CommandQueue.
+ * \brief     The biomolecules::sprelay::core::command_queue::CommandQueueTest class which implements tests for
+ *            biomolecules::sprelay::core::command_queue::CommandQueue.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2018-03-07
@@ -44,11 +44,12 @@
 #include "biomolecules/sprelay/core/k8090.h"
 #include "biomolecules/sprelay/core/k8090_utils.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace command_queue {
 
-using Command = sprelay::core::k8090::impl_::Command;
+using Command = biomolecules::sprelay::core::k8090::impl_::Command;
 
 void CommandQueueTest::uniquePush()
 {
@@ -210,3 +211,4 @@ void CommandQueueTest::updateCommand()
 }  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules

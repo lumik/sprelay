@@ -24,7 +24,8 @@
 
 /*!
  * \file      k8090_test.h
- * \brief     The sprelay::core::k8090::K8090Test class which implements tests for sprelay::core::k8090::K8090.
+ * \brief     The biomolecules::sprelay::core::k8090::K8090Test class which implements tests for
+ *            biomolecules::sprelay::core::k8090::K8090.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2017-03-21
@@ -50,6 +51,7 @@
 // forward declarations
 class QSignalSpy;
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 namespace k8090 {
@@ -103,6 +105,7 @@ ADD_TEST(K8090Test)
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_K8090_TEST_H_
 

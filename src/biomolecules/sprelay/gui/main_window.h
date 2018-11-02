@@ -24,7 +24,7 @@
 
 /*!
  * \file      main_window.h
- * \brief     The sprelay::gui::MainWindow class which implements main application window.
+ * \brief     The biomolecules::sprelay::gui::MainWindow class which implements main application window.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2017-03-22
@@ -40,7 +40,7 @@
 
 #include <QMainWindow>
 
-
+namespace biomolecules {
 namespace sprelay {
 namespace core {
 // forward declarations of core classes
@@ -65,5 +65,6 @@ private:  // NOLINT(whitespace/indent)
 
 }  // namespace gui
 }  // namespace sprelay
+}  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_GUI_MAIN_WINDOW_H_

@@ -24,7 +24,7 @@
 
 /*!
  * \file      k8090.cpp
- * \brief     The sprelay::core::k8090::K8090 class which provides API to control the relay card.
+ * \brief     The biomolecules::sprelay::core::k8090::K8090 class which provides API to control the relay card.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
  * \date      2017-03-21
@@ -51,15 +51,15 @@
 #include "serial_port_utils.h"
 #include "unified_serial_port.h"
 
+namespace biomolecules {
 namespace sprelay {
 namespace core {
-
 namespace k8090 {
 
 
 /*!
  * \class K8090
- * \ingroup group_sprelay_core_public
+ * \ingroup group_biomolecules_sprelay_core_public
  * You can see example usage below, where QPushButton for each relay switch on action is created and relay response
  * is handled.
  *
@@ -77,11 +77,12 @@ namespace k8090 {
  * private slots:
  * // ...
  *     void onRelayOnButtonClicked(int relay);
- *     void onRelayStatus(sprelay::core::k8090::RelayID previous, sprelay::core::k8090::RelayID current,
- *         sprelay::core::k8090::RelayID timed);
+ *     void onRelayStatus(biomolecules::sprelay::core::k8090::RelayID previous,
+ *         biomolecules::sprelay::core::k8090::RelayID current,
+ *         biomolecules::sprelay::core::k8090::RelayID timed);
  * private:
  * // ...
- *     sprelay::core::k8090::K8090 *k8090_;
+ *     biomolecules::sprelay::core::k8090::K8090 *k8090_;
  *     // buttons to swith the relay on
  *     QPushButton * relay_on_buttons_arr_[8];
  *     // signal mappers
@@ -94,7 +95,8 @@ namespace k8090 {
  * \code
  * // central_widget.cpp
  * // ...
- * CentralWidget::CentralWidget(QWidget *parent) : QWidget{parent}, k8090_{new sprelay::core::k8090::K8090{this}}
+ * CentralWidget::CentralWidget(QWidget *parent)
+ *     : QWidget{parent}, k8090_{new biomolecules::sprelay::core::k8090::K8090{this}}
  * {
  * // ...
  *     // create switch relay on buttons
@@ -111,17 +113,19 @@ namespace k8090 {
  *     }
  *     connect(relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
  *         this, &CentralWidget::onRelayOnButtonClicked);
- *     connect(k8090_, &sprelay::core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
+ *     connect(k8090_, &biomolecules::sprelay::core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
  * // ...
  * }
  * // ...
  * void CentralWidget::onRelayOnButtonClicked(int relay)
  * {
- *     k8090_->switchRelayOn(sprelay::core::k8090::from_number(relay));
+ *     k8090_->switchRelayOn(biomolecules::sprelay::core::k8090::from_number(relay));
  * }
  * // ...
- * void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::RelayID current,
- *     core::k8090::RelayID timed)
+ * void CentralWidget::onRelayStatus(
+ *     biomolecules::sprelay::core::k8090::RelayID previous,
+ *     biomolecules::sprelay::core::k8090::RelayID current,
+ *     biomolecules::sprelay::core::k8090::RelayID timed)
  * {
  *     Q_UNUSED(previous)
  *     for (int i = 0; i < 8; ++i) {
@@ -436,21 +440,22 @@ int K8090::pendingCommandCount(CommandID id)
  * \brief A signal for internal usage to disconnect in K8090's thread.
  */
 /*!
- * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id)
+ * \fn void K8090::enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id)
  * \brief A signal for internal usage to enqueueCommand in K8090's thread.
  */
 /*!
- * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask)
+ * \fn void K8090::enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
+ *     biomolecules::sprelay::core::k8090::RelayID mask)
  * \brief A signal for internal usage to enqueueCommand in K8090's thread.
  */
 /*!
- * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
- *     unsigned char param1)
+ * \fn void K8090::enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
+ *     biomolecules::sprelay::core::k8090::RelayID mask, unsigned char param1)
  * \brief A signal for internal usage to enqueueCommand in K8090's thread.
  */
 /*!
- * \fn void K8090::enqueueCommand(sprelay::core::k8090::CommandID command_id, sprelay::core::k8090::RelayID mask,
- *     unsigned char param1, unsigned char param2)
+ * \fn void K8090::enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
+ *     biomolecules::sprelay::core::k8090::RelayID mask, unsigned char param1, unsigned char param2)
  * \brief A signal for internal usage to enqueueCommand in K8090's thread.
  */
 
@@ -1210,3 +1215,4 @@ void K8090::connectionSuccessful()
 }  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
+}  // namespace biomolecules
