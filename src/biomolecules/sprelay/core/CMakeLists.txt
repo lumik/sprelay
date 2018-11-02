@@ -37,7 +37,7 @@ qt5_wrap_ui(${PROJECT_NAME}_ui_moc ${${PROJECT_NAME}_ui})
 # object files - can be used in tests #
 # ----------------------------------- #
 
-if(use_object_targets)
+if (use_object_targets)
     set(${PROJECT_NAME}_private_target ${PROJECT_NAME}_private)
 
     add_library(${${PROJECT_NAME}_private_target} OBJECT
@@ -59,14 +59,14 @@ if(use_object_targets)
     target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
     target_include_directories(${${PROJECT_NAME}_private_target} PUBLIC $<BUILD_INTERFACE:${sprelay_source_dir}>)
 
-    if(NOT SPRELAY_BUILD_STANDALONE)
+    if (NOT SPRELAY_BUILD_STANDALONE)
         install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${${PROJECT_NAME}_private_target}Config
             # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
         install(EXPORT ${${PROJECT_NAME}_private_target}Config DESTINATION share/${${PROJECT_NAME}_private_target}/cmake)
         export(TARGETS ${${PROJECT_NAME}_private_target} FILE ${${PROJECT_NAME}_private_target}Config.cmake)
-    endif(NOT SPRELAY_BUILD_STANDALONE)
+    endif()
 # TODO(lumik): interface targets can't be used as the replacement for object files for older cmake versions because
 # problems with qt moc, see comments in tests. Devise better approach to define used headers here.
 #else()
@@ -94,21 +94,21 @@ if(use_object_targets)
 #    target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 #    target_include_directories(${${PROJECT_NAME}_private_target} INTERFACE $<BUILD_INTERFACE:${sprelay_source_dir}>)
 
-#    if(NOT SPRELAY_BUILD_STANDALONE)
+#    if (NOT SPRELAY_BUILD_STANDALONE)
 #        install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${${PROJECT_NAME}_private_target}Config
 #            # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 #        install(EXPORT ${${PROJECT_NAME}_private_target}Config DESTINATION share/${${PROJECT_NAME}_private_target}/cmake)
 #        export(TARGETS ${${PROJECT_NAME}_private_target} FILE ${${PROJECT_NAME}_private_target}Config.cmake)
-#    endif(NOT SPRELAY_BUILD_STANDALONE)
-endif(use_object_targets)
+#    endif()
+endif()
 
 
 # core library #
 # ------------ #
 
-if(use_object_targets)
+if (use_object_targets)
     add_library(${PROJECT_NAME} SHARED
         ${${PROJECT_NAME}_lib_hdr}
         ${${PROJECT_NAME}_lib_tpp}
@@ -157,7 +157,7 @@ else()
         Threads::Threads
         lumik::enum_flags::enum_flags
         sprelay_global)
-endif(use_object_targets)
+endif()
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${sprelay_source_dir}>)
@@ -167,21 +167,21 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Config
     # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-if(NOT SPRELAY_BUILD_STANDALONE)
+if (NOT SPRELAY_BUILD_STANDALONE)
     install(EXPORT ${PROJECT_NAME}Config DESTINATION share/${PROJECT_NAME}/cmake)
     export(TARGETS ${PROJECT_NAME} FILE ${PROJECT_NAME}Config.cmake)
 
     install(FILES ${${PROJECT_NAME}_lib_hdr} ${${PROJECT_NAME}_lib_qt_hdr}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/biomolecules/sprelay/core)
-endif(NOT SPRELAY_BUILD_STANDALONE)
+endif()
 
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
 # normal targets
-if(DOXYGEN_FOUND)
+if (DOXYGEN_FOUND)
     set(${PROJECT_NAME}_doc_src
         ${PROJECT_SOURCE_DIR}/core.dox
         ${PROJECT_SOURCE_DIR}/k8090.dox
         ${PROJECT_SOURCE_DIR}/serial_port.dox)
     target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_doc_src})
     set_source_files_properties(${${PROJECT_NAME}_doc_src} PROPERTIES HEADER_FILE_ONLY TRUE)
-endif(DOXYGEN_FOUND)
+endif()

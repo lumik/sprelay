@@ -2,7 +2,7 @@
 ##  enum_flags  ##
 ##################
 
-if(SPRELAY_INSTALL_ENUM_FLAGS)
+if (SPRELAY_INSTALL_ENUM_FLAGS)
     message(STATUS "Subproject: enum_flags...")
     # setup enum_flags at configure time
     # The following commands configures external project without ExternalProject_Add
@@ -15,7 +15,7 @@ if(SPRELAY_INSTALL_ENUM_FLAGS)
             -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/enum_flagsBuild"
         RESULT_VARIABLE result)
-    if(result)
+    if (result)
         message(FATAL_ERROR "CMake step for enum_flags failed: ${result}")
     endif()
     # The following commands uses ExternalProject_add through at configure time invoked cmake project.
@@ -30,13 +30,13 @@ if(SPRELAY_INSTALL_ENUM_FLAGS)
 #            -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
 #        RESULT_VARIABLE result
 #        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/enum_flagsCreate)
-#    if(result)
+#    if (result)
 #        message(FATAL_ERROR "CMake step for enum_flags failed: ${result}")
 #    endif()
 #    execute_process(COMMAND ${CMAKE_COMMAND} --build .
 #        RESULT_VARIABLE result
 #        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/enum_flagsCreate)
-#    if(result)
+#    if (result)
 #        message(FATAL_ERROR "Build step for enum_flags failed: ${result}")
 #    endif()
     install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install
@@ -58,8 +58,7 @@ if(SPRELAY_INSTALL_ENUM_FLAGS)
             PROPERTY TAG_FILE ${CMAKE_CURRENT_BINARY_DIR}/enum_flagsBuild/enum_flags.tags)
     endif()
 
-endif(SPRELAY_INSTALL_ENUM_FLAGS)
-
+endif()
 
 message(STATUS "Subproject: enum_flags... DONE")
 

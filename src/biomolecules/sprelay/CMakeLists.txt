@@ -9,7 +9,7 @@ target_sources(${sprelay_global_target} INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/sprelay_global.h>)
 target_include_directories(${sprelay_global_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 target_include_directories(${sprelay_global_target} INTERFACE $<BUILD_INTERFACE:${sprelay_source_dir}>)
-if(NOT SPRELAY_BUILD_STANDALONE)
+if (NOT SPRELAY_BUILD_STANDALONE)
     install(TARGETS ${sprelay_global_target} EXPORT ${sprelay_global_target}Config
         # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -19,35 +19,35 @@ if(NOT SPRELAY_BUILD_STANDALONE)
 
     install(FILES "${PROJECT_SOURCE_DIR}/sprelay_global.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/biomolecules/sprelay")
-endif(NOT SPRELAY_BUILD_STANDALONE)
+endif()
 
 # sprelay gui #
 # ----------- #
 
-if(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
+if (SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
     # collect files
     set(${sprelay_project_name}_src "")
 
     # compile files connected only with standalone application only on demand
-    if(SPRELAY_BUILD_STANDALONE)
+    if (SPRELAY_BUILD_STANDALONE)
         list(APPEND ${sprelay_project_name}_src
             ${PROJECT_SOURCE_DIR}/main.cpp)
-    endif(SPRELAY_BUILD_STANDALONE)
+    endif()
 
     # create executable or dll
-    if(SPRELAY_BUILD_STANDALONE)
+    if (SPRELAY_BUILD_STANDALONE)
         add_executable(${sprelay_project_name}
             ${${sprelay_project_name}_src})
         target_compile_definitions(${sprelay_project_name} PRIVATE SPRELAY_STANDALONE)
-        if(sprelay_standalone_application_link_flags)
+        if (sprelay_standalone_application_link_flags)
             set_target_properties(${sprelay_project_name} PROPERTIES LINK_FLAGS
                 ${sprelay_standalone_application_link_flags})
-        endif(sprelay_standalone_application_link_flags)
+        endif()
     else()
         add_library(${sprelay_project_name} SHARED
             ${${sprelay_project_name}_src})
         target_compile_definitions(${sprelay_project_name} PRIVATE SPRELAY_MAIN_LIBRARY)
-    endif(SPRELAY_BUILD_STANDALONE)
+    endif()
     target_link_libraries(${sprelay_project_name}
         Qt5::Core
         Qt5::Gui
@@ -61,15 +61,15 @@ if(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
         # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-    if(NOT SPRELAY_BUILD_STANDALONE)
+    if (NOT SPRELAY_BUILD_STANDALONE)
         install(EXPORT ${sprelay_project_name}Config DESTINATION share/${sprelay_project_name}/cmake)
         export(TARGETS ${sprelay_project_name} FILE ${sprelay_project_name}Config.cmake)
-    endif(NOT SPRELAY_BUILD_STANDALONE)
-endif(SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
+    endif()
+endif()
 
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
 # normal targets
-if(DOXYGEN_FOUND)
+if (DOXYGEN_FOUND)
     set(${sprelay_project_name}_doc_src
         ${PROJECT_SOURCE_DIR}/index.md
         ${PROJECT_SOURCE_DIR}/overview.md
@@ -77,7 +77,7 @@ if(DOXYGEN_FOUND)
         ${PROJECT_SOURCE_DIR}/sprelay.dox)
     target_sources(${sprelay_project_name} PRIVATE ${${sprelay_project_name}_doc_src})
     set_source_files_properties(${${sprelay_project_name}_doc_src} PROPERTIES HEADER_FILE_ONLY TRUE)
-endif(DOXYGEN_FOUND)
+endif()
 
 # build core
 add_subdirectory(core)

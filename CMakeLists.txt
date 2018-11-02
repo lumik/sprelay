@@ -8,16 +8,16 @@ OPTION(SPRELAY_BUILD_STANDALONE
 OPTION(SPRELAY_SKIP_GUI
     "Build the without GUI. Takes effect only if SPRELAY_BUILD_STANDALONE=OFF"
     OFF)
-if(SPRELAY_BUILD_STANDALONE AND SPRELAY_SKIP_GUI)
+if (SPRELAY_BUILD_STANDALONE AND SPRELAY_SKIP_GUI)
     message(WARNING "SPRELAY_SKIP_GUI does not take any effect in combination with SPRELAY_BUILD_STANDALONE.")
-endif(SPRELAY_BUILD_STANDALONE AND SPRELAY_SKIP_GUI)
+endif()
 
 OPTION(SPRELAY_INSTALL_ENUM_FLAGS
     "Installs required dependece enum_flags with the library."
     OFF)
-if(SPRELAY_BUILD_STANDALONE AND INSTALL_SPRELAY_ENUM_FLAGS)
+if (SPRELAY_BUILD_STANDALONE AND INSTALL_SPRELAY_ENUM_FLAGS)
     message(WARNING "INSTALL_SPRELAY_ENUM_FLAGS does not take any effect in combination with SPRELAY_BUILD_STANDALONE.")
-endif(SPRELAY_BUILD_STANDALONE AND INSTALL_SPRELAY_ENUM_FLAGS)
+endif()
 
 OPTION(SPRELAY_MAKE_TESTS
     "Makes tests."
@@ -29,9 +29,9 @@ set(sprelay_global_binary_dir ${CMAKE_BINARY_DIR})
 set(sprelay_global_source_dir ${PROJECT_SOURCE_DIR})
 # object files with dependencies works well only for cmake version 3.12 or later else the object files do not propagate
 # dependencies and cant use target_link_libraries
-if(NOT CMAKE_VERSION VERSION_LESS "3.12")
+if (NOT CMAKE_VERSION VERSION_LESS "3.12")
     set(use_object_targets TRUE)
-endif(NOT CMAKE_VERSION VERSION_LESS "3.12")
+endif()
 
 # set cmake install prefix default on windows
 if (CMAKE_INSTALL_PREFIX MATCHES "^C:/Program Files")
@@ -39,17 +39,17 @@ if (CMAKE_INSTALL_PREFIX MATCHES "^C:/Program Files")
     message(STATUS "    Install-prefix was at default -> forcing it to the ${PROJECT_NAME} directory:")
     message(STATUS "        'CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX})'")
     set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif(CMAKE_INSTALL_PREFIX MATCHES "^C:/Program Files")
+endif()
 
 # setup compiler flags
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     add_compile_options(-pipe -frtti -Wall -Wextra -fexceptions)
 endif()
-if(MINGW)
+if (MINGW)
     add_compile_options(-mthreads -fno-keep-inline-dllexport -DUNICODE)
     list(APPEND sprelay_standalone_application_link_flags "-Wl,-subsystem,windows")
     list(APPEND sprelay_standalone_console_link_flags "-Wl,-subsystem,console")
@@ -70,16 +70,16 @@ find_package(Threads REQUIRED)
 include(GNUInstallDirs)
 
 # enable running program from build directory by copying all binary staff into bin subdirectory
-if(WIN32)
-    if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+if (WIN32)
+    if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
-    endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-    if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    endif()
+    if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
-    endif(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    endif()
+    if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_BINDIR}")
-    endif(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    endif()
 endif()
 
 # check for Doxygen
@@ -91,12 +91,12 @@ find_package(PythonInterp)
 
 # execute all parts of projects placed in subdirectories
 include(src/CMakeLists.txt)
-if(SPRELAY_MAKE_TESTS)
+if (SPRELAY_MAKE_TESTS)
     add_subdirectory(tests)
-endif(SPRELAY_MAKE_TESTS)
+endif()
 
 # documentation
-if(DOXYGEN_FOUND)
+if (DOXYGEN_FOUND)
     # get Qt documentation location
     get_target_property(qmake_executable Qt5::qmake LOCATION)
     execute_process(
@@ -127,13 +127,13 @@ if(DOXYGEN_FOUND)
         VERBATIM)
     add_dependencies(doc enum_flags_tag_file)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
-endif(DOXYGEN_FOUND)
+endif()
 
 # Other tests
-if(PYTHONINTERP_FOUND)
+if (PYTHONINTERP_FOUND)
     add_test(NAME cpplint
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMAND ${PYTHON_EXECUTABLE}
             external/cpplint-1.3.0/cpplint.py
             --extensions=cpp,h,tpp --headers=h,tpp --recursive src/biomolecules/sprelay tests/biomolecules/sprelay)
-endif(PYTHONINTERP_FOUND)
+endif()
