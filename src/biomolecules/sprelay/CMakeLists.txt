@@ -9,7 +9,7 @@ target_sources(${sprelay_global_target} INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/sprelay_global.h>)
 target_include_directories(${sprelay_global_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 target_include_directories(${sprelay_global_target} INTERFACE $<BUILD_INTERFACE:${sprelay_source_dir}>)
-if (NOT SPRELAY_BUILD_STANDALONE)
+if (NOT BUILD_STANDALONE)
     install(TARGETS ${sprelay_global_target} EXPORT ${sprelay_global_target}Config
         # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -24,18 +24,18 @@ endif()
 # sprelay gui #
 # ----------- #
 
-if (SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
+if (BUILD_STANDALONE OR NOT SKIP_GUI)
     # collect files
     set(${sprelay_project_name}_src "")
 
     # compile files connected only with standalone application only on demand
-    if (SPRELAY_BUILD_STANDALONE)
+    if (BUILD_STANDALONE)
         list(APPEND ${sprelay_project_name}_src
             ${PROJECT_SOURCE_DIR}/main.cpp)
     endif()
 
     # create executable or dll
-    if (SPRELAY_BUILD_STANDALONE)
+    if (BUILD_STANDALONE)
         add_executable(${sprelay_project_name}
             ${${sprelay_project_name}_src})
         target_compile_definitions(${sprelay_project_name} PRIVATE SPRELAY_STANDALONE)
@@ -61,7 +61,7 @@ if (SPRELAY_BUILD_STANDALONE OR NOT SPRELAY_SKIP_GUI)
         # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-    if (NOT SPRELAY_BUILD_STANDALONE)
+    if (NOT BUILD_STANDALONE)
         install(EXPORT ${sprelay_project_name}Config DESTINATION share/${sprelay_project_name}/cmake)
         export(TARGETS ${sprelay_project_name} FILE ${sprelay_project_name}Config.cmake)
     endif()
@@ -83,4 +83,6 @@ endif()
 add_subdirectory(core)
 
 # add sources to target ${sprelay_project_name} from the gui subfolder
-include(gui/CMakeLists.txt)
+if (BUILD_STANDALONE OR NOT SKIP_GUI)
+    include(gui/CMakeLists.txt)
+endif()

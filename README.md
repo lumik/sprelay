@@ -62,29 +62,27 @@ the project directory and run
 mkdir build
 cd build
 cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ^
--DCMAKE_INSTALL_PREFIX=.. -DSPRELAY_BUILD_STANDALONE=ON ^
--DSPRELAY_MAKE_TESTS=ON
+-DCMAKE_INSTALL_PREFIX=.. -DBUILD_STANDALONE=ON -DMAKE_TESTS=ON
 ```
 
 You can skip `CMAKE_INSTALL_PREFIX`. Application is then installed to default destination ("C:\Program Files" on
 Windows, "/usr/locaL" on Linux).
 the application is built as shared library and library includes are placed inside `include` folder if
-`SPRELAY_BUILD_STANDALONE` is omited or set to `OFF`,  The tests are not built if `SPRELAY_MAKE_TESTS` is omited or
-set to `OFF`.
+`BUILD_STANDALONE` is omited or set to `OFF`,  The tests are not built if `MAKE_TESTS` is omited or set to `OFF`.
 
-If you want to build only shared library without gui, you can use SPRELAY_SKIP_GUI define:
+If you want to build only shared library without gui, you can use SKIP_GUI define:
 ```
 cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug ^
--DCMAKE_INSTALL_PREFIX=.. -DSPRELAY_BUILD_STANDALONE=OFF ^
--DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=OFF
+-DCMAKE_INSTALL_PREFIX=.. -DBUILD_STANDALONE=OFF -DMAKE_TESTS=ON -DSKIP_GUI=OFF
 ```
-`Sprelay` application depends on `enum_flags` library. The library is searched in system path first and if
-not found, the internal `enum_flags` copy is used. If you want to specify different location of `enum_flags`
-you can set `enum_flags_ROOT_DIR` variable. If you want to force usage of `enum_flags` distributed with the
-application you can specify `MAKE_ENUM_FLAGS=ON`. For example if you have installed `enum_flags` at
-`c:\libraries\enum_flags`, you can invoke
+`Sprelay` application depends on `enum_flags` library. The library is searched in system path first and if not found,
+the internal `enum_flags` copy is used. If you want to specify different location of `enum_flags` you can set
+`enum_flags_ROOT_DIR` variable. If you want to force usage of `enum_flags` distributed with the application you can
+specify `MAKE_ENUM_FLAGS=ON`. For example if you have installed `enum_flags` at `c:\libraries\enum_flags`, you can
+invoke
 ```
-cmake .. -G "MinGW Makefiles" -DMAKE_ENUM_FLAGS=OFF -Denum_flags_ROOT_DIR:PATH=c:\libraries\enum_flags
+cmake .. -G "MinGW Makefiles" -DMAKE_ENUM_FLAGS=OFF ^
+-Denum_flags_ROOT_DIR:PATH=c:\libraries\enum_flags
 ```
 
 Then run your `make` command, for example (`-j` flag enables compilation paralelization)

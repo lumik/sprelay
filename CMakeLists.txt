@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(sprelay	VERSION 1.0.0 LANGUAGES CXX)
 
-option(SPRELAY_BUILD_STANDALONE
+option(BUILD_STANDALONE
     "Build the project as a standalone application."
     OFF)
 
-option(SPRELAY_SKIP_GUI
-    "Build the without GUI. Takes effect only if SPRELAY_BUILD_STANDALONE=OFF"
+option(SKIP_GUI
+    "Build the without GUI. Takes effect only if BUILD_STANDALONE=OFF"
     OFF)
-if (SPRELAY_BUILD_STANDALONE AND SPRELAY_SKIP_GUI)
-    message(WARNING "SPRELAY_SKIP_GUI does not take any effect in combination with SPRELAY_BUILD_STANDALONE.")
+if (BUILD_STANDALONE AND SKIP_GUI)
+    message(WARNING "SKIP_GUI does not take any effect in combination with BUILD_STANDALONE.")
 endif()
 
 option(MAKE_ENUM_FLAGS
@@ -21,7 +21,7 @@ if (NOT MAKE_ENUM_FLAGS)
     set(enum_flags_ROOT_DIR "" CACHE PATH "Location hint for enum_flags library search.")
 endif()
 
-option(SPRELAY_MAKE_TESTS
+option(MAKE_TESTS
     "Makes tests."
     OFF)
 
@@ -93,7 +93,7 @@ find_package(PythonInterp)
 
 # execute all parts of projects placed in subdirectories
 include(src/CMakeLists.txt)
-if (SPRELAY_MAKE_TESTS)
+if (MAKE_TESTS)
     add_subdirectory(tests)
 endif()
 

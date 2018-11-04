@@ -59,7 +59,7 @@ if (use_object_targets)
     target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
     target_include_directories(${${PROJECT_NAME}_private_target} PUBLIC $<BUILD_INTERFACE:${sprelay_source_dir}>)
 
-    if (NOT SPRELAY_BUILD_STANDALONE)
+    if (NOT BUILD_STANDALONE)
         install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${${PROJECT_NAME}_private_target}Config
             # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -94,7 +94,7 @@ if (use_object_targets)
 #    target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 #    target_include_directories(${${PROJECT_NAME}_private_target} INTERFACE $<BUILD_INTERFACE:${sprelay_source_dir}>)
 
-#    if (NOT SPRELAY_BUILD_STANDALONE)
+#    if (NOT BUILD_STANDALONE)
 #        install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${${PROJECT_NAME}_private_target}Config
 #            # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -167,7 +167,7 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Config
     # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-if (NOT SPRELAY_BUILD_STANDALONE)
+if (NOT BUILD_STANDALONE)
     install(EXPORT ${PROJECT_NAME}Config DESTINATION share/${PROJECT_NAME}/cmake)
     export(TARGETS ${PROJECT_NAME} FILE ${PROJECT_NAME}Config.cmake)
 
