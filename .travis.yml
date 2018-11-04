@@ -34,6 +34,6 @@ install:
 #   - sleep 3 # give xvfb some time to start
 
 script:
-  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DSPRELAY_BUILD_STANDALONE=OFF -DSPRELAY_INSTALL_ENUM_FLAGS=ON -DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=ON
+  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DSPRELAY_BUILD_STANDALONE=OFF -DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=ON
   - make -j2
   - make test ARGS="-V"

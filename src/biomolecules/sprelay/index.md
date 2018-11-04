@@ -78,14 +78,15 @@ If you want to build only shared library without gui, you can use SPRELAY_SKIP_G
 ```
 cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug ^
 -DCMAKE_INSTALL_PREFIX=.. -DSPRELAY_BUILD_STANDALONE=OFF ^
--DSPRELAY_INSTALL_ENUM_FLAGS=ON -DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=OFF
+-DSPRELAY_MAKE_TESTS=ON -DSPRELAY_SKIP_GUI=OFF
 ```
-When `SPRELAY_INSTALL_ENUM_FLAGS` is omited or set to `OFF`, the `enum_flags` are not installed along the `sprelay`
-library. The `enum_flags` library should then be installed somewhere in the system path or you have to point
-cmake to it for example by specifying the `CMAKE_PREFIX_PATH`. For example if you have `enum_flags` installed
-at `c:\libraries\enum_flags`, you should invoke
+`Sprelay` application depends on `enum_flags` library. The library is searched in system path first and if
+not found, the internal `enum_flags` copy is used. If you want to specify different location of `enum_flags`
+you can set `enum_flags_ROOT_DIR` variable. If you want to force usage of `enum_flags` distributed with the
+application you can specify `MAKE_ENUM_FLAGS=ON`. For example if you have installed `enum_flags` at
+`c:\libraries\enum_flags`, you can invoke
 ```
-cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=c:\libraries
+cmake .. -G "MinGW Makefiles" -DMAKE_ENUM_FLAGS=OFF -Denum_flags_ROOT_DIR:PATH=c:\libraries\enum_flags
 ```
 
 Then run your `make` command, for example (`-j` flag enables compilation paralelization)

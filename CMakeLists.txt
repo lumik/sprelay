@@ -1,25 +1,27 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(sprelay	VERSION 1.0.0 LANGUAGES CXX)
 
-OPTION(SPRELAY_BUILD_STANDALONE
+option(SPRELAY_BUILD_STANDALONE
     "Build the project as a standalone application."
     OFF)
 
-OPTION(SPRELAY_SKIP_GUI
+option(SPRELAY_SKIP_GUI
     "Build the without GUI. Takes effect only if SPRELAY_BUILD_STANDALONE=OFF"
     OFF)
 if (SPRELAY_BUILD_STANDALONE AND SPRELAY_SKIP_GUI)
     message(WARNING "SPRELAY_SKIP_GUI does not take any effect in combination with SPRELAY_BUILD_STANDALONE.")
 endif()
 
-OPTION(SPRELAY_INSTALL_ENUM_FLAGS
-    "Installs required dependece enum_flags with the library."
+option(MAKE_ENUM_FLAGS
+    "Forces internal enum_flags library usage. Otherwise the library is searched if sytem path. You can also specify
+    its location by enum_flags_ROOT_DIR cache variable."
     OFF)
-if (SPRELAY_BUILD_STANDALONE AND INSTALL_SPRELAY_ENUM_FLAGS)
-    message(WARNING "INSTALL_SPRELAY_ENUM_FLAGS does not take any effect in combination with SPRELAY_BUILD_STANDALONE.")
+
+if (NOT MAKE_ENUM_FLAGS)
+    set(enum_flags_ROOT_DIR "" CACHE PATH "Location hint for enum_flags library search.")
 endif()
 
-OPTION(SPRELAY_MAKE_TESTS
+option(SPRELAY_MAKE_TESTS
     "Makes tests."
     OFF)
 
@@ -112,7 +114,14 @@ if (DOXYGEN_FOUND)
     set(qt_widgets_tags "${qt_docs_dir}/qtwidgets/qtwidgets.tags=http://doc.qt.io/qt-5/")
     set(qt_testlib_tags "${qt_docs_dir}/qttestlib/qttestlib.tags=http://doc.qt.io/qt-5/")
     get_target_property(enum_flags_tags enum_flags_tag_file TAG_FILE)
-    set(enum_flags_tags "${enum_flags_tags}=../../${CMAKE_INSTALL_DATAROOTDIR}/doc/enum_flags/html/")
+    get_target_property(enum_flags_doc_dir enum_flags_tag_file DOC_DIR)
+    if (NOT "${enum_flags_doc_dir}" STREQUAL "")
+        set(enum_flags_tags "${enum_flags_tags}=${enum_flags_doc_dir}")
+    elseif (NOT "${enum_flags_tags}" STREQUAL "")
+        set(enum_flags_tags "${enum_flags_tags}=../../${CMAKE_INSTALL_DATAROOTDIR}/doc/enum_flags/html/")
+    else()
+        set(enum_flags_tags "")
+    endif()
     get_filename_component(sprelay_parent_dir ${sprelay_global_source_dir} DIRECTORY)
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
