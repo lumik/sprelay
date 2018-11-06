@@ -1,37 +1,72 @@
 project(${sprelay_project_name}_core)
 
+# set some globals
+set(sprelay_core_install_include_dir "${sprelay_install_include_dir}/core")
+
 # collect files
 set(${PROJECT_NAME}_lib_hdr
-    ${PROJECT_SOURCE_DIR}/k8090_defines.h
-    ${PROJECT_SOURCE_DIR}/serial_port_defines.h)
-set(${PROJECT_NAME}_lib_qt_hdr
-    ${PROJECT_SOURCE_DIR}/k8090.h)
+    k8090_defines.h
+    serial_port_defines.h)
 set(${PROJECT_NAME}_lib_tpp)
+set(${PROJECT_NAME}_lib_qt_hdr
+    k8090.h)
 set(${PROJECT_NAME}_lib_src
-    ${PROJECT_SOURCE_DIR}/k8090.cpp)
+    k8090.cpp)
 set(${PROJECT_NAME}_hdr
-    ${PROJECT_SOURCE_DIR}/command_queue.h
-    ${PROJECT_SOURCE_DIR}/concurent_command_queue.h
-    ${PROJECT_SOURCE_DIR}/k8090_commands.h
-    ${PROJECT_SOURCE_DIR}/k8090_utils.h
-    ${PROJECT_SOURCE_DIR}/serial_port_utils.h)
-set(${PROJECT_NAME}_qt_hdr
-    ${PROJECT_SOURCE_DIR}/mock_serial_port.h
-    ${PROJECT_SOURCE_DIR}/unified_serial_port.h)
+    command_queue.h
+    concurent_command_queue.h
+    k8090_commands.h
+    k8090_utils.h
+    serial_port_utils.h)
 set(${PROJECT_NAME}_tpp
-    ${PROJECT_SOURCE_DIR}/command_queue.tpp)
+    command_queue.tpp)
+set(${PROJECT_NAME}_qt_hdr
+    mock_serial_port.h
+    unified_serial_port.h)
 set(${PROJECT_NAME}_src
-    ${PROJECT_SOURCE_DIR}/concurent_command_queue.cpp
-    ${PROJECT_SOURCE_DIR}/k8090_utils.cpp
-    ${PROJECT_SOURCE_DIR}/mock_serial_port.cpp
-    ${PROJECT_SOURCE_DIR}/serial_port_utils.cpp
-    ${PROJECT_SOURCE_DIR}/unified_serial_port.cpp)
+    concurent_command_queue.cpp
+    k8090_utils.cpp
+    mock_serial_port.cpp
+    serial_port_utils.cpp
+    unified_serial_port.cpp)
 set(${PROJECT_NAME}_ui)
 
+# create build and install file paths
+foreach(hdr ${${PROJECT_NAME}_lib_hdr})
+    list(APPEND ${PROJECT_NAME}_lib_hdr_build "${PROJECT_SOURCE_DIR}/${hdr}")
+    list(APPEND ${PROJECT_NAME}_lib_hdr_install "${sprelay_core_install_include_dir}/${hdr}")
+endforeach()
+foreach(hdr ${${PROJECT_NAME}_lib_tpp})
+    list(APPEND ${PROJECT_NAME}_lib_tpp_build "${PROJECT_SOURCE_DIR}/${hdr}")
+    list(APPEND ${PROJECT_NAME}_lib_tpp_install "${sprelay_core_install_include_dir}/${hdr}")
+endforeach()
+foreach(hdr ${${PROJECT_NAME}_lib_qt_hdr})
+    list(APPEND ${PROJECT_NAME}_lib_qt_hdr_build "${PROJECT_SOURCE_DIR}/${hdr}")
+    list(APPEND ${PROJECT_NAME}_lib_qt_hdr_install "${sprelay_core_install_include_dir}/${hdr}")
+endforeach()
+foreach(src ${${PROJECT_NAME}_lib_src})
+    list(APPEND ${PROJECT_NAME}_lib_src_build "${PROJECT_SOURCE_DIR}/${src}")
+endforeach()
+foreach(hdr ${${PROJECT_NAME}_hdr})
+    list(APPEND ${PROJECT_NAME}_hdr_build "${PROJECT_SOURCE_DIR}/${hdr}")
+endforeach()
+foreach(hdr ${${PROJECT_NAME}_tpp})
+    list(APPEND ${PROJECT_NAME}_tpp_build "${PROJECT_SOURCE_DIR}/${hdr}")
+endforeach()
+foreach(hdr ${${PROJECT_NAME}_qt_hdr})
+    list(APPEND ${PROJECT_NAME}_qt_hdr_build "${PROJECT_SOURCE_DIR}/${hdr}")
+endforeach()
+foreach(src ${${PROJECT_NAME}_src})
+    list(APPEND ${PROJECT_NAME}_src_build "${PROJECT_SOURCE_DIR}/${src}")
+endforeach()
+foreach(src ${${PROJECT_NAME}_ui})
+    list(APPEND ${PROJECT_NAME}_ui_build "${PROJECT_SOURCE_DIR}/${src}")
+endforeach()
+
 # call qt moc
-qt5_wrap_cpp(${PROJECT_NAME}_hdr_moc ${${PROJECT_NAME}_qt_hdr})
-qt5_wrap_cpp(${PROJECT_NAME}_lib_hdr_moc ${${PROJECT_NAME}_lib_qt_hdr})
-qt5_wrap_ui(${PROJECT_NAME}_ui_moc ${${PROJECT_NAME}_ui})
+qt5_wrap_cpp(${PROJECT_NAME}_hdr_moc_build ${${PROJECT_NAME}_qt_hdr_build})
+qt5_wrap_cpp(${PROJECT_NAME}_lib_hdr_moc_build ${${PROJECT_NAME}_lib_qt_hdr_build})
+qt5_wrap_ui(${PROJECT_NAME}_ui_moc_build ${${PROJECT_NAME}_ui_build})
 
 
 # object files - can be used in tests #
@@ -40,67 +75,78 @@ qt5_wrap_ui(${PROJECT_NAME}_ui_moc ${${PROJECT_NAME}_ui})
 if (use_object_targets)
     set(${PROJECT_NAME}_private_target ${PROJECT_NAME}_private)
 
+    # create the library
     add_library(${${PROJECT_NAME}_private_target} OBJECT
-        ${${PROJECT_NAME}_lib_hdr}
-        ${${PROJECT_NAME}_lib_tpp}
-        ${${PROJECT_NAME}_lib_qt_hdr}
-        ${${PROJECT_NAME}_hdr}
-        ${${PROJECT_NAME}_tpp}
-        ${${PROJECT_NAME}_qt_hdr}
-        ${${PROJECT_NAME}_src}
-        ${${PROJECT_NAME}_hdr_moc}
-        ${${PROJECT_NAME}_ui_moc})
+        ${${PROJECT_NAME}_src_build}
+        ${${PROJECT_NAME}_hdr_moc_build}
+        ${${PROJECT_NAME}_ui_moc_build})
     target_link_libraries(${${PROJECT_NAME}_private_target}
         Qt5::Core
         Qt5::SerialPort
         Threads::Threads
         lumik::enum_flags::enum_flags
-        sprelay_global)
-    target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
-    target_include_directories(${${PROJECT_NAME}_private_target} PUBLIC $<BUILD_INTERFACE:${sprelay_source_dir}>)
+        biomolecules::sprelay::sprelay_globals)
+    target_include_directories(${${PROJECT_NAME}_private_target} PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${sprelay_source_dir}>)
+
+    # attach header files to the library (mainly to display them in IDEs)
+    target_sources(${${PROJECT_NAME}_private_target} PUBLIC
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_hdr_build}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_tpp_build}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_qt_hdr_build}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_hdr_build}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_tpp_build}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_qt_hdr_build}>)
+
+    # create alias to enable treating the library inside this project as if it were imported in namespace
+    add_library(biomolecules::${sprelay_project_name}::${${PROJECT_NAME}_private_target}
+        ALIAS ${${PROJECT_NAME}_private_target})
 
     if (NOT BUILD_STANDALONE)
-        install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${${PROJECT_NAME}_private_target}Config
-            # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        # install the library and export it to target list
+        install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${sprelay_project_name}Targets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-        install(EXPORT ${${PROJECT_NAME}_private_target}Config DESTINATION share/${${PROJECT_NAME}_private_target}/cmake)
-        export(TARGETS ${${PROJECT_NAME}_private_target} FILE ${${PROJECT_NAME}_private_target}Config.cmake)
     endif()
 # TODO(lumik): interface targets can't be used as the replacement for object files for older cmake versions because
 # problems with qt moc, see comments in tests. Devise better approach to define used headers here.
 #else()
 #    set(${PROJECT_NAME}_private_target ${PROJECT_NAME}_private)
 
+#    # create the library
 #    add_library(${${PROJECT_NAME}_private_target} INTERFACE)
 ##    set_property(TARGET ${${PROJECT_NAME}_private_target} PROPERTY qt_hdr ${${PROJECT_NAME}_qt_hdr})
 ##    set_property(TARGET ${${PROJECT_NAME}_private_target} PROPERTY qt_ui ${${PROJECT_NAME}_ui})
 #    target_sources(${${PROJECT_NAME}_private_target} INTERFACE
-#        ${${PROJECT_NAME}_lib_hdr}
-#        ${${PROJECT_NAME}_lib_tpp}
-#        ${${PROJECT_NAME}_lib_qt_hdr}
-#        ${${PROJECT_NAME}_hdr}
-#        ${${PROJECT_NAME}_tpp}
-#        ${${PROJECT_NAME}_qt_hdr}
-#        ${${PROJECT_NAME}_src}
-#        ${${PROJECT_NAME}_hdr_moc}
-#        ${${PROJECT_NAME}_ui_moc})
+#        ${${PROJECT_NAME}_src_build}
+#        ${${PROJECT_NAME}_hdr_moc_build}
+#        ${${PROJECT_NAME}_ui_moc_build})
 #    target_link_libraries(${${PROJECT_NAME}_private_target} INTERFACE
 #        Qt5::Core
 #        Qt5::SerialPort
 #        Threads::Threads
 #        lumik::enum_flags::enum_flags
-#        sprelay_global)
-#    target_include_directories(${${PROJECT_NAME}_private_target} SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
-#    target_include_directories(${${PROJECT_NAME}_private_target} INTERFACE $<BUILD_INTERFACE:${sprelay_source_dir}>)
-
+#        biomolecules::sprelay::sprelay_globals)
+#    target_include_directories(${${PROJECT_NAME}_private_target} PUBLIC
+#        $<INSTALL_INTERFACE:include>
+#        $<BUILD_INTERFACE:${sprelay_source_dir}>)
+#
+#    # attach header files to the library (mainly to display them in IDEs)
+#    target_sources(${${PROJECT_NAME}_private_target} INTERFACE
+#        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_hdr_build}>
+#        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_tpp_build}>
+#        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_qt_hdr_build}>
+#        $<BUILD_INTERFACE:${${PROJECT_NAME}_hdr_build}>
+#        $<BUILD_INTERFACE:${${PROJECT_NAME}_tpp_build}>
+#        $<BUILD_INTERFACE:${${PROJECT_NAME}_qt_hdr_build}>)
 #    if (NOT BUILD_STANDALONE)
-#        install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${${PROJECT_NAME}_private_target}Config
-#            # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#        # install the library and export it to target list
+#        install(TARGETS ${${PROJECT_NAME}_private_target} EXPORT ${sprelay_project_name}Targets
+#            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-#        install(EXPORT ${${PROJECT_NAME}_private_target}Config DESTINATION share/${${PROJECT_NAME}_private_target}/cmake)
-#        export(TARGETS ${${PROJECT_NAME}_private_target} FILE ${${PROJECT_NAME}_private_target}Config.cmake)
 #    endif()
 endif()
 
@@ -109,26 +155,35 @@ endif()
 # ------------ #
 
 if (use_object_targets)
+    # create the library
     add_library(${PROJECT_NAME} SHARED
-        ${${PROJECT_NAME}_lib_hdr}
-        ${${PROJECT_NAME}_lib_tpp}
-        ${${PROJECT_NAME}_lib_qt_hdr}
-        ${${PROJECT_NAME}_lib_src}
-        ${${PROJECT_NAME}_lib_hdr_moc})
+        ${${PROJECT_NAME}_lib_src_build}
+        ${${PROJECT_NAME}_lib_hdr_moc_build})
     target_link_libraries(${PROJECT_NAME}
-        Qt5::Core Qt5::SerialPort
+        Qt5::Core
+        Qt5::SerialPort
         Threads::Threads
         lumik::enum_flags::enum_flags
-        sprelay_global
-        ${${PROJECT_NAME}_private_target})
+        biomolecules::sprelay::sprelay_globals
+        biomolecules::sprelay::${${PROJECT_NAME}_private_target})
+
+    # attach header files to the library (mainly to display them in IDEs)
+    target_sources(${PROJECT_NAME} PUBLIC
+        $<INSTALL_INTERFACE:${${PROJECT_NAME}_lib_hdr_install}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_hdr_build}>
+        $<INSTALL_INTERFACE:${${PROJECT_NAME}_lib_tpp_install}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_tpp_build}>
+        $<INSTALL_INTERFACE:${${PROJECT_NAME}_lib_qt_hdr_install}>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_qt_hdr_build}>)
 else()
+#    # create the library
 #    # Interface target can be used, see above.
 #    add_library(${PROJECT_NAME} SHARED
-#        ${${PROJECT_NAME}_lib_hdr}
-#        ${${PROJECT_NAME}_lib_tpp}
-#        ${${PROJECT_NAME}_lib_qt_hdr}
-#        ${${PROJECT_NAME}_lib_src}
-#        ${${PROJECT_NAME}_lib_hdr_moc})
+#        ${${PROJECT_NAME}_lib_hdr_build}
+#        ${${PROJECT_NAME}_lib_tpp_build}
+#        ${${PROJECT_NAME}_lib_qt_hdr_build}
+#        ${${PROJECT_NAME}_lib_src_build}
+#        ${${PROJECT_NAME}_lib_hdr_moc_build})
 #    target_sources(${PROJECT_NAME} PRIVATE
 #        $<TARGET_PROPERTY:${${PROJECT_NAME}_private_target},INTERFACE_SOURCES>)
 ##        $<TARGET_PROPERTY:${${PROJECT_NAME}_private_target},qt_hdr>
@@ -137,42 +192,54 @@ else()
 #        Qt5::Core Qt5::SerialPort
 #        Threads::Threads
 #        lumik::enum_flags::enum_flags
-#        sprelay_global
-#        ${${PROJECT_NAME}_private_target})
+#        biomolecules::sprelay::sprelay_globals
+#        biomolecules::sprelay::${${PROJECT_NAME}_private_target})
+    # create the library
     add_library(${PROJECT_NAME} SHARED
-        ${${PROJECT_NAME}_lib_hdr}
-        ${${PROJECT_NAME}_lib_tpp}
-        ${${PROJECT_NAME}_lib_qt_hdr}
-        ${${PROJECT_NAME}_lib_src}
-        ${${PROJECT_NAME}_lib_hdr_moc}
-        ${${PROJECT_NAME}_hdr}
-        ${${PROJECT_NAME}_tpp}
-        ${${PROJECT_NAME}_qt_hdr}
-        ${${PROJECT_NAME}_src}
-        ${${PROJECT_NAME}_hdr_moc}
-        ${${PROJECT_NAME}_ui_moc})
+        ${${PROJECT_NAME}_lib_src_build}
+        ${${PROJECT_NAME}_lib_hdr_moc_build}
+        ${${PROJECT_NAME}_src_build}
+        ${${PROJECT_NAME}_hdr_moc_build}
+        ${${PROJECT_NAME}_ui_moc_build})
     target_link_libraries(${PROJECT_NAME}
         Qt5::Core
         Qt5::SerialPort
         Threads::Threads
         lumik::enum_flags::enum_flags
-        sprelay_global)
+        biomolecules::sprelay::sprelay_globals)
+
+    # attach header files to the library (mainly to display them in IDEs)
+    target_sources(${PROJECT_NAME}
+        PUBLIC
+            $<INSTALL_INTERFACE:${${PROJECT_NAME}_lib_hdr_install}>
+            $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_hdr_build}>
+            $<INSTALL_INTERFACE:${${PROJECT_NAME}_lib_tpp_install}>
+            $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_tpp_build}>
+            $<INSTALL_INTERFACE:${${PROJECT_NAME}_lib_qt_hdr_install}>
+            $<BUILD_INTERFACE:${${PROJECT_NAME}_lib_qt_hdr_build}>
+        PRIVATE
+            $<BUILD_INTERFACE:${${PROJECT_NAME}_hdr_build}>
+            $<BUILD_INTERFACE:${${PROJECT_NAME}_tpp_build}>
+            $<BUILD_INTERFACE:${${PROJECT_NAME}_qt_hdr_build}>)
 endif()
 
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC $<INSTALL_INTERFACE:include>)
-target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${sprelay_source_dir}>)
+# finish the library creation
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${sprelay_source_dir}>)
 target_compile_definitions(${PROJECT_NAME} PRIVATE SPRELAY_LIBRARY)
 
-install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Config
-    # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+# create alias to enable treating the library inside this project as if it were imported in namespace
+add_library(biomolecules::${sprelay_project_name}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+# install the library and export it to target list
+install(TARGETS ${PROJECT_NAME} EXPORT ${sprelay_project_name}Targets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 if (NOT BUILD_STANDALONE)
-    install(EXPORT ${PROJECT_NAME}Config DESTINATION share/${PROJECT_NAME}/cmake)
-    export(TARGETS ${PROJECT_NAME} FILE ${PROJECT_NAME}Config.cmake)
-
-    install(FILES ${${PROJECT_NAME}_lib_hdr} ${${PROJECT_NAME}_lib_qt_hdr}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/biomolecules/sprelay/core)
+    install(FILES ${${PROJECT_NAME}_lib_hdr_build} ${${PROJECT_NAME}_lib_qt_hdr_build}
+        DESTINATION ${sprelay_core_install_include_dir})
 endif()
 
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to

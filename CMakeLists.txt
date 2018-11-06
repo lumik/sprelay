@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.3)
-project(sprelay	VERSION 1.0.0 LANGUAGES CXX)
+project(sprelay VERSION 1.0.0 LANGUAGES CXX)
 
 option(BUILD_STANDALONE
     "Build the project as a standalone application."
@@ -27,8 +27,13 @@ option(MAKE_TESTS
 
 # set some globals
 set(sprelay_project_name sprelay)
-set(sprelay_global_binary_dir ${CMAKE_BINARY_DIR})
-set(sprelay_global_source_dir ${PROJECT_SOURCE_DIR})
+set(sprelay_root_binary_dir ${CMAKE_BINARY_DIR})
+set(sprelay_root_source_dir ${PROJECT_SOURCE_DIR})
+set(sprelay_install_include_dir "${CMAKE_INSTALL_INCLUDEDIR}/biomolecules/${sprelay_project_name}")
+set(sprelay_install_cmake_dir "${CMAKE_INSTALL_DATAROOTDIR}/cmake/${sprelay_project_name}")
+set(sprelay_bin_cmake_dir "${sprelay_root_binary_dir}/${CMAKE_INSTALL_DATAROOTDIR}/cmake/${sprelay_project_name}")
+set(sprelay_install_doc_dir "${CMAKE_INSTALL_DATAROOTDIR}/doc/${sprelay_project_name}")
+
 # object files with dependencies works well only for cmake version 3.12 or later else the object files do not propagate
 # dependencies and cant use target_link_libraries
 if (NOT CMAKE_VERSION VERSION_LESS "3.12")
@@ -49,8 +54,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    add_compile_options(-pipe -frtti -Wall -Wextra -fexceptions)
+    add_compile_options(-pipe -frtti -Wall -Wextra -Wpedantic -fexceptions)
 endif()
+
+if (MSVC)
+    add_compile_options(/W4)
+endif()
+
 if (MINGW)
     add_compile_options(-mthreads -fno-keep-inline-dllexport -DUNICODE)
     list(APPEND sprelay_standalone_application_link_flags "-Wl,-subsystem,windows")
@@ -68,28 +78,46 @@ find_package(Qt5 COMPONENTS Core Gui Widgets SerialPort Test REQUIRED)
 #set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-# install correct libraries into correct locations on all platforms
-include(GNUInstallDirs)
-
-# enable running program from build directory by copying all binary staff into bin subdirectory
-if (WIN32)
-    if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
-    endif()
-    if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
-    endif()
-    if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${sprelay_global_binary_dir}/${CMAKE_INSTALL_BINDIR}")
-    endif()
-endif()
-
 # check for Doxygen
 find_package(Doxygen)
 
 # check for python for pylint
 find_package(PythonInterp)
 
+# install correct libraries into correct locations on all platforms
+include(GNUInstallDirs)
+
+# enable running program from build directory by copying all binary staff into bin subdirectory
+if (WIN32)
+    if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${sprelay_root_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
+    endif()
+    if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${sprelay_root_binary_dir}/${CMAKE_INSTALL_LIBDIR}")
+    endif()
+    if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${sprelay_root_binary_dir}/${CMAKE_INSTALL_BINDIR}")
+    endif()
+endif()
+
+if (NOT BUILD_STANDALONE)
+    # create package to be discoverable in find package
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(cmake/${sprelay_project_name}Config.cmake.in
+        "${sprelay_bin_cmake_dir}/${sprelay_project_name}Config.cmake"
+        INSTALL_DESTINATION "${sprelay_install_cmake_dir}"
+        NO_SET_AND_CHECK_MACRO
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+    write_basic_package_version_file(
+        "${sprelay_bin_cmake_dir}/${sprelay_project_name}ConfigVersion.cmake"
+        COMPATIBILITY SameMajorVersion)
+    install(
+        FILES
+            "${sprelay_bin_cmake_dir}/${sprelay_project_name}Config.cmake"
+            "${sprelay_bin_cmake_dir}/${sprelay_project_name}ConfigVersion.cmake"
+        DESTINATION "${sprelay_install_cmake_dir}"
+        COMPONENT Develop)
+endif()
 
 # execute all parts of projects placed in subdirectories
 include(src/CMakeLists.txt)
@@ -122,7 +150,7 @@ if (DOXYGEN_FOUND)
     else()
         set(enum_flags_tags "")
     endif()
-    get_filename_component(sprelay_parent_dir ${sprelay_global_source_dir} DIRECTORY)
+    get_filename_component(sprelay_parent_dir ${sprelay_root_source_dir} DIRECTORY)
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
@@ -135,7 +163,7 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating documentation with Doxygen"
         VERBATIM)
     add_dependencies(doc enum_flags_tag_file)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html DESTINATION ${sprelay_install_doc_dir} OPTIONAL)
 endif()
 
 # Other tests
