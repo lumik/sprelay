@@ -127,6 +127,25 @@ endif()
 
 # documentation
 if (DOXYGEN_FOUND)
+    # find cppreference file
+    find_file(cppreference_tag_file cppreference-doxygen-web.tag.xml
+        HINTS
+            ${CPPREFERENCE_TAGS_ROOT_DIR}
+            $ENV{CPPREFERENCE_TAGS_ROOT_DIR})
+    if (cppreference_tag_file)
+        set(cppreference_tags "\"${cppreference_tag_file}=http://en.cppreference.com/w/\"")
+    else()
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cppreference-doxygen-web.tag.xml
+            COMMAND ${CMAKE_COMMAND}
+                -D DEST_DIR=${CMAKE_CURRENT_BINARY_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/get_cppreference_tags.cmake
+            COMMENT "Getting cppreference.com doxygen tags...")
+        add_custom_target(get_ccpreference_tags DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cppreference-doxygen-web.tag.xml)
+        set(cppreference_tags
+            "\"${CMAKE_CURRENT_BINARY_DIR}/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/\"")
+    endif()
+
     # get Qt documentation location
     get_target_property(qmake_executable Qt5::qmake LOCATION)
     execute_process(
@@ -141,6 +160,8 @@ if (DOXYGEN_FOUND)
     set(qt_gui_tags "${qt_docs_dir}/qtgui/qtgui.tags=http://doc.qt.io/qt-5/")
     set(qt_widgets_tags "${qt_docs_dir}/qtwidgets/qtwidgets.tags=http://doc.qt.io/qt-5/")
     set(qt_testlib_tags "${qt_docs_dir}/qttestlib/qttestlib.tags=http://doc.qt.io/qt-5/")
+
+    # enum_flags documentation
     get_target_property(enum_flags_tags enum_flags_tag_file TAG_FILE)
     get_target_property(enum_flags_doc_dir enum_flags_tag_file DOC_DIR)
     if (NOT "${enum_flags_doc_dir}" STREQUAL "")
@@ -152,6 +173,8 @@ if (DOXYGEN_FOUND)
     endif()
     get_filename_component(sprelay_parent_dir ${sprelay_root_source_dir} DIRECTORY)
 
+    # configure doxygen
+    set(sprelay_tags ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.tags)
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
     set(doxy_main_page ${CMAKE_CURRENT_SOURCE_DIR}/src/biomolecules/sprelay/index.md)
@@ -163,7 +186,14 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating documentation with Doxygen"
         VERBATIM)
     add_dependencies(doc enum_flags_tag_file)
+    if (NOT cppreference_tag_file)
+        add_dependencies(doc get_ccpreference_tags)
+    endif()
+
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html DESTINATION ${sprelay_install_doc_dir} OPTIONAL)
+    install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.tags
+        DESTINATION ${sprelay_install_doc_dir} OPTIONAL)
 endif()
 
 # Other tests
