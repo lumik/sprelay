@@ -21,6 +21,8 @@ if (NOT MAKE_ENUM_FLAGS)
     set(enum_flags_ROOT_DIR "" CACHE PATH "Location hint for enum_flags library search.")
 endif()
 
+set(CPPREFERENCE_TAGS_ROOT_DIR "" CACHE PATH "Location hint for the cppreference doxygen tags search.")
+
 option(MAKE_TESTS
     "Makes tests."
     OFF)
