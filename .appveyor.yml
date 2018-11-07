@@ -1,0 +1,70 @@
+version: '1.0.0-{build}'
+
+image: Visual Studio 2017
+
+configuration:
+  - Release
+
+clone_folder: C:\projects\source
+
+environment:
+  matrix:
+    - compiler: msvc-15-seh
+      generator: "Visual Studio 15 2017 Win64"
+      QTDIR: C:\Qt\5.11\msvc2017_64
+    - compiler: gcc-5.3.0-posix
+      generator: "MinGW Makefiles"
+      QTDIR: C:\Qt\5.11\mingw53_32
+    - compiler: gcc-msys2
+      generator: "MSYS Makefiles"
+      BITS: 64
+      ARCH: x86_64
+      Qt5_DIR: C:\msys64\mingw64\lib\cmake
+      # Tell msys2 to add mingw64 to the path
+      MSYSTEM: MINGW64
+      # Tell msys2 to inherit the current directory when starting the shell
+      CHERE_INVOKING: 1
+
+install:
+  # store build path
+  - set ORIGIN_PATH=%cd%
+
+  # list available Qt's
+  - cd C:\Qt
+  - dir
+  - cd 5.11
+  - dir
+
+  # move back to build path
+  - cd %ORIGIN_PATH%
+
+  # setup msys2 build
+  - if "%compiler%"=="gcc-msys2" (set "PATH=C:\msys64\usr\bin;C:\msys64\mingw%BITS%\bin;%PATH%")
+  - if "%compiler%"=="gcc-msys2" pacman --noconfirm --needed -S mingw-w64-%ARCH%-cmake mingw-w64-%ARCH%-qt5
+
+  # setup Qt
+  - if not "%compiler%"=="gcc-msys2" call %QTDIR%\bin\qtenv2.bat
+  - qmake -v
+
+  # setup mingw
+  # git bash conflicts with MinGW makefiles
+  - if "%generator%"=="MinGW Makefiles" set "PATH=%PATH:C:\Program Files\Git\usr\bin;=%"
+
+  # move back to build path
+  - cd %ORIGIN_PATH%
+
+
+before_build:
+  - git submodule update --init --recursive --checkout
+  - md build
+  - cd build
+  - if "%compiler%"=="gcc-msys2" (bash -lc "cmake /c/projects/source -G \"%generator%\" -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON")
+    else cmake C:\projects\source -G "%generator%" -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON
+
+build_script:
+  - if "%compiler%"=="gcc-msys2" (bash -lc "cmake --build . --config %configuration%")
+    else cmake --build . --config %configuration%
+
+test_script:
+  - if "%compiler%"=="gcc-msys2" (bash -lc "ctest -C %configuration% -V")
+    else ctest -C %configuration% -V
