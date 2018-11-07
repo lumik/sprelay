@@ -42,14 +42,6 @@ if (NOT CMAKE_VERSION VERSION_LESS "3.12")
     set(use_object_targets TRUE)
 endif()
 
-# set cmake install prefix default on windows
-if (CMAKE_INSTALL_PREFIX MATCHES "^C:/Program Files")
-    # Override to an "Install" directory in the current build-dir
-    message(STATUS "    Install-prefix was at default -> forcing it to the ${PROJECT_NAME} directory:")
-    message(STATUS "        'CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX})'")
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif()
-
 # setup compiler flags
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
