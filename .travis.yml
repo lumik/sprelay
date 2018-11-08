@@ -11,6 +11,8 @@ matrix:
    - compiler: gcc
    - compiler: clang
      env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7
+   - compiler: clang
+     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 COVERAGE=1 LLVM_PROFILE_BINARY=/usr/bin/llvm-profdata-7 LLVM_COV_BINARY=/usr/bin/llvm-cov-7
 
 # disable the default submodule logic
 git:
@@ -106,22 +108,39 @@ script:
 #  - ctest -V
   # configure the project
   - docker exec -t ci bash -c "mkdir -p /home/travis/build/$TRAVIS_REPO_SLUG/build"
-  - echo "normal cmake:" &&
-    echo "cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON" &&
-    if [[ ! -z "${TRUSTY}" ]]; then
-      docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
-        cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+  - if [[ ! -z "${COVERAGE}" ]]; then
+      echo "coverage cmake:" &&
+      echo "cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON -DENABLE_COVERAGE=ON" &&
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX} LLVM_PROFILE_BINARY=${LLVM_PROFILE_BINARY}
+        LLVM_COV_BINARY=${LLVM_COV_BINARY} cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON -DENABLE_COVERAGE=ON";
     else
-      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+      echo "normal cmake:" &&
+      echo "cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON" &&
+      if [[ ! -z "${TRUSTY}" ]]; then
+        docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
+          cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+      else
+        docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+      fi;
     fi
   # build the project
   - docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && cmake --build . -- -j2"
   # run tests
-  - if [[ ! -z "${TRUSTY}" ]]; then
-      docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
-        cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+  - if [[ ! -z "${COVERAGE}" ]]; then
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && cmake --build . --target coverage";
     else
-      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+      if [[ ! -z "${TRUSTY}" ]]; then
+        docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
+          cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+      else
+        docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+      fi;
+    fi
+
+after_success:
+  # report coverage
+  - if [[ ! -z "${COVERAGE}" ]]; then
+      bash <(curl -s https://codecov.io/bash);
     fi

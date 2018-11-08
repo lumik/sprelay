@@ -134,3 +134,17 @@ if (sprelay_standalone_console_link_flags)
 endif()
 
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} -silent)
+
+if (ENABLE_COVERAGE)
+    target_link_libraries(${PROJECT_NAME} -fprofile-instr-generate -fcoverage-mapping)
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.profraw
+        COMMAND LLVM_PROFILE_FILE=${PROJECT_NAME}.profraw ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} -silent
+        DEPENDS ${PROJECT_NAME}
+        COMMENT "${PROJECT_NAME}: Creating raw coverage data...")
+    add_custom_target(${PROJECT_NAME}_coverage
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.profraw)
+    set_property(GLOBAL APPEND PROPERTY coverage_raw_files "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.profraw")
+    set_property(GLOBAL APPEND PROPERTY coverage_binaries ${PROJECT_NAME})
+    set_property(GLOBAL APPEND PROPERTY coverage_targets ${PROJECT_NAME}_coverage)
+endif()

@@ -242,6 +242,11 @@ if (NOT BUILD_STANDALONE)
         DESTINATION ${sprelay_core_install_include_dir})
 endif()
 
+if (ENABLE_COVERAGE)
+    target_link_libraries(${PROJECT_NAME} -fprofile-instr-generate -fcoverage-mapping)
+    set_property(GLOBAL APPEND PROPERTY coverage_binaries ${PROJECT_NAME})
+endif()
+
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
 # normal targets
 if (DOXYGEN_FOUND)

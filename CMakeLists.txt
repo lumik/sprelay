@@ -27,6 +27,21 @@ option(MAKE_TESTS
     "Makes tests."
     OFF)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # coverage
+    option(ENABLE_COVERAGE
+        "Enable coverage reporting for Clang."
+        FALSE)
+    if (ENABLE_COVERAGE)
+        message(STATUS "Adding coverage support.")
+        add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+        add_custom_target(coverage)
+        set_property(GLOBAL PROPERTY coverage_raw_files "")
+        set_property(GLOBAL PROPERTY coverage_binaries "")
+        set_property(GLOBAL PROPERTY coverage_targets "")
+    endif()
+endif()
+
 # set some globals
 set(sprelay_project_name sprelay)
 set(sprelay_root_binary_dir ${CMAKE_BINARY_DIR})
@@ -197,4 +212,61 @@ if (PYTHONINTERP_FOUND)
         COMMAND ${PYTHON_EXECUTABLE}
             external/cpplint-1.3.0/cpplint.py
             --extensions=cpp,h,tpp --headers=h,tpp --recursive src/biomolecules/sprelay tests/biomolecules/sprelay)
+endif()
+
+if (ENABLE_COVERAGE)
+    if (DEFINED ENV{LLVM_PROFILE_BINARY})
+        set(llvm_profile_binary_file $ENV{LLVM_PROFILE_BINARY})
+    else()
+        get_filename_component(compiler_parent ${CMAKE_CXX_COMPILER} DIRECTORY)
+        set(llvm_profile_binary_file ${compiler_parent}/llvm-profdata)
+    endif()
+
+    if (DEFINED ENV{LLVM_COV_BINARY})
+        set(llvm_cov_binary_file $ENV{LLVM_COV_BINARY})
+    else()
+        get_filename_component(compiler_parent ${CMAKE_CXX_COMPILER} DIRECTORY)
+        set(llvm_cov_binary_file ${compiler_parent}/llvm-cov)
+    endif()
+
+    if (EXISTS ${llvm_profile_binary_file})
+        message(STATUS "llvm_profile_binary_file: ${llvm_profile_binary_file}")
+    else()
+        message(WARNING "llvm_cov_binary_file does not exist at location ${llvm_profile_binary_file}. Set please LLVM_COV_BINARY environment variable to llvm-cov")
+    endif()
+    if (EXISTS ${llvm_cov_binary_file})
+        message(STATUS "llvm_cov_binary_file: ${llvm_cov_binary_file}")
+    else()
+        message(WARNING "llvm_cov_binary_file does not exists at location ${llvm_cov_binary_file}. Set please LLVM_COV_BINARY environment variable to llvm-cov")
+    endif()
+
+    if (EXISTS ${llvm_profile_binary_file} AND EXISTS ${llvm_cov_binary_file})
+        # covert cmake global list to strings
+        get_property(coverage_raw_files GLOBAL PROPERTY coverage_raw_files)
+        get_property(coverage_binaries GLOBAL PROPERTY coverage_binaries)
+        get_property(coverage_targets GLOBAL PROPERTY coverage_targets)
+        list(GET coverage_binaries 0 coverage_binaries_as_params)
+        list(REMOVE_AT coverage_binaries 0)
+        set(coverage_binaries_as_params $<TARGET_FILE:${coverage_binaries_as_params}>)
+        foreach(item ${coverage_binaries})
+            set(coverage_binaries_as_params ${coverage_binaries_as_params} -object $<TARGET_FILE:${item}>)
+        endforeach()
+
+        # merge .profraw files into .profdata file and convert them into .coverage.txt summary
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${sprelay_project_name}.coverage.txt
+            COMMAND ${llvm_profile_binary_file} merge -sparse ${coverage_raw_files}
+                -o ${CMAKE_CURRENT_BINARY_DIR}/${sprelay_project_name}.profdata
+            COMMAND ${llvm_cov_binary_file} show
+                ${coverage_binaries_as_params}
+                -instr-profile=${CMAKE_CURRENT_BINARY_DIR}/${sprelay_project_name}.profdata
+                ${sprelay_root_source_dir}/src/biomolecules/sprelay
+                ${sprelay_root_source_dir}/tests/biomolecules/sprelay
+                > ${sprelay_project_name}.coverage.txt
+            DEPENDS ${coverage_targets}
+            COMMENT "Merging and converting coverage data...")
+        add_custom_target(${sprelay_project_name}_gather_coverage
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${sprelay_project_name}.coverage.txt)
+        add_dependencies(coverage ${sprelay_project_name}_gather_coverage)
+    endif()
 endif()

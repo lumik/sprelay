@@ -89,6 +89,11 @@ if (BUILD_STANDALONE OR NOT SKIP_GUI)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+    if (ENABLE_COVERAGE)
+        target_link_libraries(${sprelay_project_name} -fprofile-instr-generate -fcoverage-mapping)
+        set_property(GLOBAL APPEND PROPERTY coverage_binaries ${sprelay_project_name})
+    endif()
 endif()
 
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
