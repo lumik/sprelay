@@ -1,31 +1,97 @@
-sudo: required
-dist: trusty
+services:
+  - docker
+
+# It is not really needed, other than for showing correct language tag in Travis CI build log.
 language: cpp
+
+matrix:
+  include:
+   - compiler: gcc
+     env: TRUSTY=1
+   - compiler: gcc
+   - compiler: clang
+     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7
 
 # disable the default submodule logic
 git:
   submodules: false
 
-addons:
-  apt:
-    sources:
-      # Qt 5.4.2
-      - sourceline: 'ppa:beineri/opt-qt542-trusty'
-      # cmake3
-      - ubuntu-toolchain-r-test
-    packages:
-      - qt54serialport
-      - qt54tools
-      - cmake
+#addons:
+#  apt:
+#    sources:
+#      # Qt 5.4.2
+#      - sourceline: 'ppa:beineri/opt-qt542-trusty'
+#      # cmake3
+#      - ubuntu-toolchain-r-test
+#    packages:
+#      - qt54serialport
+#      - qt54tools
+#      - cmake
 
 before_install:
   - git submodule update --init --recursive
+  - if [[ ! -z "${TRUSTY}" ]]; then
+      docker run -d --name ci -v $(pwd):/home/travis/build/$TRAVIS_REPO_SLUG ubuntu:trusty tail -f /dev/null;
+    else
+      docker run -d --name ci -v $(pwd):/home/travis/build/$TRAVIS_REPO_SLUG ubuntu:bionic tail -f /dev/null;
+    fi
+  - docker ps
 #  - sudo add-apt-repository --yes ppa:beineri/opt-qt542-trusty
 #  - sudo add-apt-repository --yes ppa:george-edison55/cmake-3.x
 #  - sudo apt-get update -qq
 
 install:
-  - sudo apt-get -y install qt54serialport qt54tools
+#  - sudo apt-get -y install qt54serialport qt54tools
+
+  # install packages
+  - if [[ ! -z "${TRUSTY}" ]]; then
+      docker exec -t ci bash -c "apt update;
+      apt install -y software-properties-common;
+      add-apt-repository --yes ppa:beineri/opt-qt542-trusty;
+      apt update -qq";
+    fi
+  - docker exec -t ci bash -c "apt update;
+    apt install -y build-essential valgrind python wget git"
+  - if [[ ! -z "${TRUSTY}" ]]; then
+      docker exec -t ci bash -c "sudo apt-get -y install qt54serialport qt54tools";
+    else
+      docker exec -t ci bash -c "apt install -y cmake qt5-default qtbase5-dev qt5-qmake libqt5serialport5-dev";
+    fi
+
+  # install cmake
+  - if [[ ! -z "${TRUSTY}" ]]; then
+      docker exec -t ci bash -c "cd /home/travis/build &&
+        wget http://www.cmake.org/files/v3.3/cmake-3.3.2.tar.gz &&
+        tar -xzf cmake-3.3.2.tar.gz && cd cmake-3.3.2 && ./configure > /dev/null && make && make install > /dev/null";
+    fi
+
+
+  # install clang
+  - if [[ "${TRAVIS_COMPILER}" == "clang" ]]; then
+      docker exec -t ci bash -c "wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -;
+        echo \"deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main\" | tee /etc/apt/sources.list.d/clang.list;
+        echo \"deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main\" | tee -a /etc/apt/sources.list.d/clang.list;
+        apt update;
+        apt install -y clang-7 clang-tidy-7 clang-format-7 clang-tools-7 libc++-7-dev";
+    fi
+  # It is necessary to setup compiler here because the environment variables are reset to defaults by travis-ci at the start.
+  - if [[ "${TRAVIS_COMPILER}" == "clang" ]]; then
+      export CC=${CCCOMPILER};
+      export CXX=${CXXCOMPILER};
+    fi
+
+  # print version of the compiler
+  - docker exec -t ci bash -c "${CXX} -v"
+
+  # print Qt version of the compiler
+  - if [[ ! -z "${TRUSTY}" ]]; then
+      docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh && qmake -v";
+    else
+      docker exec -t ci bash -c "qmake -v";
+    fi
+
+  # print cmake version of the compiler
+  - docker exec -t ci bash -c "cmake --version"
 
 # before_script:
 # enable graphical window for gui testing
@@ -34,7 +100,28 @@ install:
 #   - sleep 3 # give xvfb some time to start
 
 script:
-  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build &&
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_STANDALONE=OFF -DSKIP_GUI=ON -DMAKE_TESTS=ON
-  - cmake --build . -- -j2
-  - ctest -V
+#  - source /opt/qt54/bin/qt54-env.sh && mkdir -p build && cd build &&
+#    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_STANDALONE=OFF -DSKIP_GUI=ON -DMAKE_TESTS=ON
+#  - cmake --build . -- -j2
+#  - ctest -V
+  # configure the project
+  - docker exec -t ci bash -c "mkdir -p /home/travis/build/$TRAVIS_REPO_SLUG/build"
+  - echo "normal cmake:" &&
+    echo "cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON" &&
+    if [[ ! -z "${TRUSTY}" ]]; then
+      docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
+        cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+    else
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+    fi
+  # build the project
+  - docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && cmake --build . -- -j2"
+  # run tests
+  - if [[ ! -z "${TRUSTY}" ]]; then
+      docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
+        cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+    else
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+    fi

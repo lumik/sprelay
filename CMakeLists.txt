@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1.3)
-project(sprelay VERSION 1.0.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.3.2)
+project(sprelay VERSION 1.0.0 LANGUAGES C CXX)
 
 option(BUILD_STANDALONE
     "Build the project as a standalone application."
