@@ -400,7 +400,7 @@ void MockSerialPort::addToBuffer()
         while (!stored_responses_.empty() && counter < max_responses) {
             std::unique_ptr<unsigned char[]> response = std::move(stored_responses_.front());
             stored_responses_.pop();
-            buffer_.append(reinterpret_cast<const char *>(response.release()), 7);
+            buffer_.append(reinterpret_cast<const char *>(response.get()), 7);
             ++counter;
         }
         if (!stored_responses_.empty()) {
