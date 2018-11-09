@@ -94,6 +94,17 @@ if (BUILD_STANDALONE OR NOT SKIP_GUI)
         target_link_libraries(${sprelay_project_name} -fprofile-instr-generate -fcoverage-mapping)
         set_property(GLOBAL APPEND PROPERTY coverage_binaries ${sprelay_project_name})
     endif()
+
+    # link in sanitizers
+    if (ADDRESS_SANITIZE)
+        target_link_libraries(${sprelay_project_name} -fsanitize=address)
+    endif()
+    if (THREAD_SANITIZE)
+        target_link_libraries(${sprelay_project_name} -fsanitize=thread)
+    endif()
+    if (UB_SANITIZE)
+        target_link_libraries(${sprelay_project_name} -fsanitize=undefined)
+    endif()
 endif()
 
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to

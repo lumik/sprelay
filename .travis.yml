@@ -13,6 +13,12 @@ matrix:
      env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7
    - compiler: clang
      env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 COVERAGE=1 LLVM_PROFILE_BINARY=/usr/bin/llvm-profdata-7 LLVM_COV_BINARY=/usr/bin/llvm-cov-7
+   - compiler: clang
+     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 ADDRESS_SANITIZE=1
+   - compiler: clang
+     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 THREAD_SANITIZE=1
+   - compiler: clang
+     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 UB_SANITIZE=1
 
 # disable the default submodule logic
 git:
@@ -46,16 +52,24 @@ install:
 #  - sudo apt-get -y install qt54serialport qt54tools
 
   # install packages
+  # Qt 5.9.5 has data race detected by thread sanitizer in QTest::qExec() so we must install a newer version.
   - if [[ ! -z "${TRUSTY}" ]]; then
       docker exec -t ci bash -c "apt update;
       apt install -y software-properties-common;
       add-apt-repository --yes ppa:beineri/opt-qt542-trusty;
       apt update -qq";
+    elif [[ ! -z "${THREAD_SANITIZE}" ]]; then
+      docker exec -t ci bash -c "apt update;
+      apt install -y software-properties-common;
+      add-apt-repository --yes ppa:beineri/opt-qt-5.11.1-bionic;
+      apt update -qq";
     fi
   - docker exec -t ci bash -c "apt update;
     apt install -y build-essential valgrind python wget git"
   - if [[ ! -z "${TRUSTY}" ]]; then
-      docker exec -t ci bash -c "sudo apt-get -y install qt54serialport qt54tools";
+      docker exec -t ci bash -c "apt install -y qt54serialport qt54tools";
+    elif [[ ! -z "${THREAD_SANITIZE}" ]]; then
+      docker exec -t ci bash -c "apt install -y cmake mesa-common-dev qt511serialport qt511tools";
     else
       docker exec -t ci bash -c "apt install -y cmake qt5-default qtbase5-dev qt5-qmake libqt5serialport5-dev";
     fi
@@ -88,6 +102,8 @@ install:
   # print Qt version of the compiler
   - if [[ ! -z "${TRUSTY}" ]]; then
       docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh && qmake -v";
+    elif [[ ! -z "${THREAD_SANITIZE}" ]]; then
+      docker exec -t ci bash -c "source /opt/qt511/bin/qt511-env.sh && qmake -v";
     else
       docker exec -t ci bash -c "qmake -v";
     fi
@@ -113,13 +129,27 @@ script:
       echo "cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON -DENABLE_COVERAGE=ON" &&
       docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX} LLVM_PROFILE_BINARY=${LLVM_PROFILE_BINARY}
         LLVM_COV_BINARY=${LLVM_COV_BINARY} cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON -DENABLE_COVERAGE=ON";
+    elif [[ ! -z "${ADDRESS_SANITIZE}" ]]; then
+      echo "asan cmake:" &&
+      echo "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-O1 -g\" -DMAKE_TESTS=ON -DADDRESS_SANITIZE=ON" &&
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-O1 -g\" -DMAKE_TESTS=ON -DADDRESS_SANITIZE=ON";
+    elif [[ ! -z "${THREAD_SANITIZE}" ]]; then
+      echo "tsan cmake:" &&
+      echo "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-O1 -g\" -DMAKE_TESTS=ON -DTHREAD_SANITIZE=ON" &&
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-O1 -g\" -DMAKE_TESTS=ON -DTHREAD_SANITIZE=ON -DCMAKE_PREFIX_PATH=/opt/qt511";
+    elif [[ ! -z "${UB_SANITIZE}" ]]; then
+      echo "ubsan cmake:" &&
+      echo "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-O1 -g\" -DENUM_FLAGS_MAKE_TESTS=ON -DUB_SANITIZE=ON" &&
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-O1 -g\" -DMAKE_TESTS=ON -DUB_SANITIZE=ON";
     else
       echo "normal cmake:" &&
       echo "cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON" &&
       if [[ ! -z "${TRUSTY}" ]]; then
-        docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
-          cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
+        docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON -DCMAKE_PREFIX_PATH=/opt/qt54";
       else
         docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && CC=${CC} CXX=${CXX}
           cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TESTS=ON";
@@ -131,12 +161,7 @@ script:
   - if [[ ! -z "${COVERAGE}" ]]; then
       docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && cmake --build . --target coverage";
     else
-      if [[ ! -z "${TRUSTY}" ]]; then
-        docker exec -t ci bash -c "source /opt/qt54/bin/qt54-env.sh &&
-          cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
-      else
-        docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
-      fi;
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
     fi
 
 after_success:

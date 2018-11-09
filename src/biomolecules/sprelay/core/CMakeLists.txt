@@ -247,6 +247,17 @@ if (ENABLE_COVERAGE)
     set_property(GLOBAL APPEND PROPERTY coverage_binaries ${PROJECT_NAME})
 endif()
 
+# link in sanitizers
+if (ADDRESS_SANITIZE)
+    target_link_libraries(${PROJECT_NAME} -fsanitize=address)
+endif()
+if (THREAD_SANITIZE)
+    target_link_libraries(${PROJECT_NAME} -fsanitize=thread)
+endif()
+if (UB_SANITIZE)
+    target_link_libraries(${PROJECT_NAME} -fsanitize=undefined)
+endif()
+
 # Documentation sources - Qt creator does not support interface libraries so the documentation sources are added to
 # normal targets
 if (DOXYGEN_FOUND)

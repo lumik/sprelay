@@ -59,4 +59,18 @@ if (ENABLE_COVERAGE)
     set_property(GLOBAL APPEND PROPERTY coverage_targets ${PROJECT_NAME}_coverage)
 endif()
 
+# link in sanitizers
+if (ADDRESS_SANITIZE)
+    target_link_libraries(${PROJECT_NAME} -fsanitize=address)
+    set_tests_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT ASAN_OPTIONS=verbosity=1:detect_leaks=1:check_initialization_order=1)
+endif()
+if (THREAD_SANITIZE)
+    target_link_libraries(${PROJECT_NAME} -fsanitize=thread)
+    set_tests_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT TSAN_OPTIONS=verbosity=1)
+endif()
+if (UB_SANITIZE)
+    target_link_libraries(${PROJECT_NAME} -fsanitize=undefined)
+    set_tests_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT UBSAN_OPTIONS=verbosity=1)
+endif()
+
 add_subdirectory(impl)
