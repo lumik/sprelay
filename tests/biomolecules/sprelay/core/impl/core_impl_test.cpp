@@ -23,12 +23,11 @@
 ****************************************************************************/
 
 /*!
- * \file      k8090_utils_test.h
- * \brief     Tests for utility functions and data structures for biomolecules::sprelay::core::k8090::K8090 class
- *            implementation.
+ * \file      core_impl_test.cpp
+ * \brief     Entry point for private sprelay core tests.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
- * \date      2018-07-17
+ * \date      2018-09-11
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
  *
  * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
@@ -36,67 +35,13 @@
  */
 
 
-#ifndef BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_TEST_H_
-#define BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_TEST_H_
-
-#include <QObject>
+#include <QCoreApplication>
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
-namespace biomolecules {
-namespace sprelay {
-namespace core {
-namespace k8090 {
-namespace impl_ {
-
-class K8090UtilsTest : public QObject
+int main(int argc, char **argv)
 {
-    Q_OBJECT
-
-private slots:  // NOLINT(whitespace/indent)
-    void checkSum();
-};
-
-ADD_TEST(K8090UtilsTest)
-
-
-class CommandTest : public QObject
-{
-    Q_OBJECT
-
-private slots:  // NOLINT(whitespace/indent)
-    void orEqual_data();
-    void orEqual();
-    void equality_data();
-    void equality();
-    void equalityFalse_data();
-    void equalityFalse();
-    void isCompatible_data();
-    void isCompatible();
-    void isNotCompatible_data();
-    void isNotCompatible();
-};
-
-ADD_TEST(CommandTest)
-
-
-class CardMessageTest : public QObject
-{
-    Q_OBJECT
-
-private slots:  // NOLINT(whitespace/indent)
-    void constructors();
-    void checksumMessage();
-    void isValid();
-    void commandByte();
-};
-
-ADD_TEST(CardMessageTest)
-
-}  // namespace impl_
-}  // namespace k8090
-}  // namespace core
-}  // namespace sprelay
-}  // namespace biomolecules
-
-#endif  // BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_TEST_H_
+    QCoreApplication app(argc, argv);
+    app.setAttribute(Qt::AA_Use96Dpi, true);
+    return lumik::qtest_suite::run_tests(argc, argv);
+}

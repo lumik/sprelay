@@ -42,6 +42,7 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
+#include "k8090_commands.h"
 #include "mock_serial_port.h"
 
 namespace biomolecules {
@@ -67,7 +68,7 @@ namespace core {
 /*!
  * \brief The name of mock com port.
  */
-const char *UnifiedSerialPort::kMockPortName = "MOCKCOM";
+const char *UnifiedSerialPort::kMockPortName = k8090::impl_::kMockPortName;
 
 
 /*!

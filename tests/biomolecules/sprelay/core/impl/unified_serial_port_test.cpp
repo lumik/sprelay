@@ -51,7 +51,7 @@
 #include <thread>
 #include <utility>
 
-#include "biomolecules/sprelay/core/k8090.h"
+#include "biomolecules/sprelay/core/k8090_commands.h"
 #include "biomolecules/sprelay/core/k8090_utils.h"
 #include "biomolecules/sprelay/core/serial_port_utils.h"
 #include "biomolecules/sprelay/core/unified_serial_port.h"
@@ -72,8 +72,8 @@ void UnifiedSerialPortTest::initTestCase()
     real_card_present_ = false;
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
             UnifiedSerialPort::availablePorts()) {
-        if (params.product_identifier == k8090::K8090::kProductID
-                && params.vendor_identifier == k8090::K8090::kVendorID) {
+        if (params.product_identifier == k8090::impl_::kProductID
+                && params.vendor_identifier == k8090::impl_::kVendorID) {
             if (params.port_name != UnifiedSerialPort::kMockPortName) {
                 real_card_port_name_ = params.port_name;
                 real_card_present_ = true;
@@ -91,8 +91,8 @@ void UnifiedSerialPortTest::availablePorts()
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
             UnifiedSerialPort::availablePorts()) {
         if (params.port_name == UnifiedSerialPort::kMockPortName
-                && params.product_identifier == k8090::K8090::kProductID
-                && params.vendor_identifier == k8090::K8090::kVendorID) {
+                && params.product_identifier == k8090::impl_::kProductID
+                && params.vendor_identifier == k8090::impl_::kVendorID) {
             mock_found = true;
         }
     }

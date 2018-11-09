@@ -23,12 +23,12 @@
 ****************************************************************************/
 
 /*!
- * \file      serial_port_utils_test.h
- * \brief     The biomolecules::sprelay::core::SerialPortUtilsTest class which implements tests for serial port
- *            utilities.
+ * \file      command_queue_test.h
+ * \brief     The biomolecules::sprelay::core::command_queue::CommandQueueTest class which implements tests for
+ *            biomolecules::sprelay::core::command_queue::CommandQueue.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
- * \date      2018-04-10
+ * \date      2018-03-07
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
  *
  * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
@@ -36,8 +36,8 @@
  */
 
 
-#ifndef BIOMOLECULES_SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_
-#define BIOMOLECULES_SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_
+#ifndef BIOMOLECULES_SPRELAY_CORE_IMPL_COMMAND_QUEUE_TEST_H_
+#define BIOMOLECULES_SPRELAY_CORE_IMPL_COMMAND_QUEUE_TEST_H_
 
 #include <QObject>
 
@@ -46,20 +46,23 @@
 namespace biomolecules {
 namespace sprelay {
 namespace core {
-namespace serial_utils {
+namespace command_queue {
 
-class SerialPortUtilsTest : public QObject
+class CommandQueueTest: public QObject
 {
     Q_OBJECT
 private slots:  // NOLINT(whitespace/indent)
-    void hexToByteTestCase();
+    void uniquePush();
+    void notUniquePush();
+    void updateCommand();
 };
 
-ADD_TEST(SerialPortUtilsTest)
+ADD_TEST(CommandQueueTest)
 
-}  // namespace serial_utils
+}  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
 }  // namespace biomolecules
 
-#endif  // BIOMOLECULES_SPRELAY_CORE_SERIAL_PORT_UTILS_TEST_H_
+#endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_COMMAND_QUEUE_TEST_H_
+

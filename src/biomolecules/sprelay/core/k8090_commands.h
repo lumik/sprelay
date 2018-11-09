@@ -256,6 +256,8 @@ const quint16 kProductID = 32912;
  */
 const quint16 kVendorID = 4303;
 
+const char * const kMockPortName = "MOCKCOM";
+
 }  // namespace impl_
 }  // namespace k8090
 }  // namespace core

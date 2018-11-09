@@ -43,6 +43,7 @@
 #include <QtTest>
 #include <QVariant>
 
+#include "biomolecules/sprelay/core/k8090_commands.h"
 #include "biomolecules/sprelay/core/serial_port_utils.h"
 #include "biomolecules/sprelay/core/unified_serial_port.h"
 
@@ -60,10 +61,10 @@ void K8090Test::initTestCase()
 {
     real_card_present_ = false;
     foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
-            UnifiedSerialPort::availablePorts()) {
+            K8090::availablePorts()) {
         if (params.product_identifier == K8090::kProductID
                 && params.vendor_identifier == K8090::kVendorID) {
-            if (params.port_name != UnifiedSerialPort::kMockPortName) {
+            if (params.port_name != k8090::impl_::kMockPortName) {
                 real_card_port_name_ = params.port_name;
                 real_card_present_ = true;
                 break;
@@ -77,7 +78,7 @@ void K8090Test::initTestCase()
         port_names << real_card_port_name_;
         qDebug() << "Real card port name:" << port_names.last();
     }
-    port_names << UnifiedSerialPort::kMockPortName;
+    port_names << k8090::impl_::kMockPortName;
     qDebug() << "Virtual card port name:" << port_names.last();
 
     for (auto port_name : port_names) {
@@ -1534,7 +1535,7 @@ void K8090Test::createTestData()
     if (real_card_present_) {
         QTest::newRow("real card") << real_card_port_name_;
     }
-    QTest::newRow("virtual card") << UnifiedSerialPort::kMockPortName;
+    QTest::newRow("virtual card") << k8090::impl_::kMockPortName;
 }
 
 

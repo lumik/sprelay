@@ -23,12 +23,12 @@
 ****************************************************************************/
 
 /*!
- * \file      mock_serial_port_test.h
- * \brief     The biomolecules::sprelay::core::MockSerialPortTest class which implements tests for
- *            biomolecules::sprelay::core::MockSerialPort.
+ * \file      k8090_utils_test.h
+ * \brief     Tests for utility functions and data structures for biomolecules::sprelay::core::k8090::K8090 class
+ *            implementation.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
- * \date      2018-04-24
+ * \date      2018-07-17
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
  *
  * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
@@ -36,58 +36,67 @@
  */
 
 
-#ifndef BIOMOLECULES_SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_
-#define BIOMOLECULES_SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_
+#ifndef BIOMOLECULES_SPRELAY_CORE_IMPL_K8090_UTILS_TEST_H_
+#define BIOMOLECULES_SPRELAY_CORE_IMPL_K8090_UTILS_TEST_H_
 
 #include <QObject>
-#include <QString>
-
-#include <memory>
 
 #include "lumik/qtest_suite/qtest_suite.h"
-
-#include "biomolecules/sprelay/core/mock_serial_port.h"
 
 namespace biomolecules {
 namespace sprelay {
 namespace core {
+namespace k8090 {
+namespace impl_ {
 
-class MockSerialPort;
-
-class MockSerialPortTest : public QObject
+class K8090UtilsTest : public QObject
 {
     Q_OBJECT
-public:  // NOLINT(whitespace/indent)
-    static const int kCommandTimeoutMs;
-    static const int kDelayBetweenCommandsMs;
 
 private slots:  // NOLINT(whitespace/indent)
-    void init();
-    void cleanup();
-    void commandBenchmark_data();
-    void commandBenchmark();
-    void jumperStatus();
-    void firmwareVersion();
-    void queryAllTimers();
-    void setMoreTimers();
-    void startTimer();
-    void defaultTimer();
-    void moreTimers();
-    void moreDefaultTimers();
-    // TODO(lumik): add test for factory defaults command
-
-private:  // NOLINT(whitespace/indent)
-    bool compareResponse(const unsigned char *response, const unsigned char *expected);
-    void sendCommand(MockSerialPort *serial_port, const unsigned char *command) const;
-    bool measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
-
-    std::unique_ptr<MockSerialPort> mock_serial_port_;
+    void checkSum();
 };
 
-ADD_TEST(MockSerialPortTest)
+ADD_TEST(K8090UtilsTest)
 
+
+class CommandTest : public QObject
+{
+    Q_OBJECT
+
+private slots:  // NOLINT(whitespace/indent)
+    void orEqual_data();
+    void orEqual();
+    void equality_data();
+    void equality();
+    void equalityFalse_data();
+    void equalityFalse();
+    void isCompatible_data();
+    void isCompatible();
+    void isNotCompatible_data();
+    void isNotCompatible();
+};
+
+ADD_TEST(CommandTest)
+
+
+class CardMessageTest : public QObject
+{
+    Q_OBJECT
+
+private slots:  // NOLINT(whitespace/indent)
+    void constructors();
+    void checksumMessage();
+    void isValid();
+    void commandByte();
+};
+
+ADD_TEST(CardMessageTest)
+
+}  // namespace impl_
+}  // namespace k8090
 }  // namespace core
 }  // namespace sprelay
 }  // namespace biomolecules
 
-#endif  // BIOMOLECULES_SPRELAY_CORE_MOCK_SERIAL_PORT_TEST_H_
+#endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_K8090_UTILS_TEST_H_

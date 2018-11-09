@@ -23,12 +23,12 @@
 ****************************************************************************/
 
 /*!
- * \file      command_queue_test.h
- * \brief     The biomolecules::sprelay::core::command_queue::CommandQueueTest class which implements tests for
- *            biomolecules::sprelay::core::command_queue::CommandQueue.
+ * \file      unified_serial_port_test.h
+ * \brief     The biomolecules::sprelay::core::UnifiedSerialPortTest class which implements tests for
+ *            biomolecules::sprelay::core::UnifiedSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
- * \date      2018-03-07
+ * \date      2018-04-10
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
  *
  * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
@@ -36,33 +36,61 @@
  */
 
 
-#ifndef BIOMOLECULES_SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
-#define BIOMOLECULES_SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
+#ifndef BIOMOLECULES_SPRELAY_CORE_IMPL_UNIFIED_SERIAL_PORT_TEST_H_
+#define BIOMOLECULES_SPRELAY_CORE_IMPL_UNIFIED_SERIAL_PORT_TEST_H_
 
 #include <QObject>
+#include <QString>
+
+#include <memory>
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
 namespace biomolecules {
 namespace sprelay {
 namespace core {
-namespace command_queue {
 
-class CommandQueueTest: public QObject
+class UnifiedSerialPort;
+
+class UnifiedSerialPortTest : public QObject
 {
     Q_OBJECT
+public:  // NOLINT(whitespace/indent)
+    static const int kCommandTimeoutMs;
+    static const int kFactoryDefaultsTimeoutMs;
+    static const int kDelayBetweenCommandsMs;
+
 private slots:  // NOLINT(whitespace/indent)
-    void uniquePush();
-    void notUniquePush();
-    void updateCommand();
+    // TODO(lumik): store relay states before tests (timers, button modes, relay statuses) and reset them at the end
+    void initTestCase();
+    void availablePorts();
+    void switchRealVirtual();
+    void realBenchmark_data();
+    void realBenchmark();
+    void realJumperStatus();
+    void realFirmwareVersion();
+    void realQueryAllTimers();
+    void realSetMoreTimers();
+    void realTimer();
+    void realDefaultTimer();
+    void realMoreTimers();
+    void realMoreDefaultTimers();
+    void cleanupTestCase();
+
+private:  // NOLINT(whitespace/indent)
+    std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
+    void resetRelays(UnifiedSerialPort *serial_port) const;
+    bool compareResponse(const unsigned char *response, const unsigned char *expected);
+    void sendCommand(UnifiedSerialPort *serial_port, const unsigned char *command) const;
+    bool measureCommandWithResponse(UnifiedSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
+    bool real_card_present_;
+    QString real_card_port_name_;
 };
 
-ADD_TEST(CommandQueueTest)
+ADD_TEST(UnifiedSerialPortTest)
 
-}  // namespace command_queue
 }  // namespace core
 }  // namespace sprelay
 }  // namespace biomolecules
 
-#endif  // BIOMOLECULES_SPRELAY_CORE_COMMAND_QUEUE_TEST_H_
-
+#endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_UNIFIED_SERIAL_PORT_TEST_H_

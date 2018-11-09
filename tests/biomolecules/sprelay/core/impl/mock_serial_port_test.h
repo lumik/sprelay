@@ -23,11 +23,12 @@
 ****************************************************************************/
 
 /*!
- * \file      core_test_utils.h
- * \brief     Utilities for sprelay core tests.
+ * \file      mock_serial_port_test.h
+ * \brief     The biomolecules::sprelay::core::MockSerialPortTest class which implements tests for
+ *            biomolecules::sprelay::core::MockSerialPort.
  *
  * \author    Jakub Klener <lumiksro@centrum.cz>
- * \date      2018-03-07
+ * \date      2018-04-24
  * \copyright Copyright (C) 2018 Jakub Klener. All rights reserved.
  *
  * \copyright This project is released under the 3-Clause BSD License. You should have received a copy of the 3-Clause
@@ -35,14 +36,58 @@
  */
 
 
-#include <QMetaType>
+#ifndef BIOMOLECULES_SPRELAY_CORE_IMPL_MOCK_SERIAL_PORT_TEST_H_
+#define BIOMOLECULES_SPRELAY_CORE_IMPL_MOCK_SERIAL_PORT_TEST_H_
 
-#ifndef BIOMOLECULES_SPRELAY_CORE_CORE_TEST_UTILS_H_
-#define BIOMOLECULES_SPRELAY_CORE_CORE_TEST_UTILS_H_
+#include <QObject>
+#include <QString>
 
-// enables usage of const unsigned char* pointer in signals and slots
-Q_DECLARE_METATYPE(unsigned char)
-Q_DECLARE_METATYPE(const unsigned char *)
+#include <memory>
 
-#endif  // BIOMOLECULES_SPRELAY_CORE_CORE_TEST_UTILS_H_
+#include "lumik/qtest_suite/qtest_suite.h"
 
+#include "biomolecules/sprelay/core/mock_serial_port.h"
+
+namespace biomolecules {
+namespace sprelay {
+namespace core {
+
+class MockSerialPort;
+
+class MockSerialPortTest : public QObject
+{
+    Q_OBJECT
+public:  // NOLINT(whitespace/indent)
+    static const int kCommandTimeoutMs;
+    static const int kDelayBetweenCommandsMs;
+
+private slots:  // NOLINT(whitespace/indent)
+    void init();
+    void cleanup();
+    void commandBenchmark_data();
+    void commandBenchmark();
+    void jumperStatus();
+    void firmwareVersion();
+    void queryAllTimers();
+    void setMoreTimers();
+    void startTimer();
+    void defaultTimer();
+    void moreTimers();
+    void moreDefaultTimers();
+    // TODO(lumik): add test for factory defaults command
+
+private:  // NOLINT(whitespace/indent)
+    bool compareResponse(const unsigned char *response, const unsigned char *expected);
+    void sendCommand(MockSerialPort *serial_port, const unsigned char *command) const;
+    bool measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
+
+    std::unique_ptr<MockSerialPort> mock_serial_port_;
+};
+
+ADD_TEST(MockSerialPortTest)
+
+}  // namespace core
+}  // namespace sprelay
+}  // namespace biomolecules
+
+#endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_MOCK_SERIAL_PORT_TEST_H_
