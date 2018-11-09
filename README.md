@@ -1,5 +1,9 @@
 # Sprelay – program for controlling K8090 relay card.
 
+[![Build Status](https://travis-ci.org/biomolecules/sprelay.svg?branch=master)](https://travis-ci.org/biomolecules/sprelay)
+[![Build status](https://ci.appveyor.com/api/projects/status/ppywbasppr32qnad/branch/master?svg=true)](https://ci.appveyor.com/project/lumik/sprelay/branch/master)
+[![codecov](https://codecov.io/gh/biomolecules/sprelay/branch/master/graph/badge.svg)](https://codecov.io/gh/biomolecules/sprelay)
+
 
 ## Requirements
 
