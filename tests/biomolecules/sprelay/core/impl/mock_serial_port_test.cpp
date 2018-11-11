@@ -420,7 +420,7 @@ void MockSerialPortTest::queryAllTimers()
     QTest::setBenchmarkResult(elapsed_ms, QTest::WalltimeMilliseconds);
     QString chunk_str = QString{"{%1"}.arg(*chunk_list.cbegin());
     for_each(std::next(chunk_list.cbegin()), chunk_list.cend(),
-        [&chunk_list, &chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
+        [&chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
     chunk_str.append("}");
     qDebug() << QString{"Responses were gathered in %1."}.arg(chunk_str);
 }
@@ -495,7 +495,7 @@ void MockSerialPortTest::setMoreTimers()
     QTest::setBenchmarkResult(elapsed_ms, QTest::WalltimeMilliseconds);
     QString chunk_str = QString{"{%1"}.arg(*chunk_list.cbegin());
     for_each(std::next(chunk_list.cbegin()), chunk_list.cend(),
-        [&chunk_list, &chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
+        [&chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
     chunk_str.append("}");
     qDebug() << QString{"Responses were gathered in %1."}.arg(chunk_str);
 }

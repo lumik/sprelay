@@ -62,7 +62,7 @@ namespace sprelay {
 namespace core {
 // forward declarations of serial_utils classes
 namespace serial_utils {
-class ComPortParams;
+struct ComPortParams;
 }
 }
 namespace gui {

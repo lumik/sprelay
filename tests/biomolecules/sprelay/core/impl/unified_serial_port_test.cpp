@@ -103,7 +103,7 @@ void UnifiedSerialPortTest::availablePorts()
 void UnifiedSerialPortTest::switchRealVirtual()
 {
     if (!real_card_present_) {
-        QSKIP("Benchmark of real serial port needs a real K8090 card connected.");
+        QSKIP("Benchmark of real serial port needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
 
     // create real port
@@ -224,7 +224,7 @@ void UnifiedSerialPortTest::switchRealVirtual()
 void UnifiedSerialPortTest::realBenchmark_data()
 {
     if (!real_card_present_) {
-        QSKIP("Benchmark of real serial port needs a real K8090 card connected.");
+        QSKIP("Benchmark of real serial port needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     QTest::addColumn<const unsigned char *>("prepare");
     QTest::addColumn<int>("n_prepare");
@@ -442,7 +442,7 @@ void UnifiedSerialPortTest::realBenchmark()
 void UnifiedSerialPortTest::realJumperStatus()
 {
     if (!real_card_present_) {
-        QSKIP("Benchmark of real serial port needs real K8090 card connected.");
+        QSKIP("Benchmark of real serial port needs real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -480,7 +480,7 @@ void UnifiedSerialPortTest::realJumperStatus()
 void UnifiedSerialPortTest::realFirmwareVersion()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -515,7 +515,7 @@ void UnifiedSerialPortTest::realFirmwareVersion()
 void UnifiedSerialPortTest::realQueryAllTimers()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -581,7 +581,7 @@ void UnifiedSerialPortTest::realQueryAllTimers()
     QTest::setBenchmarkResult(elapsed_ms, QTest::WalltimeMilliseconds);
     QString chunk_str = QString{"{%1"}.arg(*chunk_list.cbegin());
     for_each(std::next(chunk_list.cbegin()), chunk_list.cend(),
-        [&chunk_list, &chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
+        [&chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
     chunk_str.append("}");
     qDebug() << QString{"Responses were gathered in %1."}.arg(chunk_str);
 }
@@ -590,7 +590,7 @@ void UnifiedSerialPortTest::realQueryAllTimers()
 void UnifiedSerialPortTest::realSetMoreTimers()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -664,7 +664,7 @@ void UnifiedSerialPortTest::realSetMoreTimers()
     QTest::setBenchmarkResult(elapsed_ms, QTest::WalltimeMilliseconds);
     QString chunk_str = QString{"{%1"}.arg(*chunk_list.cbegin());
     for_each(std::next(chunk_list.cbegin()), chunk_list.cend(),
-        [&chunk_list, &chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
+        [&chunk_str](int i){ chunk_str.append(QString{", %1"}.arg(i)); });
     chunk_str.append("}");
     qDebug() << QString{"Responses were gathered in %1."}.arg(chunk_str);
 }
@@ -673,7 +673,7 @@ void UnifiedSerialPortTest::realSetMoreTimers()
 void UnifiedSerialPortTest::realTimer()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -778,7 +778,7 @@ void UnifiedSerialPortTest::realTimer()
 void UnifiedSerialPortTest::realDefaultTimer()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -846,7 +846,7 @@ void UnifiedSerialPortTest::realDefaultTimer()
 void UnifiedSerialPortTest::realMoreTimers()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -910,7 +910,7 @@ void UnifiedSerialPortTest::realMoreTimers()
 void UnifiedSerialPortTest::realMoreDefaultTimers()
 {
     if (!real_card_present_) {
-        QSKIP("This test needs a real K8090 card connected.");
+        QSKIP("This test needs a real K8090 card connected.", "unified_serial_port_test.cpp");
     }
     std::unique_ptr<UnifiedSerialPort> serial_port = createSerialPort(real_card_port_name_);
     if (!serial_port) {
@@ -1130,7 +1130,7 @@ std::unique_ptr<UnifiedSerialPort> UnifiedSerialPortTest::createSerialPort(QStri
         }
     }
     resetRelays(serial_port.get());
-    return std::move(serial_port);
+    return serial_port;
 }
 
 
