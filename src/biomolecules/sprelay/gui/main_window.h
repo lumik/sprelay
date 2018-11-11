@@ -60,7 +60,7 @@ public:  // NOLINT(whitespace/indent)
     ~MainWindow() override;
 
 private:  // NOLINT(whitespace/indent)
-    CentralWidget *central_widget_;
+    CentralWidget* central_widget_;
 };
 
 }  // namespace gui

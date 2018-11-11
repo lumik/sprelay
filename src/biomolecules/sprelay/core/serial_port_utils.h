@@ -53,16 +53,16 @@ class MockSerialPort;
 namespace serial_utils {
 
 /// Converts hexadecimal string message to its binary representation.
-bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, int *n);
+bool hex_to_byte(const QString& msg, std::unique_ptr<unsigned char[]>* buffer, int* n);
 
 /// Converts binary message to its string representation.
-QString byte_to_hex(const unsigned char *buffer, int n);
+QString byte_to_hex(const unsigned char* buffer, int n);
 
 /// \brief Deleter needed for forward declaration of biomolecules::sprelay::core::MockSerialPort class.
 /// \headerfile ""
 struct MockSerialPortDeleter
 {
-    void operator()(MockSerialPort *p);
+    void operator()(MockSerialPort* p);
 };
 
 }  // namespace serial_utils

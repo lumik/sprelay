@@ -71,7 +71,7 @@ namespace k8090 {
  *     Q_OBJECT
  *
  * public:
- *     explicit CentralWidget(QWidget *parent = 0);
+ *     explicit CentralWidget(QWidget* parent = 0);
  * // ...
  *
  * private slots:
@@ -82,9 +82,9 @@ namespace k8090 {
  *         biomolecules::sprelay::core::k8090::RelayID timed);
  * private:
  * // ...
- *     biomolecules::sprelay::core::k8090::K8090 *k8090_;
+ *     biomolecules::sprelay::core::k8090::K8090* k8090_;
  *     // buttons to swith the relay on
- *     QPushButton * relay_on_buttons_arr_[8];
+ *     QPushButton* relay_on_buttons_arr_[8];
  *     // signal mappers
  *     std::unique_ptr<QSignalMapper> relay_on_mapper_;
  *     bool relays_on_[8];
@@ -95,7 +95,7 @@ namespace k8090 {
  * \code
  * // central_widget.cpp
  * // ...
- * CentralWidget::CentralWidget(QWidget *parent)
+ * CentralWidget::CentralWidget(QWidget* parent)
  *     : QWidget{parent}, k8090_{new biomolecules::sprelay::core::k8090::K8090{this}}
  * {
  * // ...
@@ -167,7 +167,7 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
  * \brief Creates a new K8090 instance and sets the default values.
  * \param parent K8090 parent object in Qt ownership system.
  */
-K8090::K8090(QObject *parent) :
+K8090::K8090(QObject* parent) :
     QObject{parent},
     com_port_name_mutex_{new QMutex},
     serial_port_{new UnifiedSerialPort},
@@ -232,7 +232,7 @@ QList<serial_utils::ComPortParams> K8090::availablePorts()
 /*!
  * \brief Gets current serial port name.
  * \return name The port name.
- * \sa K8090::setComPortName(const QString &name)
+ * \sa K8090::setComPortName(const QString& name)
  */
 QString K8090::comPortName()
 {
@@ -249,7 +249,7 @@ QString K8090::comPortName()
  * \param name
  * \sa K8090::comPortName()
  */
-void K8090::setComPortName(const QString &name)
+void K8090::setComPortName(const QString& name)
 {
     QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
     if (com_port_name_ != name) {
@@ -477,7 +477,7 @@ void K8090::connectK8090()
     connected_ = false;
     bool card_found = false;
     QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
-    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
+    foreach (const serial_utils::ComPortParams& params,  // NOLINT(whitespace/parens)
             UnifiedSerialPort::availablePorts()) {
         if (params.port_name == com_port_name_
                 && params.product_identifier == kProductID
@@ -759,7 +759,7 @@ void K8090::onReadyData()
             std::unique_ptr<impl_::CardMessage> response;
             try {
                 response.reset(new impl_::CardMessage{data.constBegin() + i, data.constBegin() + i + 7});
-            } catch (const std::out_of_range &) {
+            } catch (const std::out_of_range&) {
                 onCommandFailed();
                 return;
             }

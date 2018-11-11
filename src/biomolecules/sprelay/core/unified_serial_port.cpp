@@ -68,7 +68,7 @@ namespace core {
 /*!
  * \brief The name of mock com port.
  */
-const char *UnifiedSerialPort::kMockPortName = k8090::impl_::kMockPortName;
+const char* UnifiedSerialPort::kMockPortName = k8090::impl_::kMockPortName;
 
 
 /*!
@@ -81,7 +81,7 @@ QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
     QList<serial_utils::ComPortParams> com_port_params_list;
     // QSerialPortInfo::availablePorts() returns QList by value so it should be thread safe. Implicit sharing should
     // not be a problem because it makes copy on write.
-    for (const QSerialPortInfo &info : QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
+    for (const QSerialPortInfo& info : QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
         serial_utils::ComPortParams com_port_params;
         com_port_params.port_name = info.portName();
         com_port_params.description = info.description();
@@ -106,7 +106,7 @@ QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
  * \brief Constructor.
  * \param parent Parent object in Qt ownership system.
  */
-UnifiedSerialPort::UnifiedSerialPort(QObject *parent)
+UnifiedSerialPort::UnifiedSerialPort(QObject* parent)
     : QObject{parent},
       serial_port_mutex_{new QMutex},
       port_name_pristine_{true},
@@ -133,7 +133,7 @@ UnifiedSerialPort::~UnifiedSerialPort()
  * \brief Sets port name.
  * \param port_name The port name.
  */
-void UnifiedSerialPort::setPortName(const QString &port_name)
+void UnifiedSerialPort::setPortName(const QString& port_name)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     port_name_ = port_name;
@@ -346,7 +346,7 @@ QByteArray UnifiedSerialPort::readAll()
  * \param max_size The size of data.
  * \return The number of written bytes or -1 in the case of error.
  */
-qint64 UnifiedSerialPort::write(const char *data, qint64 max_size)
+qint64 UnifiedSerialPort::write(const char* data, qint64 max_size)
 {
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
@@ -485,7 +485,7 @@ bool UnifiedSerialPort::createMockPort()
 // moves port parameters to the newly created one
 // !!! Beare, it is not threa-safe, you have to treat thread-safety externaly !!!
 template<typename TSerialPort>
-bool UnifiedSerialPort::setupPort(TSerialPort *serial_port)
+bool UnifiedSerialPort::setupPort(TSerialPort* serial_port)
 {
     // TODO(lumik): change return code to exception
     if (!port_name_pristine_) {

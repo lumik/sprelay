@@ -77,9 +77,9 @@ private slots:  // NOLINT(whitespace/indent)
     // TODO(lumik): add test for factory defaults command
 
 private:  // NOLINT(whitespace/indent)
-    bool compareResponse(const unsigned char *response, const unsigned char *expected);
-    void sendCommand(MockSerialPort *serial_port, const unsigned char *command) const;
-    bool measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
+    bool compareResponse(const unsigned char* response, const unsigned char* expected);
+    void sendCommand(MockSerialPort* serial_port, const unsigned char* command) const;
+    bool measureCommandWithResponse(MockSerialPort* serial_port, const unsigned char* message, qint64* elapsed_ms);
 
     std::unique_ptr<MockSerialPort> mock_serial_port_;
 };

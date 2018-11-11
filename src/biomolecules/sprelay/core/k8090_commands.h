@@ -187,7 +187,7 @@ struct CommandArrayGenerator<1u, Args...>
 };
 
 // CommandArray generates recursively kCommands nad kPriorities types, which contains static constant array kValues.
-// Usage: unsigned char *arr = CommandArray<k8090::Comand::None>::kCommands::kValues
+// Usage: unsigned char* arr = CommandArray<k8090::Comand::None>::kCommands::kValues
 template<unsigned char N>
 struct CommandArray_
 {
@@ -210,7 +210,7 @@ struct ResponseArrayGenerator<1u, Args...>
 };
 
 // ResponseArray generates recursively kResponses type, which contains static constant array kValues.
-// Usage: unsigned char *arr = ResponseArray<k8090::Comand::None>::kCommands::kValues
+// Usage: unsigned char* arr = ResponseArray<k8090::Comand::None>::kCommands::kValues
 template<unsigned char N>
 struct ResponseArray_
 {
@@ -224,17 +224,17 @@ constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
 /*!
  * \brief Array of hexadecimal representation of commands used to control the relay.
  */
-constexpr const unsigned char *kCommands = CommandArray_<as_number(CommandID::None)>::Commands::kValues;
+constexpr const unsigned char* kCommands = CommandArray_<as_number(CommandID::None)>::Commands::kValues;
 
 /*!
  * \brief Array of default priorities used to command scheduling.
  */
-constexpr const int *kPriorities = CommandArray_<as_number(CommandID::None)>::Priorities::kValues;
+constexpr const int* kPriorities = CommandArray_<as_number(CommandID::None)>::Priorities::kValues;
 
 /*!
  * \brief Array of hexadecimal representation of responses sended by the relay.
  */
-constexpr const unsigned char *kResponses = ResponseArray_<as_number(ResponseID::None)>::Responses::kValues;
+constexpr const unsigned char* kResponses = ResponseArray_<as_number(ResponseID::None)>::Responses::kValues;
 
 /*!
  * \brief Start delimiting command byte.
@@ -256,7 +256,7 @@ const quint16 kProductID = 32912;
  */
 const quint16 kVendorID = 4303;
 
-const char * const kMockPortName = "MOCKCOM";
+const char* const kMockPortName = "MOCKCOM";
 
 }  // namespace impl_
 }  // namespace k8090

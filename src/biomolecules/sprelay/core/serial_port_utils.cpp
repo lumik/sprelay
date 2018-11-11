@@ -53,7 +53,7 @@ namespace serial_utils {
  * \param n Pointer to variable, where the number of bytes will be stored.
  * \return True if the conversion was successful.
  */
-bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, int *n)
+bool hex_to_byte(const QString& msg, std::unique_ptr<unsigned char[]>* buffer, int* n)
 {
     // remove white spaces
     QString newMsg = msg;
@@ -84,7 +84,7 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
  * \param n The number of bytes to be converted.
  * \return The string representation of the buffer.
  */
-QString byte_to_hex(const unsigned char *buffer, int n)
+QString byte_to_hex(const unsigned char* buffer, int n)
 {
     QString msg;
     for (int ii = 0; ii < n - 1; ++ii) {
@@ -129,7 +129,7 @@ QString byte_to_hex(const unsigned char *buffer, int n)
  *
  * \param p Pointer to object to be deleted.
  */
-void MockSerialPortDeleter::operator()(MockSerialPort *p)
+void MockSerialPortDeleter::operator()(MockSerialPort* p)
 {
     delete p;
 }

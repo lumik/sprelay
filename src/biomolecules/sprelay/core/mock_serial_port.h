@@ -71,9 +71,9 @@ public:  // NOLINT(whitespace/indent)
     static const quint16 kProductID;
     static const quint16 kVendorID;
 
-    explicit MockSerialPort(QObject *parent = nullptr);
+    explicit MockSerialPort(QObject* parent = nullptr);
 
-    void setPortName(const QString &com_port_name);
+    void setPortName(const QString& com_port_name);
     bool setBaudRate(qint32 baud_rate);
     bool setDataBits(QSerialPort::DataBits data_bits);
     bool setParity(QSerialPort::Parity parity);
@@ -85,7 +85,7 @@ public:  // NOLINT(whitespace/indent)
     void close();
 
     QByteArray readAll();
-    qint64 write(const char *data, qint64 max_size);
+    qint64 write(const char* data, qint64 max_size);
     bool flush();
 
     QSerialPort::SerialPortError error();
@@ -112,7 +112,7 @@ private:  // NOLINT(whitespace/indent)
     static const int kTimerDeltaMs_;  // interval for which the timer is treated as if started at the same time
 
     bool verifyPortParameters();
-    void sendData(const unsigned char *buffer, qint64 max_size);
+    void sendData(const unsigned char* buffer, qint64 max_size);
     static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
     static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
     static int getRandomDelay();

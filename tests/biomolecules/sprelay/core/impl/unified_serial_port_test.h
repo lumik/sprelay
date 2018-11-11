@@ -79,10 +79,10 @@ private slots:  // NOLINT(whitespace/indent)
 
 private:  // NOLINT(whitespace/indent)
     std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
-    void resetRelays(UnifiedSerialPort *serial_port) const;
-    bool compareResponse(const unsigned char *response, const unsigned char *expected);
-    void sendCommand(UnifiedSerialPort *serial_port, const unsigned char *command) const;
-    bool measureCommandWithResponse(UnifiedSerialPort *serial_port, const unsigned char *message, qint64 *elapsed_ms);
+    void resetRelays(UnifiedSerialPort* serial_port) const;
+    bool compareResponse(const unsigned char* response, const unsigned char* expected);
+    void sendCommand(UnifiedSerialPort* serial_port, const unsigned char* command) const;
+    bool measureCommandWithResponse(UnifiedSerialPort* serial_port, const unsigned char* message, qint64* elapsed_ms);
     bool real_card_present_;
     QString real_card_port_name_;
 };

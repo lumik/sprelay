@@ -56,9 +56,9 @@ class IndicatorLight : public QPushButton
     Q_PROPERTY(bool state MEMBER state_ READ state WRITE setState NOTIFY stateChanged)
 
 public:  // NOLINT(whitespace/indent)
-    explicit IndicatorLight(QWidget *parent = nullptr);
-    IndicatorLight(const IndicatorLight &) = delete;
-    IndicatorLight & operator=(const IndicatorLight &) = delete;
+    explicit IndicatorLight(QWidget* parent = nullptr);
+    IndicatorLight(const IndicatorLight&) = delete;
+    IndicatorLight& operator=(const IndicatorLight&) = delete;
 
     /// Getter for IndicatorLight::state property.
     bool state() const { return state_; }
@@ -83,13 +83,13 @@ class IndicatorButton : public QPushButton
     Q_PROPERTY(QString text READ text WRITE setText)
 
 public:  // NOLINT(whitespace/indent)
-    explicit IndicatorButton(QWidget *parent = nullptr);
-    explicit IndicatorButton(const QString &text, QWidget *parent = nullptr);
-    IndicatorButton(const QIcon &icon, const QString &text, QWidget *parent = nullptr);
-    IndicatorButton(const IndicatorButton &) = delete;
-    IndicatorButton & operator=(const IndicatorButton &) = delete;
+    explicit IndicatorButton(QWidget* parent = nullptr);
+    explicit IndicatorButton(const QString& text, QWidget* parent = nullptr);
+    IndicatorButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
+    IndicatorButton(const IndicatorButton&) = delete;
+    IndicatorButton& operator=(const IndicatorButton&) = delete;
 
-    void setText(const QString &text);
+    void setText(const QString& text);
     /// Getter for IndicatorButton::text property.
     QString text() const;
     QSize sizeHint() const override;
@@ -103,9 +103,9 @@ signals:  // NOLINT(whitespace/indent)
     void stateChanged();
 
 private:  // NOLINT(whitespace/indent)
-    void initialize(const QString &text);
-    QLabel *label_;
-    IndicatorLight *indicator_;
+    void initialize(const QString& text);
+    QLabel* label_;
+    IndicatorLight* indicator_;
 };
 
 }  // namespace gui

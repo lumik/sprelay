@@ -74,9 +74,9 @@ struct Command
     int priority;
     unsigned char params[3];
 
-    Command & operator|=(const Command &other);
+    Command& operator|=(const Command& other);
 
-    bool operator==(const Command &other) const
+    bool operator==(const Command& other) const
     {
         if (id != other.id) {
             return false;
@@ -89,13 +89,13 @@ struct Command
         return true;
     }
 
-    bool operator!=(const Command &other) const { return !(*this == other); }
+    bool operator!=(const Command& other) const { return !(*this == other); }
 
-    bool isCompatible(const Command &other) const;
+    bool isCompatible(const Command& other) const;
 };
 
 /// Computes checksum of bytes in the msg.
-unsigned char check_sum(const unsigned char *msg, int n);
+unsigned char check_sum(const unsigned char* msg, int n);
 
 
 /// \brief Wraps message from or to the Velleman %K8090 relay card.
@@ -105,7 +105,7 @@ struct CardMessage
     CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1, unsigned char param2,
         unsigned char chk, unsigned char etx);
     CardMessage(QByteArray::const_iterator begin, QByteArray::const_iterator end);
-    CardMessage(const unsigned char *begin, const unsigned char *end);
+    CardMessage(const unsigned char* begin, const unsigned char* end);
 
     void checksumMessage();
     bool isValid() const;

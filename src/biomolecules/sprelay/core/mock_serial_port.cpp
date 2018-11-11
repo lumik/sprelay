@@ -141,7 +141,7 @@ const int MockSerialPort::kTimerDeltaMs_ = 100;
  * \brief The constructor.
  * \param parent Parent object in Qt ownership system.
  */
-MockSerialPort::MockSerialPort(QObject *parent)
+MockSerialPort::MockSerialPort(QObject* parent)
     : QObject{parent},
       baud_rate_{QSerialPort::Baud9600},
       data_bits_{QSerialPort::Data8},
@@ -185,7 +185,7 @@ MockSerialPort::MockSerialPort(QObject *parent)
  *
  * \param com_port_name The port name.
  */
-void MockSerialPort::setPortName(const QString &com_port_name)
+void MockSerialPort::setPortName(const QString& com_port_name)
 {
     Q_UNUSED(com_port_name)
 }
@@ -330,11 +330,11 @@ QByteArray MockSerialPort::readAll()
  * \param max_size The size of data.
  * \return The number of written bytes or -1 in the case of error.
  */
-qint64 MockSerialPort::write(const char *data, qint64 max_size)
+qint64 MockSerialPort::write(const char* data, qint64 max_size)
 {
     if (open_ && error_ == QSerialPort::NoError) {
         if (mode_ & QIODevice::WriteOnly && verifyPortParameters()) {
-            sendData(reinterpret_cast<const unsigned char *>(data), max_size);
+            sendData(reinterpret_cast<const unsigned char*>(data), max_size);
         }
         return max_size;
     } else {
@@ -400,7 +400,7 @@ void MockSerialPort::addToBuffer()
         while (!stored_responses_.empty() && counter < max_responses) {
             std::unique_ptr<unsigned char[]> response = std::move(stored_responses_.front());
             stored_responses_.pop();
-            buffer_.append(reinterpret_cast<const char *>(response.get()), 7);
+            buffer_.append(reinterpret_cast<const char*>(response.get()), 7);
             ++counter;
         }
         if (!stored_responses_.empty()) {
@@ -467,7 +467,7 @@ bool MockSerialPort::verifyPortParameters()
 
 
 // this method is called from the write() method and decides which command is received
-void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
+void MockSerialPort::sendData(const unsigned char* buffer, qint64 max_size)
 {
     if (max_size < 7) {
         return;
@@ -476,7 +476,7 @@ void MockSerialPort::sendData(const unsigned char *buffer, qint64 max_size)
     std::unique_ptr<k8090::impl_::CardMessage> command;
     try {
         command.reset(new k8090::impl_::CardMessage{buffer, buffer + 7});
-    } catch (const std::out_of_range &) {
+    } catch (const std::out_of_range&) {
         return;
     }
 

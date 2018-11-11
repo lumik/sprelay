@@ -60,7 +60,7 @@ namespace gui {
  *
  * Sets the widget to false IndicatorLight::state and sets the light to red color.
  */
-IndicatorLight::IndicatorLight(QWidget *parent) : QPushButton(parent), state_{false}
+IndicatorLight::IndicatorLight(QWidget* parent) : QPushButton(parent), state_{false}
 {
     QSize indicatorSize(10, 10);
     setFixedSize(indicatorSize);
@@ -122,7 +122,7 @@ void IndicatorLight::setState(bool state)
  * \brief Constructs the widget.
  * \param parent The widget's parent object in Qt ownership system.
  */
-IndicatorButton::IndicatorButton(QWidget *parent) : QPushButton{parent}
+IndicatorButton::IndicatorButton(QWidget* parent) : QPushButton{parent}
 {
     initialize("");
 }
@@ -133,7 +133,7 @@ IndicatorButton::IndicatorButton(QWidget *parent) : QPushButton{parent}
  * \param text The text displayed on the pushbutton.
  * \param parent The widget's parent object in Qt ownership system.
  */
-IndicatorButton::IndicatorButton(const QString &text, QWidget *parent) : QPushButton{"", parent}
+IndicatorButton::IndicatorButton(const QString& text, QWidget* parent) : QPushButton{"", parent}
 {
     initialize(text);
 }
@@ -145,7 +145,7 @@ IndicatorButton::IndicatorButton(const QString &text, QWidget *parent) : QPushBu
  * \param text The text displayed on the pushbutton.
  * \param parent The widget's parent object in Qt ownership system.
  */
-IndicatorButton::IndicatorButton(const QIcon &icon, const QString &text, QWidget *parent)
+IndicatorButton::IndicatorButton(const QIcon& icon, const QString& text, QWidget* parent)
     : QPushButton{icon, "", parent}
 {
     initialize(text);
@@ -174,7 +174,7 @@ IndicatorButton::IndicatorButton(const QIcon &icon, const QString &text, QWidget
  * | Access functions: ||
  * | - | - |
  * | **Access** | QString %IndicatorButton::text()   |
- * | **Set**    | IndicatorButton::setText(const QString &text) |
+ * | **Set**    | IndicatorButton::setText(const QString& text) |
  */
 
 
@@ -182,7 +182,7 @@ IndicatorButton::IndicatorButton(const QIcon &icon, const QString &text, QWidget
  * \brief Setter for the IndicatorButton::text property.
  * \param text The text.
  */
-void IndicatorButton::setText(const QString &text)
+void IndicatorButton::setText(const QString& text)
 {
     label_->setText(text);
 }
@@ -216,9 +216,9 @@ QSize IndicatorButton::sizeHint() const
  */
 
 
-void IndicatorButton::initialize(const QString &text)
+void IndicatorButton::initialize(const QString& text)
 {
-    QHBoxLayout *layout = new QHBoxLayout{this};
+    QHBoxLayout* layout = new QHBoxLayout{this};
     indicator_ = new IndicatorLight{this};
     label_ = new QLabel{text, this};
 

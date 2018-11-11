@@ -134,7 +134,7 @@ namespace impl_ {
  * \param other The other command.
  * \return Merged command.
  */
-Command & Command::operator|=(const Command &other) {
+Command& Command::operator|=(const Command& other) {
     // TODO(lumik): enable merging into none command
     switch (id) {
         // commands with special treatment
@@ -176,11 +176,11 @@ Command & Command::operator|=(const Command &other) {
         default :
             break;
     }
-    return *this;
+    return* this;
 }
 
 /*!
- * \fn bool Command::operator==(const Command &other) const
+ * \fn bool Command::operator==(const Command& other) const
  * \brief Compares two commands for equality.
  *
  * \param other The command to be compared.
@@ -188,7 +188,7 @@ Command & Command::operator|=(const Command &other) {
  */
 
 /*!
- * \fn bool Command::operator!=(const Command &other) const
+ * \fn bool Command::operator!=(const Command& other) const
  * \brief Compares two commands for non-equality.
  *
  * \param other The command to be compared.
@@ -204,7 +204,7 @@ Command & Command::operator|=(const Command &other) {
  * \param other The command to be stested.
  * \return True if the commands are compatible.
  */
-bool Command::isCompatible(const Command &other) const
+bool Command::isCompatible(const Command& other) const
 {
     // ids are not equal
     if (id != other.id) {
@@ -256,7 +256,7 @@ bool Command::isCompatible(const Command &other) const
  *
  * The checksum is bit inversion of sum of all bytes plus 1.
  */
-unsigned char check_sum(const unsigned char *msg, int n)
+unsigned char check_sum(const unsigned char* msg, int n)
 {
     unsigned int sum = 0u;
     for (int ii = 0; ii < n; ++ii) {
@@ -300,7 +300,7 @@ CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_ite
         throw std::out_of_range{"The card response should have exactly 7 bytes."};
     }
     for (int i = 0; i < 7; ++i) {
-        data[i] = reinterpret_cast<const unsigned char &>(begin[i]);
+        data[i] = reinterpret_cast<const unsigned char&>(begin[i]);
     }
 }
 
@@ -311,7 +311,7 @@ CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_ite
  * \param end The pointer to one after the end of the message.
  * \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
  */
-CardMessage::CardMessage(const unsigned char *begin, const unsigned char *end)
+CardMessage::CardMessage(const unsigned char* begin, const unsigned char* end)
 {
     if (std::distance(begin, end) != 7) {
         // TODO(lumik): all exceptions should derive from the project specific one. Refactor exceptions.

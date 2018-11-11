@@ -60,7 +60,7 @@ namespace k8090 {
 void K8090Test::initTestCase()
 {
     real_card_present_ = false;
-    foreach (const serial_utils::ComPortParams &params,  // NOLINT(whitespace/parens)
+    foreach (const serial_utils::ComPortParams& params,  // NOLINT(whitespace/parens)
             K8090::availablePorts()) {
         if (params.product_identifier == K8090::kProductID
                 && params.vendor_identifier == K8090::kVendorID) {
@@ -1302,7 +1302,7 @@ void K8090Test::priorities()
         SIGNAL(remainingTimerDelay(biomolecules::sprelay::core::k8090::RelayID, quint16)));
     QSignalSpy spy_jumper_status(k8090_.get(), SIGNAL(jumperStatus(bool)));
     QSignalSpy spy_firmware_version(k8090_.get(), SIGNAL(firmwareVersion(int, int)));
-    QSignalSpy *spies[kSpyNo] = {&spy_relay_status, &spy_button_modes, &spy_total_timer_delay,
+    QSignalSpy* spies[kSpyNo] = {&spy_relay_status, &spy_button_modes, &spy_total_timer_delay,
         &spy_remaining_timer_delay, &spy_jumper_status, &spy_firmware_version};
 
     // store initial state
@@ -1539,7 +1539,7 @@ void K8090Test::createTestData()
 }
 
 
-bool K8090Test::checkNoSpyData(QSignalSpy **spies, int n)
+bool K8090Test::checkNoSpyData(QSignalSpy** spies, int n)
 {
     for (int i = 0; i < n; ++i) {
         if (spies[i]->count() > 0) {

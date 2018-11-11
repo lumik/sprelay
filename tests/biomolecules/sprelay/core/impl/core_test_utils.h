@@ -42,7 +42,7 @@
 
 // enables usage of const unsigned char* pointer in signals and slots
 Q_DECLARE_METATYPE(unsigned char)
-Q_DECLARE_METATYPE(const unsigned char *)
+Q_DECLARE_METATYPE(const unsigned char*)
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_CORE_TEST_UTILS_H_
 

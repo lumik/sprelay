@@ -60,7 +60,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
 
 /*!
  * \class biomolecules::sprelay::core::command_queue::impl_::PendingCommands
- * The class abuses constant pointer access. You can get from it `TList<const TCommand *>` which is directly
+ * The class abuses constant pointer access. You can get from it `TList<const TCommand*>` which is directly
  * stored inside but you can also modify stored `TCommand` using `PendingCommands::updateEntry()` method (so the
  * `TCommand` is not realy const, only returned list should not be used to modify them because it can distort
  * integrity of the queue).
@@ -87,7 +87,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
  */
 
 /*!
- * \fn CommandPriority::operator<(const CommandPriority &other) const
+ * \fn CommandPriority::operator<(const CommandPriority& other) const
  * \brief Defines CommandPriority ordering.
  *
  * Ordering is defined according to TCommand::priority and time stamp CommandPriority::stamp. Higher priority and
@@ -108,7 +108,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
  */
 
 /*!
- * \fn const TList<const TCommand *> & PendingCommands::operator[](std::size_t id) const
+ * \fn const TList<const TCommand*>& PendingCommands::operator[](std::size_t id) const
  * \brief Direct constant member access.
  *
  * Index id is not controlled for validity.
@@ -118,7 +118,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
  */
 
 /*!
- * \fn TList<const TCommand *> & PendingCommands::operator[](std::size_t id)
+ * \fn TList<const TCommand*>& PendingCommands::operator[](std::size_t id)
  * \brief Direct member access.
  *
  * Index id is not controlled for validity.
@@ -128,7 +128,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
  */
 
 /*!
- * \fn void PendingCommands::updateEntry(int idx, const TCommand &command)
+ * \fn void PendingCommands::updateEntry(int idx, const TCommand& command)
  * \brief Enables update of desired command.
  *
  * Indices command.id nor idx are not controlled for validity.
@@ -178,7 +178,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
  *     unsigned int priority1 = 1;
  *     Command cmd1{cmd_id1, priority1};
  *     command_queue.push(cmd1);
- *     const QList<const * Command> & cmd_list = command_queue.get(cmd_id1);
+ *     const QList<const Command*>& cmd_list = command_queue.get(cmd_id1);
  *     Command cmd2 = *cmd_list[0];
  *     cmd2.priority = 2;
  *     command_queue.updateCommand(0, cmd2);
@@ -241,7 +241,7 @@ CommandQueue<TCommand, tSize, TList>::CommandQueue()
  * \return True if the operation was successful, false otherwise.
  */
 template<typename TCommand, int tSize, template <typename> class TList>
-bool CommandQueue<TCommand, tSize, TList>::push(const TCommand &command, bool unique)
+bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool unique)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
     // TODO(lumik): Use exceptions.
@@ -264,7 +264,7 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand &command, bool un
         // erase all previously inserted commands with the same id and copy all the remaining commands.
         std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
         unsigned int stamp = std::numeric_limits<unsigned int>::max();
-        for (CommandPriority<TCommand> &command_priority : this->c) {
+        for (CommandPriority<TCommand>& command_priority : this->c) {
             if (command_priority.command->id != command.id) {
                 temp_command_queue.emplace(std::move(command_priority));
             } else if (command_priority.stamp < stamp) {
@@ -329,7 +329,7 @@ TCommand CommandQueue<TCommand, tSize, TList>::pop()
  * \return Requested command or default constructed TCommand.
  */
 template<typename TCommand, int tSize, template <typename> class TList>
-const TList<const TCommand *> & CommandQueue<TCommand, tSize, TList>::get(typename TCommand::IdType command_id) const
+const TList<const TCommand*>& CommandQueue<TCommand, tSize, TList>::get(typename TCommand::IdType command_id) const
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command_id);
     // TODO(lumik): Use exceptions.
@@ -356,7 +356,7 @@ const TList<const TCommand *> & CommandQueue<TCommand, tSize, TList>::get(typena
  * \param command Command which replaces the stored command.
  */
 template<typename TCommand, int tSize, template <typename> class TList>
-bool CommandQueue<TCommand, tSize, TList>::updateCommand(int idx, const TCommand &command)
+bool CommandQueue<TCommand, tSize, TList>::updateCommand(int idx, const TCommand& command)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
     if (id >= tSize || id < 0 || idx < 0 || idx >= pending_commands_[id].size()) {
@@ -375,7 +375,7 @@ void CommandQueue<TCommand, tSize, TList>::updatePriorities(typename TCommand::N
     if (pending_commands_[command_id].at(idx)->priority != priority) {
         std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
         CommandPriority<TCommand> temp_priority;
-        for (CommandPriority<TCommand> &command_priority : this->c) {
+        for (CommandPriority<TCommand>& command_priority : this->c) {
             if (command_priority.command.get() == pending_commands_[command_id].at(idx)) {
                 temp_priority = std::move(command_priority);
                 temp_priority.setPriority(priority);

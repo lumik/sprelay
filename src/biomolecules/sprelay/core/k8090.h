@@ -79,12 +79,12 @@ public:  // NOLINT(whitespace/indent)
     static const quint16 kProductID;
     static const quint16 kVendorID;
 
-    explicit K8090(QObject *parent = nullptr);
+    explicit K8090(QObject* parent = nullptr);
     ~K8090() override;
 
     static QList<serial_utils::ComPortParams> availablePorts();
     QString comPortName();
-    void setComPortName(const QString &name);
+    void setComPortName(const QString& name);
     void setCommandDelay(int msec);
     void setFailureDelay(int msec);
     void setMaxFailureCount(int count);

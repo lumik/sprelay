@@ -657,7 +657,7 @@ void CardMessageTest::constructors()
 
     // test constructor from QByteArray
     {
-        QByteArray byte_array = QByteArray::fromRawData(reinterpret_cast<const char *>(expected), 7);
+        QByteArray byte_array = QByteArray::fromRawData(reinterpret_cast<const char*>(expected), 7);
         const CardMessage message{byte_array.constBegin(), byte_array.constEnd()};
         for (int i = 0; i < 7; ++i) {
             QVERIFY2(message.data[i] == expected[i],

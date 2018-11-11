@@ -65,7 +65,7 @@ public:  // NOLINT(whitespace/indent)
     int count(CommandID command_id) const;
 
 private:  // NOLINT(whitespace/indent)
-    bool updateCommandImpl(CommandID command_id, const Command &command);
+    bool updateCommandImpl(CommandID command_id, const Command& command);
     mutable std::mutex global_mutex_;
 };
 

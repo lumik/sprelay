@@ -180,7 +180,7 @@ void CommandQueueTest::updateCommand()
     Command cmd4{k8090::CommandID::RelayOn, priority1, 4, 5, 6};
     command_queue.push(cmd4, false);
     QCOMPARE(command_queue.size(), std::size_t{4});
-    const QList<const Command *> & command_list1 = command_queue.get(k8090::CommandID::RelayOn);
+    const QList<const Command*>& command_list1 = command_queue.get(k8090::CommandID::RelayOn);
     QCOMPARE(command_list1.size(), 4);
     QCOMPARE(*command_list1[0], cmd1);
     QCOMPARE(*command_list1[1], cmd2);

@@ -98,7 +98,7 @@ void ConcurentCommandQueue::updateOrPush(CommandID command_id, RelayID mask, uns
     // TODO(lumik): treat commands, which are directly sended better (avoid duplication)
     Command command{command_id, kPriorities[as_number(command_id)], as_number(mask), param1, param2};
 
-    const QList<const Command *> & pending_command_list = Predecessor::get(command_id);
+    const QList<const Command*>& pending_command_list = Predecessor::get(command_id);
     // if there is no command with the same id waiting
     if (pending_command_list.isEmpty()) {
         Predecessor::push(command);
@@ -112,12 +112,12 @@ void ConcurentCommandQueue::updateOrPush(CommandID command_id, RelayID mask, uns
     // TODO(lumik): test if updated oposite command doesn't update any relay and if it does, remove it from the
     // queue
     if (command_id == CommandID::RelayOn) {
-        const QList<const impl_::Command *> & off_pending_command_list = Predecessor::get(CommandID::RelayOff);
+        const QList<const impl_::Command*>& off_pending_command_list = Predecessor::get(CommandID::RelayOff);
         if (!off_pending_command_list.isEmpty()) {
             updateCommandImpl(CommandID::RelayOff, command);
         }
     } else if (command_id == CommandID::RelayOff) {
-        const QList<const impl_::Command *> & on_pending_command_list = Predecessor::get(CommandID::RelayOn);
+        const QList<const impl_::Command*>& on_pending_command_list = Predecessor::get(CommandID::RelayOn);
         if (!on_pending_command_list.isEmpty()) {
             updateCommandImpl(CommandID::RelayOn, command);
         }
@@ -138,9 +138,9 @@ int ConcurentCommandQueue::count(CommandID command_id) const
 
 
 // helper method which updates already enqueued command
-bool ConcurentCommandQueue::updateCommandImpl(CommandID command_id, const Command &command)
+bool ConcurentCommandQueue::updateCommandImpl(CommandID command_id, const Command& command)
 {
-    const QList<const impl_::Command *> &pending_command_list = Predecessor::get(command_id);
+    const QList<const impl_::Command*>& pending_command_list = Predecessor::get(command_id);
     // check if equal command is in pending command list
     int compatible_idx = pending_command_list.size();
     for (int i = 0; i < pending_command_list.size(); ++i) {

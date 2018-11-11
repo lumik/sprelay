@@ -75,9 +75,9 @@ class SPRELAY_EXPORT CentralWidget : public QWidget
     Q_OBJECT
 public:  // NOLINT(whitespace/indent)
     explicit CentralWidget(
-            core::k8090::K8090 *k8090 = nullptr,
-            const QString &com_port_name = QString{},
-            QWidget *parent = 0);
+            core::k8090::K8090* k8090 = nullptr,
+            const QString& com_port_name = QString{},
+            QWidget* parent = 0);
     ~CentralWidget() override;
 
 signals:  // NOLINT(whitespace/indent)
@@ -87,7 +87,7 @@ public slots:  // NOLINT(whitespace/indent)
 private slots:  // NOLINT(whitespace/indent)
     // reactions to user interaction with gui
     void onConnectButtonClicked();
-    void onPortsComboBoxCurrentIndexChanged(const QString &port_name);
+    void onPortsComboBoxCurrentIndexChanged(const QString& port_name);
     void onRefreshPortsButtonClicked();
     void onRefreshRelaysButtonClicked();
     void resetFactoryDefaultsButtonClicked();
@@ -132,43 +132,43 @@ private:  // NOLINT(whitespace/indent)
     void makeLayout();
     void connectionStatusChanged();
 
-    core::k8090::K8090 *k8090_;
+    core::k8090::K8090* k8090_;
     QString com_port_name_;
     bool connected_;
 
     // GUI elements
     // port settings
-    IndicatorButton *connect_button_;
-    QPushButton *refresh_ports_button_;
-    QComboBox *ports_combo_box_;
+    IndicatorButton* connect_button_;
+    QPushButton* refresh_ports_button_;
+    QComboBox* ports_combo_box_;
 
     // relays
     // relays globals
-    QGroupBox *relays_globals_box_;
-    QPushButton *refresh_relays_button_;
-    QPushButton *reset_factory_defaults_button_;
-    QLabel *firmware_version_label_;
-    IndicatorLight *jumper_status_light_;
+    QGroupBox* relays_globals_box_;
+    QPushButton* refresh_relays_button_;
+    QPushButton* reset_factory_defaults_button_;
+    QLabel* firmware_version_label_;
+    IndicatorLight* jumper_status_light_;
     // relay button status
-    QGroupBox *relay_button_status_settings_box_;
-    IndicatorLight * pushed_indicators_arr_[kNRelays];
+    QGroupBox* relay_button_status_settings_box_;
+    IndicatorLight* pushed_indicators_arr_[kNRelays];
     // power settings
-    QGroupBox *relay_power_settings_box_;
-    IndicatorButton * relay_on_buttons_arr_[kNRelays];
-    QPushButton * relay_off_buttons_arr_[kNRelays];
-    QPushButton * toggle_relay_buttons_arr_[kNRelays];
+    QGroupBox* relay_power_settings_box_;
+    IndicatorButton* relay_on_buttons_arr_[kNRelays];
+    QPushButton* relay_off_buttons_arr_[kNRelays];
+    QPushButton* toggle_relay_buttons_arr_[kNRelays];
     // mode settings
-    QGroupBox *relay_mode_settings_box_;
-    IndicatorButton * momentary_buttons_arr_[kNRelays];
-    IndicatorButton * toggle_mode_buttons_arr_[kNRelays];
-    IndicatorButton * timed_buttons_arr_[kNRelays];
+    QGroupBox* relay_mode_settings_box_;
+    IndicatorButton* momentary_buttons_arr_[kNRelays];
+    IndicatorButton* toggle_mode_buttons_arr_[kNRelays];
+    IndicatorButton* timed_buttons_arr_[kNRelays];
     // timer settings
-    QGroupBox *relay_timers_settings_box_;
-    QLabel * default_timer_labels_arr_[kNRelays];
-    QLabel * remaining_time_labels_arr_[kNRelays];
-    QPushButton * set_default_timer_buttons_arr_[kNRelays];
-    IndicatorButton * start_timer_buttons_arr_[kNRelays];
-    QSpinBox * timer_spin_box_arr_[kNRelays];
+    QGroupBox* relay_timers_settings_box_;
+    QLabel* default_timer_labels_arr_[kNRelays];
+    QLabel* remaining_time_labels_arr_[kNRelays];
+    QPushButton* set_default_timer_buttons_arr_[kNRelays];
+    IndicatorButton* start_timer_buttons_arr_[kNRelays];
+    QSpinBox* timer_spin_box_arr_[kNRelays];
 
     // signal mappers
     std::unique_ptr<QSignalMapper> relay_on_mapper_;

@@ -150,7 +150,7 @@ namespace gui {
  * \param com_port_name Predefined COM port name.
  * \param parent The widget's parent object in Qt ownership system.
  */
-CentralWidget::CentralWidget(core::k8090::K8090 *k8090, const QString &com_port_name, QWidget *parent)
+CentralWidget::CentralWidget(core::k8090::K8090* k8090, const QString& com_port_name, QWidget* parent)
     : QWidget{parent},
       com_port_name_{com_port_name},
       refresh_delay_timer_{new QTimer}
@@ -194,7 +194,7 @@ void CentralWidget::onConnectButtonClicked()
 }
 
 
-void CentralWidget::onPortsComboBoxCurrentIndexChanged(const QString &port_name)
+void CentralWidget::onPortsComboBoxCurrentIndexChanged(const QString& port_name)
 {
     if (k8090_->isConnected() && k8090_->comPortName() != port_name) {
         k8090_->disconnect();
@@ -208,7 +208,7 @@ void CentralWidget::onRefreshPortsButtonClicked()
         QString msg;
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
-        foreach (const core::serial_utils::ComPortParams &comPortParams,  // NOLINT(whitespace/parens)
+        foreach (const core::serial_utils::ComPortParams& comPortParams,  // NOLINT(whitespace/parens)
                  core::k8090::K8090::availablePorts()) {
             msg.append(tr(
                 "Port name: %1\n"
@@ -584,7 +584,7 @@ void CentralWidget::initializePortsCombobox()
     QList<core::serial_utils::ComPortParams> com_port_params_list = core::k8090::K8090::availablePorts();
     bool current_port_found = false;
     // fill combo box
-    for (const core::serial_utils::ComPortParams &com_port_params : com_port_params_list) {
+    for (const core::serial_utils::ComPortParams& com_port_params : com_port_params_list) {
         ports_combo_box_->insertItem(index++, com_port_params.port_name);
         if (com_port_name_ == com_port_params.port_name) {
             current_port_found = true;
@@ -593,7 +593,7 @@ void CentralWidget::initializePortsCombobox()
 
     // if com_port_name_ doesn't match any port, try to find card.
     if (!current_port_found) {
-        for (const core::serial_utils::ComPortParams &com_port_params : com_port_params_list) {
+        for (const core::serial_utils::ComPortParams& com_port_params : com_port_params_list) {
             if (com_port_params.product_identifier == core::k8090::K8090::kProductID
                     && com_port_params.vendor_identifier == core::k8090::K8090::kVendorID) {
                 com_port_name_ = com_port_params.port_name;
@@ -612,7 +612,7 @@ void CentralWidget::connectGui()
     // reactions on user interaction with gui
     connect(connect_button_, &QPushButton::clicked, this, &CentralWidget::onConnectButtonClicked);
     connect(refresh_ports_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshPortsButtonClicked);
-    connect(ports_combo_box_, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
+    connect(ports_combo_box_, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged),
             this, &CentralWidget::onPortsComboBoxCurrentIndexChanged);
 
     connect(refresh_relays_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshRelaysButtonClicked);
@@ -693,16 +693,16 @@ void CentralWidget::connectGui()
 
 void CentralWidget::makeLayout()
 {
-    QHBoxLayout *main_layout = new QHBoxLayout{this};
+    QHBoxLayout* main_layout = new QHBoxLayout{this};
     main_layout->setSizeConstraint(QLayout::SetFixedSize);
 
     // COM port settings
     // next two lines have to follow each other to preserve RAII
-    QVBoxLayout *port_v_layout = new QVBoxLayout;
+    QVBoxLayout* port_v_layout = new QVBoxLayout;
     main_layout->addLayout(port_v_layout, 0);
     // now port_v_layout has its parent => owner of the memory
     port_v_layout->addWidget(connect_button_);
-    QLabel *ports_label = new QLabel(tr("Select port:"), this);
+    QLabel* ports_label = new QLabel(tr("Select port:"), this);
     ports_label->setBuddy(ports_combo_box_);  // buddy accepts focus instead of label (for editing)
     port_v_layout->addWidget(ports_label);
     port_v_layout->addWidget(ports_combo_box_);
@@ -711,12 +711,12 @@ void CentralWidget::makeLayout()
     // Relays globals
     relays_globals_box_ = new QGroupBox{tr("Relays globals"), this};
     port_v_layout->addWidget(relays_globals_box_);
-    QVBoxLayout *relays_globals_layout = new QVBoxLayout{relays_globals_box_};
+    QVBoxLayout* relays_globals_layout = new QVBoxLayout{relays_globals_box_};
     relays_globals_layout->addWidget(refresh_relays_button_);
     relays_globals_layout->addWidget(firmware_version_label_);
 
     // next two lines have to follow each other to preserve RAII
-    QHBoxLayout *jumper_status_layout = new QHBoxLayout;
+    QHBoxLayout* jumper_status_layout = new QHBoxLayout;
     relays_globals_layout->addLayout(jumper_status_layout);
     // now jumper_status_layout has its parent => owner of the memory
     jumper_status_layout->addWidget(new QLabel{tr("Jumper Status:"), this});
@@ -727,14 +727,14 @@ void CentralWidget::makeLayout()
 
     // relay buttons
     // next two lines have to follow each other to preserve RAII
-    QVBoxLayout *relays_grid_v_layout = new QVBoxLayout;
+    QVBoxLayout* relays_grid_v_layout = new QVBoxLayout;
     main_layout->addLayout(relays_grid_v_layout);
     // now relays_grid_v_layout has its parent => owner of the memory
 
     // relay numbers
-    QGroupBox *relay_number_box = new QGroupBox{tr("Relays"), this};
+    QGroupBox* relay_number_box = new QGroupBox{tr("Relays"), this};
     relays_grid_v_layout->addWidget(relay_number_box);
-    QGridLayout *relay_number_grid_layout = new QGridLayout{relay_number_box};
+    QGridLayout* relay_number_grid_layout = new QGridLayout{relay_number_box};
     relay_number_grid_layout->addWidget(new QLabel{tr("Number:"), this}, 0, 0);
     for (int i = 0; i < kNRelays; ++i) {
         relay_number_grid_layout->addWidget(new QLabel{QString::number(i + 1), this}, 0, i + 1, Qt::AlignHCenter);
@@ -743,7 +743,7 @@ void CentralWidget::makeLayout()
     // relays button status settings
     relay_button_status_settings_box_ = new QGroupBox{tr("Relay button status"), this};
     relays_grid_v_layout->addWidget(relay_button_status_settings_box_);
-    QGridLayout *button_status_grid_layout = new QGridLayout{relay_button_status_settings_box_};
+    QGridLayout* button_status_grid_layout = new QGridLayout{relay_button_status_settings_box_};
     button_status_grid_layout->addWidget(new QLabel{tr("pushed:"), this}, 0, 0);
     for (int i = 0; i < kNRelays; ++i) {
         button_status_grid_layout->addWidget(pushed_indicators_arr_[i], 0, i + 1, Qt::AlignHCenter);
@@ -752,7 +752,7 @@ void CentralWidget::makeLayout()
     // relays power settings
     relay_power_settings_box_ = new QGroupBox{tr("Relays power settings"), this};
     relays_grid_v_layout->addWidget(relay_power_settings_box_);
-    QGridLayout *power_grid_layout = new QGridLayout{relay_power_settings_box_};
+    QGridLayout* power_grid_layout = new QGridLayout{relay_power_settings_box_};
     power_grid_layout->addWidget(new QLabel{tr("Switch on:"), this}, 0, 0);
     power_grid_layout->addWidget(new QLabel{tr("Switch off:"), this}, 1, 0);
     power_grid_layout->addWidget(new QLabel{tr("Toggle:"), this}, 2, 0);
@@ -765,7 +765,7 @@ void CentralWidget::makeLayout()
     // relays mode settings
     relay_mode_settings_box_ = new QGroupBox{tr("Relays mode settings"), this};
     relays_grid_v_layout->addWidget(relay_mode_settings_box_);
-    QGridLayout *mode_grid_layout = new QGridLayout{relay_mode_settings_box_};
+    QGridLayout* mode_grid_layout = new QGridLayout{relay_mode_settings_box_};
     mode_grid_layout->addWidget(new QLabel(tr("Momentary:"), this), 0, 0);
     mode_grid_layout->addWidget(new QLabel(tr("Toggle:"), this), 1, 0);
     mode_grid_layout->addWidget(new QLabel(tr("Timed:"), this), 2, 0);
@@ -778,7 +778,7 @@ void CentralWidget::makeLayout()
     // relay timers settings
     relay_timers_settings_box_ = new QGroupBox{tr("Relay timers settings"), this};
     relays_grid_v_layout->addWidget(relay_timers_settings_box_);
-    QGridLayout *timer_grid_layout = new QGridLayout{relay_timers_settings_box_};
+    QGridLayout* timer_grid_layout = new QGridLayout{relay_timers_settings_box_};
     timer_grid_layout->addWidget(new QLabel(tr("Default timer (s):"), this), 0, 0);
     timer_grid_layout->addWidget(new QLabel(tr("Remaining time (s):"), this), 1, 0);
     timer_grid_layout->addWidget(new QLabel(tr("Default:"), this), 2, 0);
@@ -793,7 +793,7 @@ void CentralWidget::makeLayout()
     }
 
     const int layout_no = 5;
-    QGridLayout * grid_layouts[layout_no] = {button_status_grid_layout, relay_number_grid_layout, power_grid_layout,
+    QGridLayout* grid_layouts[layout_no] = {button_status_grid_layout, relay_number_grid_layout, power_grid_layout,
         mode_grid_layout, timer_grid_layout};
     int relay_label_min_width = std::numeric_limits<int>::min();
     int relay_label_width;

@@ -61,7 +61,7 @@ struct CommandPriority
     unsigned int stamp;
     std::unique_ptr<TCommand> command;
 
-    bool operator<(const CommandPriority &other) const
+    bool operator<(const CommandPriority& other) const
     {
         if (command->priority != other.command->priority) {
             return command->priority < other.command->priority;
@@ -84,15 +84,15 @@ class PendingCommands
 {
 public:  // NOLINT(whitespace/indent)
     PendingCommands() : pending_commands_{} {}
-    const TList<const TCommand *> & operator[](std::size_t id) const { return pending_commands_[id]; }
-    TList<const TCommand *> & operator[](std::size_t id) { return pending_commands_[id]; }
-    void updateEntry(int idx, const TCommand &command)
+    const TList<const TCommand*>& operator[](std::size_t id) const { return pending_commands_[id]; }
+    TList<const TCommand*>& operator[](std::size_t id) { return pending_commands_[id]; }
+    void updateEntry(int idx, const TCommand& command)
     {
-        *const_cast<TCommand *>(pending_commands_[TCommand::idAsNumber(command.id)][idx]) = command;
+        *const_cast<TCommand*>(pending_commands_[TCommand::idAsNumber(command.id)][idx]) = command;
     }
 
 private:  // NOLINT(whitespace/indent)
-    TList<const TCommand *> pending_commands_[tSize];  // NOLINT(runtime/arrays)
+    TList<const TCommand*> pending_commands_[tSize];  // NOLINT(runtime/arrays)
 };
 
 }  // namespace impl_
@@ -107,11 +107,11 @@ public:  // NOLINT(whitespace/indent)
 
     bool empty() const { return std::priority_queue<impl_::CommandPriority<TCommand>>::empty(); }
     std::size_t size() const { return std::priority_queue<impl_::CommandPriority<TCommand>>::size(); }
-    bool push(const TCommand &command, bool unique = true);
+    bool push(const TCommand& command, bool unique = true);
     TCommand pop();
-    const TList<const TCommand *> & get(typename TCommand::IdType command_id) const;
+    const TList<const TCommand*>& get(typename TCommand::IdType command_id) const;
     unsigned int stampCounter() const { return stamp_counter_; }
-    bool updateCommand(int idx, const TCommand &command);
+    bool updateCommand(int idx, const TCommand& command);
 
 private:  // NOLINT(whitespace/indent)
     void updatePriorities(typename TCommand::NumberType command_id, int idx, int priority);
@@ -119,7 +119,7 @@ private:  // NOLINT(whitespace/indent)
     impl_::PendingCommands<TCommand, tSize, TList> pending_commands_;
     bool unique_[tSize];  // NOLINT(runtime/arrays)
     const TCommand none_command_;
-    const TList<const TCommand *> none_list_;
+    const TList<const TCommand*> none_list_;
 
     unsigned int stamp_counter_;
 };

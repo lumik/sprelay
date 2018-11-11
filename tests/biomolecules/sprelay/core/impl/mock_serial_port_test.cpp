@@ -94,21 +94,21 @@ void MockSerialPortTest::cleanup()
 
 void MockSerialPortTest::commandBenchmark_data()
 {
-    QTest::addColumn<const unsigned char *>("prepare");
+    QTest::addColumn<const unsigned char*>("prepare");
     QTest::addColumn<int>("n_prepare");
-    QTest::addColumn<const unsigned char *>("message");
-    QTest::addColumn<const unsigned char *>("response");
+    QTest::addColumn<const unsigned char*>("message");
+    QTest::addColumn<const unsigned char*>("response");
 
     // switch relay on
     //                                        STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare1   = nullptr;
+    static const unsigned char* prepare1   = nullptr;
     static const unsigned char on1[]       = {0x04, 0x11, 0x01, 0x00, 0x00, 0xea, 0x0f};
     static const unsigned char response1[] = {0x04, 0x51, 0x00, 0x01, 0x00, 0xaa, 0x0f};
     QTest::newRow("Switch on") << prepare1 << 0 << &on1[0] << &response1[0];
 
     // switch relay all on
     //                                        STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare2   = nullptr;
+    static const unsigned char* prepare2   = nullptr;
     static const unsigned char on2[]       = {0x04, 0x11, 0xff, 0x00, 0x00, 0xec, 0x0f};
     static const unsigned char response2[] = {0x04, 0x51, 0x00, 0xff, 0x00, 0xac, 0x0f};
     QTest::newRow("Switch all on") << prepare2 << 0 << &on2[0] << &response2[0];
@@ -125,7 +125,7 @@ void MockSerialPortTest::commandBenchmark_data()
 
     // toggle relay on
     //                                        STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare4   = nullptr;
+    static const unsigned char* prepare4   = nullptr;
     static const unsigned char toggle4[]   = {0x04, 0x14, 0x04, 0x00, 0x00, 0xe4, 0x0f};
     static const unsigned char response4[] = {0x04, 0x51, 0x00, 0x04, 0x00, 0xa7, 0x0f};
     QTest::newRow("toggle on") << prepare4 << 0 << &toggle4[0] << &response4[0];
@@ -194,14 +194,14 @@ void MockSerialPortTest::commandBenchmark_data()
 
     // query relay status
     //                                          STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare10       = nullptr;
+    static const unsigned char* prepare10       = nullptr;
     static const unsigned char query_status10[] = {0x04, 0x18, 0x00, 0x00, 0x00, 0xe4, 0x0f};
     static const unsigned char response10[]     = {0x04, 0x51, 0x00, 0x00, 0x00, 0xab, 0x0f};
     QTest::newRow("factory defaults - button status") << prepare10 << 0 << &query_status10[0] << &response10[0];
 
     // query button modes
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare11     = nullptr;
+    static const unsigned char* prepare11     = nullptr;
     static const unsigned char query_mode11[] = {0x04, 0x22, 0x00, 0x00, 0x00, 0xda, 0x0f};
     static const unsigned char response11[]   = {0x04, 0x22, 0x00, 0xff, 0x00, 0xdb, 0x0f};
     QTest::newRow("factory defaults - button modes") << prepare11 << 0 << &query_mode11[0] << &response11[0];
@@ -209,56 +209,56 @@ void MockSerialPortTest::commandBenchmark_data()
     // query timer delays
     // timer 1
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare12      = nullptr;
+    static const unsigned char* prepare12      = nullptr;
     static const unsigned char query_timer12[] = {0x04, 0x44, 0x01, 0x00, 0x00, 0xb7, 0x0f};
     static const unsigned char response12[]    = {0x04, 0x44, 0x01, 0x00, 0x05, 0xb2, 0x0f};
     QTest::newRow("factory defaults - query timer 1") << prepare12 << 0 << &query_timer12[0] << &response12[0];
 
     // timer 2
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare13      = nullptr;
+    static const unsigned char* prepare13      = nullptr;
     static const unsigned char query_timer13[] = {0x04, 0x44, 0x02, 0x00, 0x00, 0xb6, 0x0f};
     static const unsigned char response13[]    = {0x04, 0x44, 0x02, 0x00, 0x05, 0xb1, 0x0f};
     QTest::newRow("factory defaults - query timer 2") << prepare13 << 0 << &query_timer13[0] << &response13[0];
 
     // timer 3
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare14      = nullptr;
+    static const unsigned char* prepare14      = nullptr;
     static const unsigned char query_timer14[] = {0x04, 0x44, 0x04, 0x00, 0x00, 0xb4, 0x0f};
     static const unsigned char response14[]    = {0x04, 0x44, 0x04, 0x00, 0x05, 0xaf, 0x0f};
     QTest::newRow("factory defaults - query timer 3") << prepare14 << 0 << &query_timer14[0] << &response14[0];
 
     // timer 4
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare15      = nullptr;
+    static const unsigned char* prepare15      = nullptr;
     static const unsigned char query_timer15[] = {0x04, 0x44, 0x08, 0x00, 0x00, 0xb0, 0x0f};
     static const unsigned char response15[]    = {0x04, 0x44, 0x08, 0x00, 0x05, 0xab, 0x0f};
     QTest::newRow("factory defaults - query timer 4") << prepare15 << 0 << &query_timer15[0] << &response15[0];
 
     // timer 5
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare16      = nullptr;
+    static const unsigned char* prepare16      = nullptr;
     static const unsigned char query_timer16[] = {0x04, 0x44, 0x10, 0x00, 0x00, 0xa8, 0x0f};
     static const unsigned char response16[]    = {0x04, 0x44, 0x10, 0x00, 0x05, 0xa3, 0x0f};
     QTest::newRow("factory defaults - query timer 5") << prepare16 << 0 << &query_timer16[0] << &response16[0];
 
     // timer 6
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare17      = nullptr;
+    static const unsigned char* prepare17      = nullptr;
     static const unsigned char query_timer17[] = {0x04, 0x44, 0x20, 0x00, 0x00, 0x98, 0x0f};
     static const unsigned char response17[]    = {0x04, 0x44, 0x20, 0x00, 0x05, 0x93, 0x0f};
     QTest::newRow("factory defaults - query timer 6") << prepare17 << 0 << &query_timer17[0] << &response17[0];
 
     // timer 7
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare18      = nullptr;
+    static const unsigned char* prepare18      = nullptr;
     static const unsigned char query_timer18[] = {0x04, 0x44, 0x40, 0x00, 0x00, 0x78, 0x0f};
     static const unsigned char response18[]    = {0x04, 0x44, 0x40, 0x00, 0x05, 0x73, 0x0f};
     QTest::newRow("factory defaults - query timer 7") << prepare18 << 0 << &query_timer18[0] << &response18[0];
 
     // timer 8
     //                                           STX   CMD   MASK  PAR1  PAR2  CHK   ETX
-    static const unsigned char *prepare19      = nullptr;
+    static const unsigned char* prepare19      = nullptr;
     static const unsigned char query_timer19[] = {0x04, 0x44, 0x80, 0x00, 0x00, 0x38, 0x0f};
     static const unsigned char response19[]    = {0x04, 0x44, 0x80, 0x00, 0x05, 0x33, 0x0f};
     QTest::newRow("factory defaults - query timer 8") << prepare19 << 0 << &query_timer19[0] << &response19[0];
@@ -268,10 +268,10 @@ void MockSerialPortTest::commandBenchmark_data()
 void MockSerialPortTest::commandBenchmark()
 {
     // fetch data
-    QFETCH(const unsigned char *, prepare);
+    QFETCH(const unsigned char*, prepare);
     QFETCH(int, n_prepare);
-    QFETCH(const unsigned char *, message);
-    QFETCH(const unsigned char *, response);
+    QFETCH(const unsigned char*, message);
+    QFETCH(const unsigned char*, response);
 
     // prepare relay for the command
     for (int i = 0; i < n_prepare; ++i) {
@@ -292,7 +292,7 @@ void MockSerialPortTest::commandBenchmark()
     // check for expected response
     QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
-    const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
     }
@@ -317,7 +317,7 @@ void MockSerialPortTest::jumperStatus()
     // check for expected response
     QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
-    const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
     }
@@ -347,7 +347,7 @@ void MockSerialPortTest::firmwareVersion()
     // check for expected response
     QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
-    const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7 bytes"}.arg(n)));
     }
@@ -402,7 +402,7 @@ void MockSerialPortTest::queryAllTimers()
         if (n % 7 != 0) {
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         std::list<int>::iterator it;
         for (int i = 0; i < n; i += 7) {
             it = std::find_if(remaining_responses.begin(), remaining_responses.end(),
@@ -477,7 +477,7 @@ void MockSerialPortTest::setMoreTimers()
         if (n % 7 != 0) {
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         std::list<int>::iterator it;
         for (int i = 0; i < n; i += 7) {
             it = std::find_if(remaining_responses.begin(), remaining_responses.end(),
@@ -531,7 +531,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status, 7))));
@@ -549,7 +549,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(buffer[1] == remaining_timer,
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 1)).arg(serial_utils::byte_to_hex(&remaining_timer, 1))));
@@ -567,7 +567,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, total_timer),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(total_timer, 7))));
@@ -588,7 +588,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status, 7))));
@@ -628,7 +628,7 @@ void MockSerialPortTest::defaultTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status, 7))));
@@ -648,7 +648,7 @@ void MockSerialPortTest::defaultTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status, 7))));
@@ -684,7 +684,7 @@ void MockSerialPortTest::moreTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status, 7))));
@@ -704,7 +704,7 @@ void MockSerialPortTest::moreTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status, 7))));
@@ -766,7 +766,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status1),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status1, 7))));
@@ -784,7 +784,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status2),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(on_status2, 7))));
@@ -808,7 +808,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status0),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status0, 7))));
@@ -828,7 +828,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, toggle_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(toggle_status, 7))));
@@ -848,7 +848,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status1),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status1, 7))));
@@ -870,7 +870,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status2),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status2, 7))));
@@ -892,7 +892,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 but expected 7."}.arg(n)));
         }
-        const unsigned char *buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status3),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status3, 7))));
@@ -902,7 +902,7 @@ void MockSerialPortTest::moreDefaultTimers()
 }
 
 
-bool MockSerialPortTest::compareResponse(const unsigned char *response, const unsigned char *expected)
+bool MockSerialPortTest::compareResponse(const unsigned char* response, const unsigned char* expected)
 {
     unsigned char check_sum = k8090::impl_::check_sum(expected, 5);
     if (check_sum != expected[5]) {
@@ -918,7 +918,7 @@ bool MockSerialPortTest::compareResponse(const unsigned char *response, const un
 }
 
 
-void MockSerialPortTest::sendCommand(MockSerialPort *serial_port, const unsigned char *command) const
+void MockSerialPortTest::sendCommand(MockSerialPort* serial_port, const unsigned char* command) const
 {
     serial_port->write(reinterpret_cast<const char*>(command), 7);
     QCoreApplication::sendPostedEvents();
@@ -929,8 +929,8 @@ void MockSerialPortTest::sendCommand(MockSerialPort *serial_port, const unsigned
 }
 
 
-bool MockSerialPortTest::measureCommandWithResponse(MockSerialPort *serial_port, const unsigned char *message,
-    qint64 *elapsed_ms)
+bool MockSerialPortTest::measureCommandWithResponse(MockSerialPort* serial_port, const unsigned char* message,
+    qint64* elapsed_ms)
 {
     QTimer timer;
     timer.setSingleShot(true);

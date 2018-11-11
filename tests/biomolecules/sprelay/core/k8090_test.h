@@ -93,7 +93,7 @@ private slots:  // NOLINT(whitespace/indent)
 
 private:  // NOLINT(whitespace/indent)
     void createTestData();
-    bool checkNoSpyData(QSignalSpy **spies, int n);
+    bool checkNoSpyData(QSignalSpy** spies, int n);
 
     std::unique_ptr<K8090> k8090_;
     bool real_card_present_;

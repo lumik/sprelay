@@ -43,7 +43,7 @@
 
 /// Creates application entry point.
 /// \ingroup group_biomolecules_sprelay_main
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
     biomolecules::sprelay::gui::MainWindow w;
