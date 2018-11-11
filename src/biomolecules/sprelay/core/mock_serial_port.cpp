@@ -126,7 +126,7 @@ const int MockSerialPort::kMinResponseDelayMs_ = 2;
 // maximal delay for random response delay generation
 const int MockSerialPort::kMaxResponseDelayMs_ = 10;
 // probability of success of response delay binomial distribution
-const float MockSerialPort::kResponseDelayDistributionP = 0.3;
+const float MockSerialPort::kResponseDelayDistributionP = 0.3f;
 // Serial port settings
 const qint32 MockSerialPort::kNeededBaudRate_ = QSerialPort::Baud19200;
 const QSerialPort::DataBits MockSerialPort::kNeededDataBits_ = QSerialPort::Data8;

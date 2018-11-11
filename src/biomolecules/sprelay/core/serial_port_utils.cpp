@@ -70,7 +70,7 @@ bool hex_to_byte(const QString &msg, std::unique_ptr<unsigned char[]> *buffer, i
     *n = msgSize / 2;
     buffer->reset(new unsigned char[*n]);
     // TODO(lumik): change to exception
-    bool ok;
+    bool ok = false;
     for (int ii = 0; ii < *n; ++ii) {
         (*buffer)[ii] = newMsg.midRef(2 * ii, 2).toUInt(&ok, 16);
     }

@@ -523,7 +523,7 @@ void CentralWidget::onDisconnected()
 
 void CentralWidget::onRefreshTimersDelay()
 {
-    bool is_timed;
+    bool is_timed = false;
     for (int i = 0; i < kNRelays; ++i) {
         if (start_timer_buttons_arr_[i]->state()) {
             is_timed = true;

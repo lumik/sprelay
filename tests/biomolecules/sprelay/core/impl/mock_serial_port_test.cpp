@@ -740,7 +740,7 @@ void MockSerialPortTest::moreDefaultTimers()
     std::this_thread::sleep_for(std::chrono::milliseconds(kCommandTimeoutMs - kDelayBetweenCommandsMs));
 
     // measure timer
-    qint64 elapsed_ms;
+    qint64 total_elapsed_ms;
     QElapsedTimer off_elapsed_timer;
     QElapsedTimer toggle_elapsed_timer;
     QElapsedTimer elapsed_timer1;
@@ -853,8 +853,8 @@ void MockSerialPortTest::moreDefaultTimers()
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status1, 7))));
     }
-    elapsed_ms = elapsed_timer1.elapsed();
-    qDebug() << QString{"The timer group 1 took %1ms"}.arg(elapsed_ms);
+    total_elapsed_ms = elapsed_timer1.elapsed();
+    qDebug() << QString{"The timer group 1 took %1ms"}.arg(total_elapsed_ms);
     {  // wait for relay timer group 2 to elapse
         QTimer timer;
         timer.setSingleShot(true);
@@ -875,8 +875,8 @@ void MockSerialPortTest::moreDefaultTimers()
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status2, 7))));
     }
-    elapsed_ms = elapsed_timer2.elapsed();
-    qDebug() << QString{"The timer group 2 took %1ms"}.arg(elapsed_ms);
+    total_elapsed_ms = elapsed_timer2.elapsed();
+    qDebug() << QString{"The timer group 2 took %1ms"}.arg(total_elapsed_ms);
     {  // wait for relay timer group 3 to elapse
         QTimer timer;
         timer.setSingleShot(true);
@@ -897,8 +897,8 @@ void MockSerialPortTest::moreDefaultTimers()
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                 .arg(serial_utils::byte_to_hex(buffer, 7)).arg(serial_utils::byte_to_hex(off_status3, 7))));
     }
-    elapsed_ms = elapsed_timer3.elapsed();
-    qDebug() << QString{"The timer group 3 took %1ms"}.arg(elapsed_ms);
+    total_elapsed_ms = elapsed_timer3.elapsed();
+    qDebug() << QString{"The timer group 3 took %1ms"}.arg(total_elapsed_ms);
 }
 
 
