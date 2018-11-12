@@ -132,7 +132,7 @@ struct EnableBitmaskOperators<biomolecules::sprelay::core::k8090::RelayID>
 }  // namespace enum_flags
 }  // namespace lumik
 
-
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 Q_DECLARE_METATYPE(biomolecules::sprelay::core::k8090::RelayID)
 
 /*!

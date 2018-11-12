@@ -85,6 +85,7 @@ public:
     TList<const TCommand*>& operator[](std::size_t id) { return pending_commands_[id]; }
     void updateEntry(int idx, const TCommand& command)
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         *const_cast<TCommand*>(pending_commands_[TCommand::idAsNumber(command.id)][idx]) = command;
     }
 

@@ -80,6 +80,10 @@ public:
     static const quint16 kVendorID;
 
     explicit K8090(QObject* parent = nullptr);
+    K8090(const K8090&) = delete;
+    K8090(K8090&&) = delete;
+    K8090& operator=(const K8090&) = delete;
+    K8090& operator=(K8090&&) = delete;
     ~K8090() override;
 
     static QList<serial_utils::ComPortParams> availablePorts();

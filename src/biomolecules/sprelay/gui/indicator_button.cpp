@@ -237,7 +237,6 @@ void IndicatorButton::initialize(const QString& text)
     layout->setMargin(0);
     layout->setContentsMargins(5, 5, 5, 5);
 
-    setLayout(layout);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     connect(indicator_, &IndicatorLight::stateChanged, this, &IndicatorButton::stateChanged);

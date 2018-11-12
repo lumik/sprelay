@@ -41,7 +41,9 @@
 #define BIOMOLECULES_SPRELAY_CORE_IMPL_CORE_TEST_UTILS_H_
 
 // enables usage of const unsigned char* pointer in signals and slots
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 Q_DECLARE_METATYPE(unsigned char)
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 Q_DECLARE_METATYPE(const unsigned char*)
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_CORE_TEST_UTILS_H_

@@ -300,6 +300,7 @@ CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_ite
         throw std::out_of_range{"The card response should have exactly 7 bytes."};
     }
     for (int i = 0; i < 7; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         data[i] = reinterpret_cast<const unsigned char&>(begin[i]);
     }
 }

@@ -334,6 +334,7 @@ qint64 MockSerialPort::write(const char* data, qint64 max_size)
 {
     if (open_ && error_ == QSerialPort::NoError) {
         if (mode_ & QIODevice::WriteOnly && verifyPortParameters()) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             sendData(reinterpret_cast<const unsigned char*>(data), max_size);
         }
         return max_size;
@@ -400,6 +401,7 @@ void MockSerialPort::addToBuffer()
         while (!stored_responses_.empty() && counter < max_responses) {
             std::unique_ptr<unsigned char[]> response = std::move(stored_responses_.front());
             stored_responses_.pop();
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             buffer_.append(reinterpret_cast<const char*>(response.get()), 7);
             ++counter;
         }

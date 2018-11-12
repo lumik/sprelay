@@ -76,6 +76,10 @@ public:
     static QList<serial_utils::ComPortParams> availablePorts();
 
     explicit UnifiedSerialPort(QObject* parent = nullptr);
+    UnifiedSerialPort(const UnifiedSerialPort&) = delete;
+    UnifiedSerialPort(UnifiedSerialPort&&) = delete;
+    UnifiedSerialPort& operator=(const UnifiedSerialPort&) = delete;
+    UnifiedSerialPort& operator=(UnifiedSerialPort&&) = delete;
     ~UnifiedSerialPort() override;
 
     void setPortName(const QString& port_name);

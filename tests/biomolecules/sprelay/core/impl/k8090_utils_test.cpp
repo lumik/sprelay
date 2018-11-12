@@ -45,6 +45,7 @@
 #include "biomolecules/sprelay/core/k8090_defines.h"
 #include "biomolecules/sprelay/core/k8090_utils.h"
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 Q_DECLARE_METATYPE(biomolecules::sprelay::core::k8090::impl_::Command)
 
 namespace biomolecules {
@@ -661,6 +662,7 @@ void CardMessageTest::constructors()
 
     // test constructor from QByteArray
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         QByteArray byte_array = QByteArray::fromRawData(reinterpret_cast<const char*>(expected), 7);
         const CardMessage message{byte_array.constBegin(), byte_array.constEnd()};
         for (int i = 0; i < 7; ++i) {

@@ -58,7 +58,10 @@ class IndicatorLight : public QPushButton
 public:
     explicit IndicatorLight(QWidget* parent = nullptr);
     IndicatorLight(const IndicatorLight&) = delete;
+    IndicatorLight(IndicatorLight&&) = delete;
     IndicatorLight& operator=(const IndicatorLight&) = delete;
+    IndicatorLight& operator=(IndicatorLight&&) = delete;
+    ~IndicatorLight() override = default;
 
     /// Getter for IndicatorLight::state property.
     bool state() const { return state_; }
@@ -87,7 +90,10 @@ public:
     explicit IndicatorButton(const QString& text, QWidget* parent = nullptr);
     IndicatorButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
     IndicatorButton(const IndicatorButton&) = delete;
+    IndicatorButton(IndicatorButton&&) = delete;
     IndicatorButton& operator=(const IndicatorButton&) = delete;
+    IndicatorButton& operator=(IndicatorButton&&) = delete;
+    ~IndicatorButton() override = default;
 
     void setText(const QString& text);
     /// Getter for IndicatorButton::text property.

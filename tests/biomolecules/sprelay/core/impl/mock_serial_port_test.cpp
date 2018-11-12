@@ -294,6 +294,7 @@ void MockSerialPortTest::commandBenchmark()
     // check for expected response
     QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
@@ -320,6 +321,7 @@ void MockSerialPortTest::jumperStatus()
     // check for expected response
     QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
@@ -351,6 +353,7 @@ void MockSerialPortTest::firmwareVersion()
     // check for expected response
     QByteArray data = mock_serial_port_->readAll();
     int n = data.size();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7 bytes"}.arg(n)));
@@ -391,6 +394,7 @@ void MockSerialPortTest::queryAllTimers()
     std::list<int> chunk_list;
 
     elapsed_timer.start();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     mock_serial_port_->write(reinterpret_cast<const char*>(query_timers), 7);
     mock_serial_port_->flush();
 
@@ -407,6 +411,7 @@ void MockSerialPortTest::queryAllTimers()
         if (n % 7 != 0) {
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         std::list<int>::iterator it;
         for (int i = 0; i < n; i += 7) {
@@ -464,6 +469,7 @@ void MockSerialPortTest::setMoreTimers()
     std::list<int> chunk_list;
 
     elapsed_timer.start();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     mock_serial_port_->write(reinterpret_cast<const char*>(query_timers), 7);
     mock_serial_port_->flush();
 
@@ -480,6 +486,7 @@ void MockSerialPortTest::setMoreTimers()
         if (n % 7 != 0) {
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         std::list<int>::iterator it;
         for (int i = 0; i < n; i += 7) {
@@ -533,6 +540,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -552,6 +560,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(buffer[1] == remaining_timer,
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -571,6 +580,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, total_timer),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -593,6 +603,7 @@ void MockSerialPortTest::startTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -634,6 +645,7 @@ void MockSerialPortTest::defaultTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -655,6 +667,7 @@ void MockSerialPortTest::defaultTimer()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -692,6 +705,7 @@ void MockSerialPortTest::moreTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -713,6 +727,7 @@ void MockSerialPortTest::moreTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -776,6 +791,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status1),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -795,6 +811,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status2),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -820,6 +837,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status0),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -841,6 +859,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, toggle_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -862,6 +881,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status1),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -885,6 +905,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status2),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -908,6 +929,7 @@ void MockSerialPortTest::moreDefaultTimers()
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 but expected 7."}.arg(n)));
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status3),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
@@ -937,6 +959,7 @@ bool MockSerialPortTest::compareResponse(const unsigned char* response, const un
 
 void MockSerialPortTest::sendCommand(MockSerialPort* serial_port, const unsigned char* command) const
 {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     serial_port->write(reinterpret_cast<const char*>(command), 7);
     QCoreApplication::sendPostedEvents();
     QCoreApplication::processEvents(QEventLoop::AllEvents);
@@ -956,6 +979,7 @@ bool MockSerialPortTest::measureCommandWithResponse(
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     QElapsedTimer elapsed_timer;
     elapsed_timer.start();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     serial_port->write(reinterpret_cast<const char*>(message), 7);
     serial_port->flush();
     timer.start(kCommandTimeoutMs);

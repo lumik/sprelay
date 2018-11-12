@@ -964,6 +964,7 @@ void K8090::sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n)
             return;
         }
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     serial_port_->write(reinterpret_cast<char*>(buffer.get()), n);
     serial_port_->flush();
 }
