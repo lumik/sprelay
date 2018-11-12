@@ -83,8 +83,8 @@ void CommandTest::orEqual_data()
     {
         const Command cmd1{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two), 5u, 10u};
         const Command cmd2{CommandID::RelayOn, priority1, as_number(RelayID::Two | RelayID::Three), 10u, 5u};
-        const Command response{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three),
-            5u, 10u};
+        const Command response{
+            CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 5u, 10u};
         QTest::newRow("Duplicated relay on") << cmd1 << cmd2 << response;
     }
 
@@ -100,8 +100,8 @@ void CommandTest::orEqual_data()
     {
         const Command cmd1{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
         const Command cmd2{CommandID::None, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
-        const Command response{CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three),
-            3u, 7u};
+        const Command response{
+            CommandID::RelayOn, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
         QTest::newRow("Relay on + none") << cmd1 << cmd2 << response;
     }
 
@@ -109,8 +109,8 @@ void CommandTest::orEqual_data()
     {
         const Command cmd1{CommandID::RelayOff, priority1, as_number(RelayID::One | RelayID::Two), 3u, 7u};
         const Command cmd2{CommandID::RelayOff, priority2, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
-        const Command response{CommandID::RelayOff, priority1, as_number(RelayID::One | RelayID::Two | RelayID::Three),
-            3u, 7u};
+        const Command response{
+            CommandID::RelayOff, priority1, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
         QTest::newRow("Relay off") << cmd1 << cmd2 << response;
     }
 
@@ -149,8 +149,8 @@ void CommandTest::orEqual_data()
     {
         const Command cmd1{CommandID::StartTimer, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
         const Command cmd2{CommandID::StartTimer, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
-        const Command response{CommandID::StartTimer, priority2,
-            as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
+        const Command response{
+            CommandID::StartTimer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
         QTest::newRow("start timer") << cmd1 << cmd2 << response;
     }
 
@@ -158,8 +158,8 @@ void CommandTest::orEqual_data()
     {
         const Command cmd1{CommandID::SetTimer, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
         const Command cmd2{CommandID::SetTimer, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
-        const Command response{CommandID::SetTimer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three),
-            3u, 7u};
+        const Command response{
+            CommandID::SetTimer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
         QTest::newRow("set timer") << cmd1 << cmd2 << response;
     }
 
@@ -167,8 +167,8 @@ void CommandTest::orEqual_data()
     {
         const Command cmd1{CommandID::Timer, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
         const Command cmd2{CommandID::Timer, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
-        const Command response{CommandID::Timer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u,
-            7u};
+        const Command response{
+            CommandID::Timer, priority2, as_number(RelayID::One | RelayID::Two | RelayID::Three), 3u, 7u};
         QTest::newRow("query timer") << cmd1 << cmd2 << response;
     }
 
@@ -190,10 +190,9 @@ void CommandTest::orEqual_data()
 
     // reset factory defaults
     {
-        const Command cmd1{CommandID::ResetFactoryDefaults, priority2, as_number(RelayID::One | RelayID::Two), 3u,
-            7u};
-        const Command cmd2{CommandID::ResetFactoryDefaults, priority1, as_number(RelayID::Two | RelayID::Three), 5u,
-            3u};
+        const Command cmd1{CommandID::ResetFactoryDefaults, priority2, as_number(RelayID::One | RelayID::Two), 3u, 7u};
+        const Command cmd2{
+            CommandID::ResetFactoryDefaults, priority1, as_number(RelayID::Two | RelayID::Three), 5u, 3u};
         const Command response = cmd1;
         QTest::newRow("reset factory defaults") << cmd1 << cmd2 << response;
     }
@@ -245,12 +244,15 @@ void CommandTest::orEqual()
     // test result
     QVERIFY2(command1.id == result.id,
         qPrintable(QString{"id = '%1' does not match the expected %2."}
-            .arg(as_number(command1.id)).arg(as_number(result.id))));
+                       .arg(as_number(command1.id))
+                       .arg(as_number(result.id))));
     QCOMPARE(command1.priority, result.priority);
     for (int i = 0; i < 3; ++i) {
         QVERIFY2(command1.params[i] == result.params[i],
             qPrintable(QString{"params[%1] = '%2' does not match the expected %3."}
-                .arg(i).arg(command1.params[i], 8, 2, QChar('0')).arg(result.params[i], 8, 2, QChar('0'))));
+                           .arg(i)
+                           .arg(command1.params[i], 8, 2, QChar('0'))
+                           .arg(result.params[i], 8, 2, QChar('0'))));
     }
 }
 
@@ -401,8 +403,8 @@ void CommandTest::isCompatible_data()
 
     // query total timer
     {
-        const Command cmd1{CommandID::Timer, priority1, as_number(RelayID::One | RelayID::Two),
-            as_number(TimerDelayType::Total), 3u};
+        const Command cmd1{
+            CommandID::Timer, priority1, as_number(RelayID::One | RelayID::Two), as_number(TimerDelayType::Total), 3u};
         const Command cmd2{CommandID::Timer, priority2, as_number(RelayID::Two | RelayID::Three),
             as_number(TimerDelayType::Total), 4u};
         QTest::newRow("query total timer") << cmd1 << cmd2;
@@ -552,16 +554,16 @@ void CommandTest::isNotCompatible_data()
     // query timer
     {
         const Command cmd1{CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total), 3u};
-        const Command cmd2{CommandID::SetTimer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total),
-            3u};
+        const Command cmd2{
+            CommandID::SetTimer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total), 3u};
         QTest::newRow("query timer") << cmd1 << cmd2;
     }
 
     // query timer - 1st arg
     {
         const Command cmd1{CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Total), 3u};
-        const Command cmd2{CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Remaining),
-            3u};
+        const Command cmd2{
+            CommandID::Timer, priority, as_number(RelayID::One), as_number(TimerDelayType::Remaining), 3u};
         QTest::newRow("query timer - 1st arg") << cmd1 << cmd2;
     }
 
@@ -636,13 +638,13 @@ void CommandTest::isNotCompatible()
 
 void CardMessageTest::constructors()
 {
-    const unsigned char stx = 0x04;  // STX byte
-    const unsigned char cmd = 0x21;  // set button mode
-    const unsigned char mask = 0x10;  // momentary = relay 5
+    const unsigned char stx = 0x04;     // STX byte
+    const unsigned char cmd = 0x21;     // set button mode
+    const unsigned char mask = 0x10;    // momentary = relay 5
     const unsigned char param1 = 0xcf;  // toggle = all the other
     const unsigned char param2 = 0x20;  // timed = relay 6
-    const unsigned char chk = 0xdc;  // check sum
-    const unsigned char etx = 0x0f;  // ETX byte
+    const unsigned char chk = 0xdc;     // check sum
+    const unsigned char etx = 0x0f;     // ETX byte
     const unsigned char expected[7] = {stx, cmd, mask, param1, param2, chk, etx};
 
     // test constructor from data
@@ -651,7 +653,9 @@ void CardMessageTest::constructors()
         for (int i = 0; i < 7; ++i) {
             QVERIFY2(message.data[i] == expected[i],
                 qPrintable(QString{"data[%1] = '%2' does not match the expected %3."}
-                    .arg(i).arg(message.data[i], 8, 2, QChar('0')).arg(expected[i], 8, 2, QChar('0'))));
+                               .arg(i)
+                               .arg(message.data[i], 8, 2, QChar('0'))
+                               .arg(expected[i], 8, 2, QChar('0'))));
         }
     }
 
@@ -662,7 +666,9 @@ void CardMessageTest::constructors()
         for (int i = 0; i < 7; ++i) {
             QVERIFY2(message.data[i] == expected[i],
                 qPrintable(QString{"data[%1] = '%2' does not match the expected %3."}
-                    .arg(i).arg(message.data[i], 8, 2, QChar('0')).arg(expected[i], 8, 2, QChar('0'))));
+                               .arg(i)
+                               .arg(message.data[i], 8, 2, QChar('0'))
+                               .arg(expected[i], 8, 2, QChar('0'))));
         }
     }
 
@@ -673,7 +679,9 @@ void CardMessageTest::constructors()
         for (int i = 0; i < 7; ++i) {
             QVERIFY2(message.data[i] == expected[i],
                 qPrintable(QString{"data[%1] = '%2' does not match the expected %3."}
-                    .arg(i).arg(message.data[i], 8, 2, QChar('0')).arg(expected[i], 8, 2, QChar('0'))));
+                               .arg(i)
+                               .arg(message.data[i], 8, 2, QChar('0'))
+                               .arg(expected[i], 8, 2, QChar('0'))));
         }
     }
 }
@@ -681,13 +689,13 @@ void CardMessageTest::constructors()
 
 void CardMessageTest::checksumMessage()
 {
-    const unsigned char stx = 0x04;  // STX byte
-    const unsigned char cmd = 0x21;  // set button mode
-    const unsigned char mask = 0x10;  // momentary = relay 5
+    const unsigned char stx = 0x04;     // STX byte
+    const unsigned char cmd = 0x21;     // set button mode
+    const unsigned char mask = 0x10;    // momentary = relay 5
     const unsigned char param1 = 0xcf;  // toggle = all the other
     const unsigned char param2 = 0x20;  // timed = relay 6
-    const unsigned char chk = 0xdc;  // check sum
-    const unsigned char etx = 0x0f;  // ETX byte
+    const unsigned char chk = 0xdc;     // check sum
+    const unsigned char etx = 0x0f;     // ETX byte
     const unsigned char expected[7] = {stx, cmd, mask, param1, param2, chk, etx};
 
     CardMessage message{stx, cmd, mask, param1, param2, 0, etx};
@@ -695,20 +703,22 @@ void CardMessageTest::checksumMessage()
     for (int i = 0; i < 7; ++i) {
         QVERIFY2(message.data[i] == expected[i],
             qPrintable(QString{"data[%1] = '%2' does not match the expected %3."}
-                .arg(i).arg(message.data[i], 8, 2, QChar('0')).arg(expected[i], 8, 2, QChar('0'))));
+                           .arg(i)
+                           .arg(message.data[i], 8, 2, QChar('0'))
+                           .arg(expected[i], 8, 2, QChar('0'))));
     }
 }
 
 
 void CardMessageTest::isValid()
 {
-    const unsigned char stx = 0x04;  // STX byte
-    const unsigned char cmd = 0x21;  // set button mode
-    const unsigned char mask = 0x10;  // momentary = relay 5
+    const unsigned char stx = 0x04;     // STX byte
+    const unsigned char cmd = 0x21;     // set button mode
+    const unsigned char mask = 0x10;    // momentary = relay 5
     const unsigned char param1 = 0xcf;  // toggle = all the other
     const unsigned char param2 = 0x20;  // timed = relay 6
-    const unsigned char chk = 0xdc;  // check sum
-    const unsigned char etx = 0x0f;  // ETX byte
+    const unsigned char chk = 0xdc;     // check sum
+    const unsigned char etx = 0x0f;     // ETX byte
 
     // valid message
     {
@@ -738,18 +748,19 @@ void CardMessageTest::isValid()
 
 void CardMessageTest::commandByte()
 {
-    const unsigned char stx = 0x04;  // STX byte
-    const unsigned char cmd = 0x21;  // set button mode
-    const unsigned char mask = 0x10;  // momentary = relay 5
+    const unsigned char stx = 0x04;     // STX byte
+    const unsigned char cmd = 0x21;     // set button mode
+    const unsigned char mask = 0x10;    // momentary = relay 5
     const unsigned char param1 = 0xcf;  // toggle = all the other
     const unsigned char param2 = 0x20;  // timed = relay 6
-    const unsigned char chk = 0xdc;  // check sum
-    const unsigned char etx = 0x0f;  // ETX byte
+    const unsigned char chk = 0xdc;     // check sum
+    const unsigned char etx = 0x0f;     // ETX byte
 
     CardMessage message{stx, cmd, mask, param1, param2, chk, etx};
     QVERIFY2(message.commandByte() == cmd,
         qPrintable(QString{"commandByte = '%1' does not match the expected %2."}
-            .arg(message.commandByte(), 8, 2, QChar('0')).arg(cmd, 8, 2, QChar('0'))));
+                       .arg(message.commandByte(), 8, 2, QChar('0'))
+                       .arg(cmd, 8, 2, QChar('0'))));
 }
 
 }  // namespace impl_

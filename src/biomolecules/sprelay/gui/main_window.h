@@ -45,7 +45,7 @@ namespace sprelay {
 namespace core {
 // forward declarations of core classes
 class K8090;
-}
+}  // namespace core
 namespace gui {
 class CentralWidget;
 
@@ -55,11 +55,11 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:  // NOLINT(whitespace/indent)
+public:
     MainWindow();
     ~MainWindow() override;
 
-private:  // NOLINT(whitespace/indent)
+private:
     CentralWidget* central_widget_;
 };
 

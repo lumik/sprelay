@@ -55,7 +55,7 @@ class IndicatorLight : public QPushButton
     Q_OBJECT
     Q_PROPERTY(bool state MEMBER state_ READ state WRITE setState NOTIFY stateChanged)
 
-public:  // NOLINT(whitespace/indent)
+public:
     explicit IndicatorLight(QWidget* parent = nullptr);
     IndicatorLight(const IndicatorLight&) = delete;
     IndicatorLight& operator=(const IndicatorLight&) = delete;
@@ -63,13 +63,13 @@ public:  // NOLINT(whitespace/indent)
     /// Getter for IndicatorLight::state property.
     bool state() const { return state_; }
 
-public slots:  // NOLINT(whitespace/indent)
+public slots:
     void setState(bool state);
 
-signals:  // NOLINT(whitespace/indent)
+signals:
     void stateChanged();
 
-private:  // NOLINT(whitespace/indent)
+private:
     bool state_;
 };
 
@@ -82,7 +82,7 @@ class IndicatorButton : public QPushButton
     Q_PROPERTY(bool state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QString text READ text WRITE setText)
 
-public:  // NOLINT(whitespace/indent)
+public:
     explicit IndicatorButton(QWidget* parent = nullptr);
     explicit IndicatorButton(const QString& text, QWidget* parent = nullptr);
     IndicatorButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
@@ -96,13 +96,13 @@ public:  // NOLINT(whitespace/indent)
     /// Getter for IndicatorButton::state property.
     bool state() const { return indicator_->state(); }
 
-public slots:  // NOLINT(whitespace/indent)
+public slots:
     void setState(bool state) { indicator_->setState(state); }
 
-signals:  // NOLINT(whitespace/indent)
+signals:
     void stateChanged();
 
-private:  // NOLINT(whitespace/indent)
+private:
     void initialize(const QString& text);
     QLabel* label_;
     IndicatorLight* indicator_;

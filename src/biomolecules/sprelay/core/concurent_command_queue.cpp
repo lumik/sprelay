@@ -102,9 +102,9 @@ void ConcurentCommandQueue::updateOrPush(CommandID command_id, RelayID mask, uns
     // if there is no command with the same id waiting
     if (pending_command_list.isEmpty()) {
         Predecessor::push(command);
-    // else try to update stored command and if it is not possible (updateCommandImpl returns false), push it to the
-    // queue
     } else if (!updateCommandImpl(command_id, command)) {
+        // else try to update stored command and if it is not possible (updateCommandImpl returns false), push it to the
+        // queue
         Predecessor::push(command, false);
     }
 

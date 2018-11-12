@@ -61,7 +61,7 @@ namespace core {
 #ifdef __MINGW32__
 static std::mt19937_64 random_generator{
     static_cast<std::uint_fast64_t>(std::chrono::system_clock::now().time_since_epoch().count())};
-#else  // ifdef __MINGW32__
+#else   // ifdef __MINGW32__
 static std::random_device random_device;
 static std::mt19937_64 random_generator{random_device()};
 #endif  // ifdef __MINGW32__
@@ -161,16 +161,16 @@ MockSerialPort::MockSerialPort(QObject* parent)
       firmware_version_{16, 6},
       delay_timer_mapper_{new QSignalMapper}
 {
-    std::uniform_int_distribution<int> distribution{std::numeric_limits<quint16>::min(),
-        std::numeric_limits<quint16>::max()};
+    std::uniform_int_distribution<int> distribution{
+        std::numeric_limits<quint16>::min(), std::numeric_limits<quint16>::max()};
     for (int i = 0; i < 8; ++i) {
         remaining_delays_[i] = distribution(random_generator);
         delay_timers_[i].setSingleShot(true);
-        connect(&delay_timers_[i], &QTimer::timeout,
+        connect(&delay_timers_[i], &QTimer::timeout,  // wrap
             delay_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         delay_timer_mapper_->setMapping(&delay_timers_[i], i);
     }
-    connect(delay_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
+    connect(delay_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
         this, &MockSerialPort::delayTimeout);
     response_timer_.setSingleShot(true);
     connect(&response_timer_, &QTimer::timeout, this, &MockSerialPort::addToBuffer);
@@ -435,15 +435,14 @@ void MockSerialPort::delayTimeout(int i)
     unsigned char current = on_;
 
     // insert response to queue with responses
-    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
-        previous,
-        current,
-        active_timers_,
-        0,
-        k8090::impl_::kEtxByte
-    }};
+    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{           // wrap
+        k8090::impl_::kStxByte,                                               // wrap
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],  // wrap
+        previous,                                                             // wrap
+        current,                                                              // wrap
+        active_timers_,                                                       // wrap
+        0,                                                                    // wrap
+        k8090::impl_::kEtxByte}};
     response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
 
@@ -458,7 +457,7 @@ void MockSerialPort::delayTimeout(int i)
 bool MockSerialPort::verifyPortParameters()
 {
     if (baud_rate_ != kNeededBaudRate_ || data_bits_ != kNeededDataBits_ || parity_ != kNeededParity_
-            || stop_bits_ != kNeedeStopBits_ || flow_control_ != kNeededFlowControl_) {
+        || stop_bits_ != kNeedeStopBits_ || flow_control_ != kNeededFlowControl_) {
         return false;
     } else {
         return true;
@@ -485,40 +484,40 @@ void MockSerialPort::sendData(const unsigned char* buffer, qint64 max_size)
     }
 
     switch (buffer[1]) {
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::RelayOn)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RelayOn)]:
             relayOn(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::RelayOff)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::RelayOff)]:
             relayOff(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::ToggleRelay)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::ToggleRelay)]:
             toggleRelay(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::SetButtonMode)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::SetButtonMode)]:
             setButtonMode(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::ButtonMode)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::ButtonMode)]:
             queryButtonMode();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::StartTimer)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::StartTimer)]:
             startRelayTimer(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::SetTimer)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::SetTimer)]:
             setRelayTimer(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::Timer)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::Timer)]:
             queryRelayTimer(std::move(command));
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::QueryRelay)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::QueryRelay)]:
             queryRelay();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::ResetFactoryDefaults)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::ResetFactoryDefaults)]:
             factoryDefaults();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::JumperStatus)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::JumperStatus)]:
             jumperStatus();
             break;
-        case k8090::impl_::kCommands[as_number(k8090::CommandID::FirmwareVersion)] :
+        case k8090::impl_::kCommands[as_number(k8090::CommandID::FirmwareVersion)]:
             firmwareVersion();
             break;
     }
@@ -528,8 +527,8 @@ void MockSerialPort::sendData(const unsigned char* buffer, qint64 max_size)
 // Returns random delya according to binomial distribution. It is used for response delay. See class description.
 int MockSerialPort::getRandomDelay()
 {
-    std::binomial_distribution<int> distribution{kMaxResponseDelayMs_ - kMinResponseDelayMs_,
-        kResponseDelayDistributionP};
+    std::binomial_distribution<int> distribution{
+        kMaxResponseDelayMs_ - kMinResponseDelayMs_, kResponseDelayDistributionP};
     return kMinResponseDelayMs_ + distribution(random_generator);
 }
 
@@ -547,15 +546,13 @@ void MockSerialPort::relayOn(std::unique_ptr<k8090::impl_::CardMessage> command)
     on_ |= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
-        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            k8090::impl_::kStxByte,
+        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
             k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
-            previous,
-            current,
-            active_timers_,
-            0,
-            k8090::impl_::kEtxByte
-        }};
+            previous,        // wrap
+            current,         // wrap
+            active_timers_,  // wrap
+            0,               // wrap
+            k8090::impl_::kEtxByte}};
         response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
@@ -579,15 +576,13 @@ void MockSerialPort::relayOff(std::unique_ptr<k8090::impl_::CardMessage> command
                 active_timers_ &= ~relay;
             }
         }
-        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
-            previous,
-            current,
-            active_timers_,
-            0,
-            k8090::impl_::kEtxByte
-        }};
+        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],                // wrap
+            previous,                                                                           // wrap
+            current,                                                                            // wrap
+            active_timers_,                                                                     // wrap
+            0,                                                                                  // wrap
+            k8090::impl_::kEtxByte}};
         response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
@@ -611,15 +606,13 @@ void MockSerialPort::toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> comm
                 active_timers_ &= ~relay;
             }
         }
-        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            k8090::impl_::kStxByte,
+        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
             k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
-            previous,
-            current,
-            active_timers_,
-            0,
-            k8090::impl_::kEtxByte
-        }};
+            previous,        // wrap
+            current,         // wrap
+            active_timers_,  // wrap
+            0,               // wrap
+            k8090::impl_::kEtxByte}};
         response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
@@ -641,15 +634,13 @@ void MockSerialPort::setButtonMode(std::unique_ptr<k8090::impl_::CardMessage> co
 // queries button modes
 void MockSerialPort::queryButtonMode()
 {
-    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::ButtonMode)],
-        momentary_,
-        toggle_,
-        timed_,
-        0,
-        k8090::impl_::kEtxByte
-    }};
+    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::ButtonMode)],                 // wrap
+        momentary_,                                                                         // wrap
+        toggle_,                                                                            // wrap
+        timed_,                                                                             // wrap
+        0,                                                                                  // wrap
+        k8090::impl_::kEtxByte}};
     response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
@@ -681,15 +672,13 @@ void MockSerialPort::startRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
     on_ |= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
-        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-            k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
-            previous,
-            current,
-            active_timers_,
-            0,
-            k8090::impl_::kEtxByte
-        }};
+        std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
+            k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],                // wrap
+            previous,                                                                           // wrap
+            current,                                                                            // wrap
+            active_timers_,                                                                     // wrap
+            0,                                                                                  // wrap
+            k8090::impl_::kEtxByte}};
         response[5] = k8090::impl_::check_sum(response.get(), 5);
         stored_responses_.push(std::move(response));
         if (!response_timer_.isActive()) {
@@ -734,15 +723,14 @@ void MockSerialPort::queryRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
                 high_byte = highByte(delay);
                 low_byte = lowByte(delay);
             }
-            std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-                k8090::impl_::kStxByte,
+            std::unique_ptr<unsigned char[]> response{new unsigned char[7]{// wrap
+                k8090::impl_::kStxByte,                                    // wrap
                 k8090::impl_::kResponses[as_number(k8090::ResponseID::Timer)],
-                as_number(k8090::from_number(i)),
-                high_byte,
-                low_byte,
-                0,
-                k8090::impl_::kEtxByte
-            }};
+                as_number(k8090::from_number(i)),  // wrap
+                high_byte,                         // wrap
+                low_byte,                          // wrap
+                0,                                 // wrap
+                k8090::impl_::kEtxByte}};
             response[5] = k8090::impl_::check_sum(response.get(), 5);
             stored_responses_.push(std::move(response));
             if (!response_timer_.isActive()) {
@@ -756,15 +744,14 @@ void MockSerialPort::queryRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
 // queries relay status
 void MockSerialPort::queryRelay()
 {
-    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],
-        on_,
-        on_,
-        active_timers_,
-        0,
-        k8090::impl_::kEtxByte
-    }};
+    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{           // wrap
+        k8090::impl_::kStxByte,                                               // wrap
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::RelayStatus)],  // wrap
+        on_,                                                                  // wrap
+        on_,                                                                  // wrap
+        active_timers_,                                                       // wrap
+        0,                                                                    // wrap
+        k8090::impl_::kEtxByte}};
     response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
@@ -784,15 +771,14 @@ void MockSerialPort::factoryDefaults()
     }
     if (on_ != k8090::as_number(k8090::RelayID::None)) {
         // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
-        std::unique_ptr<k8090::impl_::CardMessage> off_command{new k8090::impl_::CardMessage{
-            k8090::impl_::kStxByte,
-            k8090::impl_::kResponses[as_number(k8090::CommandID::RelayOff)],
-            on_,
-            0,
-            0,
-            0,
-            k8090::impl_::kEtxByte
-        }};
+        std::unique_ptr<k8090::impl_::CardMessage> off_command{new k8090::impl_::CardMessage{// wrap
+            k8090::impl_::kStxByte,                                                          // wrap
+            k8090::impl_::kResponses[as_number(k8090::CommandID::RelayOff)],                 // wrap
+            on_,                                                                             // wrap
+            0,                                                                               // wrap
+            0,                                                                               // wrap
+            0,                                                                               // wrap
+            k8090::impl_::kEtxByte}};
         off_command->checksumMessage();
         relayOff(std::move(off_command));
     }
@@ -802,15 +788,14 @@ void MockSerialPort::factoryDefaults()
 // queries jumper status
 void MockSerialPort::jumperStatus()
 {
-    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::JumperStatus)],
-        0,
-        jumper_status_,
-        0,
-        0,
-        k8090::impl_::kEtxByte
-    }};
+    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{            // wrap
+        k8090::impl_::kStxByte,                                                // wrap
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::JumperStatus)],  // wrap
+        0,                                                                     // wrap
+        jumper_status_,                                                        // wrap
+        0,                                                                     // wrap
+        0,                                                                     // wrap
+        k8090::impl_::kEtxByte}};
     response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {
@@ -822,15 +807,14 @@ void MockSerialPort::jumperStatus()
 // queries firmware version
 void MockSerialPort::firmwareVersion()
 {
-    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{
-        k8090::impl_::kStxByte,
-        k8090::impl_::kResponses[as_number(k8090::ResponseID::FirmwareVersion)],
-        0,
-        firmware_version_[0],
-        firmware_version_[1],
-        0,
-        k8090::impl_::kEtxByte
-    }};
+    std::unique_ptr<unsigned char[]> response{new unsigned char[7]{               // wrap
+        k8090::impl_::kStxByte,                                                   // wrap
+        k8090::impl_::kResponses[as_number(k8090::ResponseID::FirmwareVersion)],  // wrap
+        0,                                                                        // wrap
+        firmware_version_[0],                                                     // wrap
+        firmware_version_[1],                                                     // wrap
+        0,                                                                        // wrap
+        k8090::impl_::kEtxByte}};
     response[5] = k8090::impl_::check_sum(response.get(), 5);
     stored_responses_.push(std::move(response));
     if (!response_timer_.isActive()) {

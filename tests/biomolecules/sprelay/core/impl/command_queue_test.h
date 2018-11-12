@@ -48,10 +48,10 @@ namespace sprelay {
 namespace core {
 namespace command_queue {
 
-class CommandQueueTest: public QObject
+class CommandQueueTest : public QObject
 {
     Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void uniquePush();
     void notUniquePush();
     void updateCommand();
@@ -65,4 +65,3 @@ ADD_TEST(CommandQueueTest)
 }  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_IMPL_COMMAND_QUEUE_TEST_H_
-

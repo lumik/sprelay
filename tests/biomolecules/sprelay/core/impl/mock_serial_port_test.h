@@ -57,11 +57,11 @@ class MockSerialPort;
 class MockSerialPortTest : public QObject
 {
     Q_OBJECT
-public:  // NOLINT(whitespace/indent)
+public:
     static const int kCommandTimeoutMs;
     static const int kDelayBetweenCommandsMs;
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void init();
     void cleanup();
     void commandBenchmark_data();
@@ -76,7 +76,7 @@ private slots:  // NOLINT(whitespace/indent)
     void moreDefaultTimers();
     // TODO(lumik): add test for factory defaults command
 
-private:  // NOLINT(whitespace/indent)
+private:
     bool compareResponse(const unsigned char* response, const unsigned char* expected);
     void sendCommand(MockSerialPort* serial_port, const unsigned char* command) const;
     bool measureCommandWithResponse(MockSerialPort* serial_port, const unsigned char* message, qint64* elapsed_ms);

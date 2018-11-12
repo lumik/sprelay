@@ -60,14 +60,14 @@ namespace k8090 {
 namespace impl_ {
 struct CardMessage;
 }  // namespace impl_
-}
+}  // namespace k8090
 
 /// \brief Class which simulates the behavior of Velleman relay %K8090 card connected through the virtual serial port.
 /// \headerfile ""
 class MockSerialPort : public QObject
 {
     Q_OBJECT
-public:  // NOLINT(whitespace/indent)
+public:
     static const quint16 kProductID;
     static const quint16 kVendorID;
 
@@ -91,14 +91,14 @@ public:  // NOLINT(whitespace/indent)
     QSerialPort::SerialPortError error();
     void clearError();
 
-signals:  // NOLINT(whitespace/indent)
+signals:
     void readyRead();
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void addToBuffer();
     void delayTimeout(int i);
 
-private:  // NOLINT(whitespace/indent)
+private:
     static const int kMinResponseDelayMs_;
     static const int kMaxResponseDelayMs_;
     static const float kResponseDelayDistributionP;
@@ -113,8 +113,8 @@ private:  // NOLINT(whitespace/indent)
 
     bool verifyPortParameters();
     void sendData(const unsigned char* buffer, qint64 max_size);
-    static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
-    static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
+    static inline unsigned char lowByte(quint16 delay) { return (delay) & (0xFF); }
+    static inline unsigned char highByte(quint16 delay) { return (delay >> 8) & (0xFF); }
     static int getRandomDelay();
 
     void relayOn(std::unique_ptr<k8090::impl_::CardMessage> command);

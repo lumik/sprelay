@@ -57,14 +57,14 @@ class ConcurentCommandQueue : private command_queue::CommandQueue<Command, as_nu
 {
     using Predecessor = command_queue::CommandQueue<Command, as_number(k8090::CommandID::None)>;
 
-public:  // NOLINT(whitespace/indent)
+public:
     bool empty() const;
     Command pop();
     unsigned int stampCounter() const;
     void updateOrPush(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2);
     int count(CommandID command_id) const;
 
-private:  // NOLINT(whitespace/indent)
+private:
     bool updateCommandImpl(CommandID command_id, const Command& command);
     mutable std::mutex global_mutex_;
 };

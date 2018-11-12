@@ -53,7 +53,7 @@ class K8090UtilsTest : public QObject
 {
     Q_OBJECT
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void checkSum();
 };
 
@@ -64,7 +64,7 @@ class CommandTest : public QObject
 {
     Q_OBJECT
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void orEqual_data();
     void orEqual();
     void equality_data();
@@ -84,7 +84,7 @@ class CardMessageTest : public QObject
 {
     Q_OBJECT
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void constructors();
     void checksumMessage();
     void isValid();

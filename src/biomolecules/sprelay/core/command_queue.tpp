@@ -50,7 +50,7 @@ namespace command_queue {
  * \namespace biomolecules::sprelay::core::command_queue::impl_
  * \brief Namespace containing implementation details. Not intended for public use.
  */
-using namespace impl_;  // NOLINT(build/namespaces)
+using namespace impl_;
 
 /*!
  * \class biomolecules::sprelay::core::command_queue::impl_::CommandPriority
@@ -204,7 +204,7 @@ using namespace impl_;  // NOLINT(build/namespaces)
 /*!
  * \brief Default constructor
  */
-template<typename TCommand, int tSize, template <typename> class TList>
+template<typename TCommand, int tSize, template<typename> class TList>
 CommandQueue<TCommand, tSize, TList>::CommandQueue()
     : unique_{true}, none_command_{}, none_list_{&none_command_}, stamp_counter_{0}
 {}
@@ -240,7 +240,7 @@ CommandQueue<TCommand, tSize, TList>::CommandQueue()
  * \param unique If the insertion should be unique.
  * \return True if the operation was successful, false otherwise.
  */
-template<typename TCommand, int tSize, template <typename> class TList>
+template<typename TCommand, int tSize, template<typename> class TList>
 bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool unique)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
@@ -250,14 +250,12 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool un
     }
     // TODO(lumik): treat overflows of stamp_counter.
     if (!unique || pending_commands_[id].empty()) {  // no command with this id is inside
-        CommandPriority<TCommand> command_priority{
-            stamp_counter_++,
-            std::unique_ptr<TCommand>{new TCommand{command}}};
+        CommandPriority<TCommand> command_priority{stamp_counter_++, std::unique_ptr<TCommand>{new TCommand{command}}};
         pending_commands_[id].append(command_priority.command.get());
         unique_[id] = unique;
         std::priority_queue<CommandPriority<TCommand>>::emplace(std::move(command_priority));
-    // unique push with different priorities
     } else if (unique && unique_[id]) {
+        // unique push with different priorities
         updatePriorities(id, 0, command.priority);
         pending_commands_.updateEntry(0, command);
     } else if (unique && !unique_[id]) {  // wasn't unique but now it is
@@ -273,9 +271,7 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool un
         }
         pending_commands_[id].clear();
         // insert new command
-        CommandPriority<TCommand> command_priority{
-            stamp,
-            std::unique_ptr<TCommand>{new TCommand{command}}};
+        CommandPriority<TCommand> command_priority{stamp, std::unique_ptr<TCommand>{new TCommand{command}}};
         pending_commands_[id].append(command_priority.command.get());
         unique_[id] = unique;
         temp_command_queue.emplace(std::move(command_priority));
@@ -293,7 +289,7 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool un
  *
  * \return The oldest most importat element.
  */
-template<typename TCommand, int tSize, template <typename> class TList>
+template<typename TCommand, int tSize, template<typename> class TList>
 TCommand CommandQueue<TCommand, tSize, TList>::pop()
 {
     if (empty()) {
@@ -301,8 +297,7 @@ TCommand CommandQueue<TCommand, tSize, TList>::pop()
     } else {
         TCommand command = *std::priority_queue<CommandPriority<TCommand>>::top().command;
         typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
-        pending_commands_[id]
-                .removeOne(std::priority_queue<CommandPriority<TCommand>>::top().command.get());
+        pending_commands_[id].removeOne(std::priority_queue<CommandPriority<TCommand>>::top().command.get());
         std::priority_queue<CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
         if (!pending_commands_[id].size()) {
             unique_[id] = true;
@@ -328,7 +323,7 @@ TCommand CommandQueue<TCommand, tSize, TList>::pop()
  * \param command_id Command id.
  * \return Requested command or default constructed TCommand.
  */
-template<typename TCommand, int tSize, template <typename> class TList>
+template<typename TCommand, int tSize, template<typename> class TList>
 const TList<const TCommand*>& CommandQueue<TCommand, tSize, TList>::get(typename TCommand::IdType command_id) const
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command_id);
@@ -355,7 +350,7 @@ const TList<const TCommand*>& CommandQueue<TCommand, tSize, TList>::get(typename
  * \param idx Index of the command. For more info see CommandQueue::get().
  * \param command Command which replaces the stored command.
  */
-template<typename TCommand, int tSize, template <typename> class TList>
+template<typename TCommand, int tSize, template<typename> class TList>
 bool CommandQueue<TCommand, tSize, TList>::updateCommand(int idx, const TCommand& command)
 {
     typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
@@ -368,9 +363,9 @@ bool CommandQueue<TCommand, tSize, TList>::updateCommand(int idx, const TCommand
 }
 
 
-template<typename TCommand, int tSize, template <typename> class TList>
-void CommandQueue<TCommand, tSize, TList>::updatePriorities(typename TCommand::NumberType command_id, int idx,
-    int priority)
+template<typename TCommand, int tSize, template<typename> class TList>
+void CommandQueue<TCommand, tSize, TList>::updatePriorities(
+    typename TCommand::NumberType command_id, int idx, int priority)
 {
     if (pending_commands_[command_id].at(idx)->priority != priority) {
         std::priority_queue<CommandPriority<TCommand>> temp_command_queue;

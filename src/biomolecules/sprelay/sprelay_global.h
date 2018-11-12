@@ -42,20 +42,20 @@
 #include <QtCore/QtGlobal>
 
 #if defined(SPRELAY_STANDALONE)
-    #define SPRELAY_EXPORT
+#define SPRELAY_EXPORT
 #else  // if defined(SPRELAY_STANDALONE)
-    #if defined(SPRELAY_MAIN_LIBRARY)
-        #define SPRELAY_EXPORT Q_DECL_EXPORT
-    #else  // if defined(SPRELAY_MAIN_LIBRARY)
-        #define SPRELAY_EXPORT Q_DECL_IMPORT
-    #endif  // if defined(SPRELAY_MAIN_LIBRARY)
+#if defined(SPRELAY_MAIN_LIBRARY)
+#define SPRELAY_EXPORT Q_DECL_EXPORT
+#else  // if defined(SPRELAY_MAIN_LIBRARY)
+#define SPRELAY_EXPORT Q_DECL_IMPORT
+#endif  // if defined(SPRELAY_MAIN_LIBRARY)
 #endif  // if defined(SPRELAY_STANDALONE)
 
 
 #if defined(SPRELAY_LIBRARY)
-    #define SPRELAY_LIBRARY_EXPORT Q_DECL_EXPORT
+#define SPRELAY_LIBRARY_EXPORT Q_DECL_EXPORT
 #else  // if defined(SPRELAY_BUILD_LIBRARY)
-    #define SPRELAY_LIBRARY_EXPORT Q_DECL_IMPORT
+#define SPRELAY_LIBRARY_EXPORT Q_DECL_IMPORT
 #endif  // if defined(SPRELAY_BUILD_LIBRARY)
 
 
@@ -97,7 +97,7 @@
 /*! @}*/  // group_biomolecules_sprelay_public
 
 #if defined(DOXYGEN)
-    #define SPRELAY_STANDALONE
+#define SPRELAY_STANDALONE
 #endif
 /*!
  * \def SPRELAY_STANDALONE
@@ -114,7 +114,7 @@
  */
 
 #if defined(DOXYGEN)
-    #define SPRELAY_MAIN_LIBRARY
+#define SPRELAY_MAIN_LIBRARY
 #endif
 /*!
  * \def SPRELAY_MAIN_LIBRARY
@@ -143,7 +143,7 @@
  */
 
 #if defined(DOXYGEN)
-    #define SPRELAY_LIBRARY
+#define SPRELAY_LIBRARY
 #endif
 /*!
  * \def SPRELAY_LIBRARY

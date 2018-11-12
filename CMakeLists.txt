@@ -117,9 +117,6 @@ find_package(Threads REQUIRED)
 # check for Doxygen
 find_package(Doxygen)
 
-# check for python for pylint
-find_package(PythonInterp)
-
 # install correct libraries into correct locations on all platforms
 include(GNUInstallDirs)
 
@@ -230,15 +227,6 @@ if (DOXYGEN_FOUND)
     install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.tags
         DESTINATION ${sprelay_install_doc_dir} OPTIONAL)
-endif()
-
-# Other tests
-if (PYTHONINTERP_FOUND)
-    add_test(NAME cpplint
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND ${PYTHON_EXECUTABLE}
-            external/cpplint-1.3.0/cpplint.py
-            --extensions=cpp,h,tpp --headers=h,tpp --recursive src/biomolecules/sprelay tests/biomolecules/sprelay)
 endif()
 
 if (ENABLE_COVERAGE)

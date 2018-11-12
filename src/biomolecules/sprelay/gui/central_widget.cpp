@@ -151,9 +151,7 @@ namespace gui {
  * \param parent The widget's parent object in Qt ownership system.
  */
 CentralWidget::CentralWidget(core::k8090::K8090* k8090, const QString& com_port_name, QWidget* parent)
-    : QWidget{parent},
-      com_port_name_{com_port_name},
-      refresh_delay_timer_{new QTimer}
+    : QWidget{parent}, com_port_name_{com_port_name}, refresh_delay_timer_{new QTimer}
 {
     // gets K8090 class from the user or sets it to the private one.
     if (k8090) {
@@ -182,9 +180,7 @@ CentralWidget::CentralWidget(core::k8090::K8090* k8090, const QString& com_port_
 /*!
  * \brief The destructor.
  */
-CentralWidget::~CentralWidget()
-{
-}
+CentralWidget::~CentralWidget() {}
 
 
 void CentralWidget::onConnectButtonClicked()
@@ -208,19 +204,18 @@ void CentralWidget::onRefreshPortsButtonClicked()
         QString msg;
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
-        foreach (const core::serial_utils::ComPortParams& comPortParams,  // NOLINT(whitespace/parens)
-                 core::k8090::K8090::availablePorts()) {
-            msg.append(tr(
-                "Port name: %1\n"
-                "Description: %2\n"
-                "Manufacturer: %3\n"
-                "Product Identifier: %4\n"
-                "Vendor Identifier: %5\n")
-                .arg(comPortParams.port_name)
-                .arg(comPortParams.description)
-                .arg(comPortParams.manufacturer)
-                .arg(comPortParams.product_identifier)
-                .arg(comPortParams.vendor_identifier));
+        foreach (const core::serial_utils::ComPortParams& comPortParams, core::k8090::K8090::availablePorts()) {
+            msg.append(
+                tr("Port name: %1\n"
+                   "Description: %2\n"
+                   "Manufacturer: %3\n"
+                   "Product Identifier: %4\n"
+                   "Vendor Identifier: %5\n")
+                    .arg(comPortParams.port_name)
+                    .arg(comPortParams.description)
+                    .arg(comPortParams.manufacturer)
+                    .arg(comPortParams.product_identifier)
+                    .arg(comPortParams.vendor_identifier));
             comPortNames.append(comPortParams.port_name);
         }
         QMessageBox::information(this, tr("Serial ports information:"), msg, QMessageBox::Ok);
@@ -386,8 +381,8 @@ void CentralWidget::onTimerSpinBoxValueChanged(int relay)
 }
 
 
-void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::RelayID current,
-    core::k8090::RelayID timed)
+void CentralWidget::onRelayStatus(
+    core::k8090::RelayID previous, core::k8090::RelayID current, core::k8090::RelayID timed)
 {
     Q_UNUSED(previous)
     bool is_timed = false;
@@ -411,8 +406,8 @@ void CentralWidget::onRelayStatus(core::k8090::RelayID previous, core::k8090::Re
 }
 
 
-void CentralWidget::onButtonStatus(core::k8090::RelayID state, core::k8090::RelayID pressed,
-    core::k8090::RelayID released)
+void CentralWidget::onButtonStatus(
+    core::k8090::RelayID state, core::k8090::RelayID pressed, core::k8090::RelayID released)
 {
     Q_UNUSED(pressed)
     Q_UNUSED(released)
@@ -450,8 +445,8 @@ void CentralWidget::onRemainingTimerDelay(core::k8090::RelayID relay, quint16 de
 }
 
 
-void CentralWidget::onButtonModes(core::k8090::RelayID momentary, core::k8090::RelayID toggle,
-    core::k8090::RelayID timed)
+void CentralWidget::onButtonModes(
+    core::k8090::RelayID momentary, core::k8090::RelayID toggle, core::k8090::RelayID timed)
 {
     for (int i = 0; i < kNRelays; ++i) {
         if (static_cast<bool>(core::k8090::from_number(i) & momentary)) {
@@ -568,7 +563,7 @@ void CentralWidget::createUiElements()
         toggle_mode_buttons_arr_[i] = new IndicatorButton{this};
         timed_buttons_arr_[i] = new IndicatorButton{this};
         default_timer_labels_arr_[i] = new QLabel{"0", this};
-        remaining_time_labels_arr_[i]= new QLabel{"0", this};
+        remaining_time_labels_arr_[i] = new QLabel{"0", this};
         set_default_timer_buttons_arr_[i] = new QPushButton{this};
         start_timer_buttons_arr_[i] = new IndicatorButton{this};
         timer_spin_box_arr_[i] = new QSpinBox{this};
@@ -595,14 +590,13 @@ void CentralWidget::initializePortsCombobox()
     if (!current_port_found) {
         for (const core::serial_utils::ComPortParams& com_port_params : com_port_params_list) {
             if (com_port_params.product_identifier == core::k8090::K8090::kProductID
-                    && com_port_params.vendor_identifier == core::k8090::K8090::kVendorID) {
+                && com_port_params.vendor_identifier == core::k8090::K8090::kVendorID) {
                 com_port_name_ = com_port_params.port_name;
                 break;
             }
         }
     }
-    if ((index = ports_combo_box_->findText(com_port_name_)) != -1)
-        ports_combo_box_->setCurrentIndex(index);
+    if ((index = ports_combo_box_->findText(com_port_name_)) != -1) ports_combo_box_->setCurrentIndex(index);
     com_port_name_ = ports_combo_box_->currentText();
 }
 
@@ -612,12 +606,13 @@ void CentralWidget::connectGui()
     // reactions on user interaction with gui
     connect(connect_button_, &QPushButton::clicked, this, &CentralWidget::onConnectButtonClicked);
     connect(refresh_ports_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshPortsButtonClicked);
-    connect(ports_combo_box_, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged),
-            this, &CentralWidget::onPortsComboBoxCurrentIndexChanged);
+    connect(ports_combo_box_,                                                               // wrap
+        static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged),  // wrap
+        this, &CentralWidget::onPortsComboBoxCurrentIndexChanged);
 
     connect(refresh_relays_button_, &QPushButton::clicked, this, &CentralWidget::onRefreshRelaysButtonClicked);
-    connect(reset_factory_defaults_button_, &QPushButton::clicked,
-            this, &CentralWidget::resetFactoryDefaultsButtonClicked);
+    connect(
+        reset_factory_defaults_button_, &QPushButton::clicked, this, &CentralWidget::resetFactoryDefaultsButtonClicked);
 
     relay_on_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     relay_off_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
@@ -629,52 +624,53 @@ void CentralWidget::connectGui()
     start_timer_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     timer_spin_box_mapper_ = std::unique_ptr<QSignalMapper>{new QSignalMapper};
     for (int i = 0; i < 8; ++i) {
-        connect(relay_on_buttons_arr_[i], &IndicatorButton::clicked,
-                relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(relay_on_buttons_arr_[i], &IndicatorButton::clicked,  // wrap
+            relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         relay_on_mapper_->setMapping(relay_on_buttons_arr_[i], i);
-        connect(relay_off_buttons_arr_[i], &IndicatorButton::clicked,
-                relay_off_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(relay_off_buttons_arr_[i], &IndicatorButton::clicked,  // wrap
+            relay_off_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         relay_off_mapper_->setMapping(relay_off_buttons_arr_[i], i);
-        connect(toggle_relay_buttons_arr_[i], &QPushButton::clicked,
-                toggle_relay_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(toggle_relay_buttons_arr_[i], &QPushButton::clicked,  // wrap
+            toggle_relay_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         toggle_relay_mapper_->setMapping(toggle_relay_buttons_arr_[i], i);
-        connect(momentary_buttons_arr_[i], &QPushButton::clicked,
-                momentary_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(momentary_buttons_arr_[i], &QPushButton::clicked,  // wrap
+            momentary_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         momentary_mapper_->setMapping(momentary_buttons_arr_[i], i);
-        connect(timed_buttons_arr_[i], &IndicatorButton::clicked,
-                timed_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(timed_buttons_arr_[i], &IndicatorButton::clicked,  // wrap
+            timed_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         toggle_mode_mapper_->setMapping(toggle_mode_buttons_arr_[i], i);
-        connect(set_default_timer_buttons_arr_[i], &IndicatorButton::clicked,
-                set_default_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(set_default_timer_buttons_arr_[i], &IndicatorButton::clicked,  // wrap
+            set_default_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         timed_mapper_->setMapping(timed_buttons_arr_[i], i);
-        connect(toggle_mode_buttons_arr_[i], &IndicatorButton::clicked,
-                toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(toggle_mode_buttons_arr_[i], &IndicatorButton::clicked,  // wrap
+            toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         set_default_timer_mapper_->setMapping(set_default_timer_buttons_arr_[i], i);
-        connect(start_timer_buttons_arr_[i], &IndicatorButton::clicked,
-                start_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(start_timer_buttons_arr_[i], &IndicatorButton::clicked,  // wrap
+            start_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         start_timer_mapper_->setMapping(start_timer_buttons_arr_[i], i);
-        connect(timer_spin_box_arr_[i], static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-                timer_spin_box_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
+        connect(timer_spin_box_arr_[i], static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),  // wrap
+            timer_spin_box_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
         timer_spin_box_mapper_->setMapping(timer_spin_box_arr_[i], i);
     }
-    connect(relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onRelayOnButtonClicked);
-    connect(relay_off_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onRelayOffButtonClicked);
-    connect(toggle_relay_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onToggleRelayButtonClicked);
-    connect(momentary_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onMomentaryButtonClicked);
-    connect(toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onToggleModeButtonClicked);
-    connect(timed_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onTimedButtonClicked);
-    connect(set_default_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onSetDefaultTimerButtonClicked);
-    connect(start_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onStartTimerButtonClicked);
-    connect(timer_spin_box_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            this, &CentralWidget::onTimerSpinBoxValueChanged);
+    connect(relay_on_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onRelayOnButtonClicked);
+    connect(relay_off_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onRelayOffButtonClicked);
+    connect(toggle_relay_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onToggleRelayButtonClicked);
+    connect(momentary_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onMomentaryButtonClicked);
+    connect(toggle_mode_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onToggleModeButtonClicked);
+    connect(timed_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onTimedButtonClicked);
+    connect(set_default_timer_mapper_.get(),                                // wrap
+        static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onSetDefaultTimerButtonClicked);
+    connect(start_timer_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onStartTimerButtonClicked);
+    connect(timer_spin_box_mapper_.get(), static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),  // wrap
+        this, &CentralWidget::onTimerSpinBoxValueChanged);
 
     // reactions to signals from the relay
     connect(k8090_, &core::k8090::K8090::relayStatus, this, &CentralWidget::onRelayStatus);
@@ -793,8 +789,8 @@ void CentralWidget::makeLayout()
     }
 
     const int layout_no = 5;
-    QGridLayout* grid_layouts[layout_no] = {button_status_grid_layout, relay_number_grid_layout, power_grid_layout,
-        mode_grid_layout, timer_grid_layout};
+    QGridLayout* grid_layouts[layout_no] = {
+        button_status_grid_layout, relay_number_grid_layout, power_grid_layout, mode_grid_layout, timer_grid_layout};
     int relay_label_min_width = std::numeric_limits<int>::min();
     int relay_label_width;
     for (int i = 0; i < layout_no; ++i) {

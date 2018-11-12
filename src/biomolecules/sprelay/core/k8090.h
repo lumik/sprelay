@@ -75,7 +75,7 @@ class SPRELAY_LIBRARY_EXPORT K8090 : public QObject
 {
     Q_OBJECT
 
-public:  // NOLINT(whitespace/indent)
+public:
     static const quint16 kProductID;
     static const quint16 kVendorID;
 
@@ -91,7 +91,7 @@ public:  // NOLINT(whitespace/indent)
     bool isConnected();
     int pendingCommandCount(k8090::CommandID id);
 
-signals:  // NOLINT(whitespace/indent)
+signals:
     void relayStatus(biomolecules::sprelay::core::k8090::RelayID previous,
         biomolecules::sprelay::core::k8090::RelayID current, biomolecules::sprelay::core::k8090::RelayID timed);
     void buttonStatus(biomolecules::sprelay::core::k8090::RelayID state,
@@ -99,7 +99,7 @@ signals:  // NOLINT(whitespace/indent)
     void totalTimerDelay(biomolecules::sprelay::core::k8090::RelayID relay, quint16 delay);
     void remainingTimerDelay(biomolecules::sprelay::core::k8090::RelayID relay, quint16 delay);
     void buttonModes(biomolecules::sprelay::core::k8090::RelayID momentary,
-       biomolecules::sprelay::core::k8090::RelayID toggle, biomolecules::sprelay::core::k8090::RelayID timed);
+        biomolecules::sprelay::core::k8090::RelayID toggle, biomolecules::sprelay::core::k8090::RelayID timed);
     void jumperStatus(bool on);
     void firmwareVersion(int year, int week);
     void connected();
@@ -115,7 +115,7 @@ signals:  // NOLINT(whitespace/indent)
     void enqueueCommand(biomolecules::sprelay::core::k8090::CommandID command_id,
         biomolecules::sprelay::core::k8090::RelayID mask, unsigned char param1, unsigned char param2);
 
-public slots:  // NOLINT(whitespace/indent)
+public slots:
     void connectK8090();
     void disconnect();
     void refreshRelaysInfo();
@@ -138,21 +138,21 @@ public slots:  // NOLINT(whitespace/indent)
     // TODO(lumik): use undocumented feature which enables to disable physical button by setting all its button modes
     // to zero. See the UnifiedSerialPort tests.
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void onReadyData();
     void dequeueCommand();
     void onCommandFailed();
     void onDoDisconnect(bool failure);
 
-private:  // NOLINT(whitespace/indent)
-    void sendCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
-            unsigned char param1 = 0, unsigned char param2 = 0);
+private:
+    void sendCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None, unsigned char param1 = 0,
+        unsigned char param2 = 0);
     void onEnqueueCommand(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
-                        unsigned char param1 = 0, unsigned char param2 = 0);
+        unsigned char param1 = 0, unsigned char param2 = 0);
     void sendCommandHelper(k8090::CommandID command_id, k8090::RelayID mask = k8090::RelayID::None,
-            unsigned char param1 = 0, unsigned char param2 = 0);
+        unsigned char param1 = 0, unsigned char param2 = 0);
     bool hasResponse(k8090::CommandID command_id);
-    void sendToSerial(std::unique_ptr<unsigned char []> buffer, int n);
+    void sendToSerial(std::unique_ptr<unsigned char[]> buffer, int n);
 
     void buttonModeResponse(std::unique_ptr<impl_::CardMessage> response);
     void timerResponse(std::unique_ptr<impl_::CardMessage> response);
@@ -162,8 +162,8 @@ private:  // NOLINT(whitespace/indent)
     void firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response);
     void connectionSuccessful();
 
-    static inline unsigned char lowByte(quint16 delay) { return (delay)&(0xFF); }
-    static inline unsigned char highByte(quint16 delay) { return (delay>>8)&(0xFF); }
+    static inline unsigned char lowByte(quint16 delay) { return (delay) & (0xFF); }
+    static inline unsigned char highByte(quint16 delay) { return (delay >> 8) & (0xFF); }
 
     static const int kDefaultCommandDelay_;
     static const int kDefaultFailureDelay_;

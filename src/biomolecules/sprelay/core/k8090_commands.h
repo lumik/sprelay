@@ -163,7 +163,7 @@ struct ResponseDataValue<as_number(ResponseID::FirmwareVersion)>
 };
 
 // Template containing static array
-template<typename T, T ...Args>
+template<typename T, T... Args>
 struct XArrayData
 {
     // initializing declaration
@@ -171,7 +171,7 @@ struct XArrayData
 };
 
 // recursively generates command typedefs
-template<unsigned int N, unsigned char ...Args>
+template<unsigned int N, unsigned char... Args>
 struct CommandArrayGenerator
 {
     using Commands = typename CommandArrayGenerator<N - 1, CommandDataValue<N - 1>::kCommand, Args...>::Commands;
@@ -179,7 +179,7 @@ struct CommandArrayGenerator
 };
 
 // end case template partial specialization of command typedefs
-template<unsigned char ...Args>
+template<unsigned char... Args>
 struct CommandArrayGenerator<1u, Args...>
 {
     using Commands = XArrayData<unsigned char, CommandDataValue<0u>::kCommand, Args...>;
@@ -196,14 +196,14 @@ struct CommandArray_
 };
 
 // recursively generates reponse typedefs
-template<unsigned int N, unsigned char ...Args>
+template<unsigned int N, unsigned char... Args>
 struct ResponseArrayGenerator
 {
     using Responses = typename ResponseArrayGenerator<N - 1, ResponseDataValue<N - 1>::kCommand, Args...>::Responses;
 };
 
 // end case template partial specialization of response typedefs
-template<unsigned char ...Args>
+template<unsigned char... Args>
 struct ResponseArrayGenerator<1u, Args...>
 {
     using Responses = XArrayData<unsigned char, ResponseDataValue<0u>::kCommand, Args...>;
@@ -218,7 +218,7 @@ struct ResponseArray_
 };
 
 // static const array definition (needed to create the static array kValues to satisfy ODR, deprecated c++17)
-template<typename T, T ...Args>
+template<typename T, T... Args>
 constexpr T XArrayData<T, Args...>::kValues[sizeof...(Args)];
 
 /*!

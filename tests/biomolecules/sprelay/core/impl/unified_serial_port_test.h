@@ -55,12 +55,12 @@ class UnifiedSerialPort;
 class UnifiedSerialPortTest : public QObject
 {
     Q_OBJECT
-public:  // NOLINT(whitespace/indent)
+public:
     static const int kCommandTimeoutMs;
     static const int kFactoryDefaultsTimeoutMs;
     static const int kDelayBetweenCommandsMs;
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     // TODO(lumik): store relay states before tests (timers, button modes, relay statuses) and reset them at the end
     void initTestCase();
     void availablePorts();
@@ -77,7 +77,7 @@ private slots:  // NOLINT(whitespace/indent)
     void realMoreDefaultTimers();
     void cleanupTestCase();
 
-private:  // NOLINT(whitespace/indent)
+private:
     std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
     void resetRelays(UnifiedSerialPort* serial_port) const;
     bool compareResponse(const unsigned char* response, const unsigned char* expected);

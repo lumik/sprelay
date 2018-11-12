@@ -134,36 +134,37 @@ namespace impl_ {
  * \param other The other command.
  * \return Merged command.
  */
-Command& Command::operator|=(const Command& other) {
+Command& Command::operator|=(const Command& other)
+{
     // TODO(lumik): enable merging into none command
     switch (id) {
         // commands with special treatment
-        case k8090::CommandID::RelayOn :
+        case k8090::CommandID::RelayOn:
             if (other.id == k8090::CommandID::RelayOff) {
                 params[0] &= ~other.params[0];
             } else {
                 params[0] |= other.params[0];
             }
             break;
-        case k8090::CommandID::RelayOff :
+        case k8090::CommandID::RelayOff:
             if (other.id == k8090::CommandID::RelayOn) {
                 params[0] &= ~other.params[0];
             } else {
                 params[0] |= other.params[0];
             }
             break;
-        case k8090::CommandID::ToggleRelay :
+        case k8090::CommandID::ToggleRelay:
             params[0] ^= other.params[0];
             break;
-        case k8090::CommandID::SetButtonMode :
+        case k8090::CommandID::SetButtonMode:
             params[0] |= other.params[0];
             params[1] = (params[1] | other.params[1]) & ~params[0];
             params[2] = (params[2] | other.params[2]) & ~params[1] & ~params[0];
             break;
         // commands with one relevant parameter mask
-        case k8090::CommandID::StartTimer :
-        case k8090::CommandID::SetTimer :
-        case k8090::CommandID::Timer :
+        case k8090::CommandID::StartTimer:
+        case k8090::CommandID::SetTimer:
+        case k8090::CommandID::Timer:
             params[0] |= other.params[0];
             break;
         // commands with no parameters
@@ -173,10 +174,10 @@ Command& Command::operator|=(const Command& other) {
         //     case k8090::CommandID::JumperStatus :
         //     case k8090::CommandID::FirmwareVersion :
         //     case k8090::CommandID::None
-        default :
+        default:
             break;
     }
-    return* this;
+    return *this;
 }
 
 /*!
@@ -211,17 +212,17 @@ bool Command::isCompatible(const Command& other) const
         // TODO(lumik): treat compatibility of toggle relay
         // TODO(lumik): treat compatibility to none command
         switch (id) {
-            case k8090::CommandID::RelayOn :
+            case k8090::CommandID::RelayOn:
                 if (other.id == k8090::CommandID::RelayOff) {
                     return true;
                 }
                 return false;
-            case k8090::CommandID::RelayOff :
+            case k8090::CommandID::RelayOff:
                 if (other.id == k8090::CommandID::RelayOn) {
                     return true;
                 }
                 return false;
-            default :
+            default:
                 return false;
         }
     }
@@ -229,21 +230,21 @@ bool Command::isCompatible(const Command& other) const
     // ids are equal
     switch (id) {
         // TODO(lumik): handle the cases with the same id as compatible.
-        case k8090::CommandID::StartTimer :
-        case k8090::CommandID::SetTimer :
+        case k8090::CommandID::StartTimer:
+        case k8090::CommandID::SetTimer:
             for (int i = 1; i < 3; ++i) {
                 if (params[i] != other.params[i]) {
                     return false;
                 }
             }
             return true;
-        case k8090::CommandID::Timer :
+        case k8090::CommandID::Timer:
             // compare only first bits
             if ((params[1] & 1) != (other.params[1] & 1)) {
                 return false;
             }
             return true;
-        default :
+        default:
             return true;
     }
 }
@@ -263,8 +264,8 @@ unsigned char check_sum(const unsigned char* msg, int n)
         sum += (unsigned int)msg[ii];
     }
     unsigned char sum_byte = sum % 256;
-    sum = (unsigned int) (~sum_byte) + 1u;
-    sum_byte = (unsigned char) sum % 256;
+    sum = (unsigned int)(~sum_byte) + 1u;
+    sum_byte = (unsigned char)sum % 256;
 
     return sum_byte;
 }
@@ -283,8 +284,7 @@ unsigned char check_sum(const unsigned char* msg, int n)
 CardMessage::CardMessage(unsigned char stx, unsigned char cmd, unsigned char mask, unsigned char param1,
     unsigned char param2, unsigned char chk, unsigned char etx)
     : data{stx, cmd, mask, param1, param2, chk, etx}
-{
-}
+{}
 
 
 /*!
@@ -339,13 +339,10 @@ void CardMessage::checksumMessage()
  */
 bool CardMessage::isValid() const
 {
-    if (data[0] != kStxByte)
-        return false;
+    if (data[0] != kStxByte) return false;
     unsigned char chk = check_sum(data, 5);
-    if (chk != data[5])
-        return false;
-    if (data[6] != kEtxByte)
-        return false;
+    if (chk != data[5]) return false;
+    if (data[6] != kEtxByte) return false;
     return true;
 }
 

@@ -10,7 +10,7 @@ matrix:
      env: TRUSTY=1
    - compiler: gcc
    - compiler: clang
-     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7
+     env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 CPPLINT=1 CLANG_FORMAT=1
    - compiler: clang
      env: CCCOMPILER=/usr/bin/clang-7 CXXCOMPILER=/usr/bin/clang++-7 COVERAGE=1 LLVM_PROFILE_BINARY=/usr/bin/llvm-profdata-7 LLVM_COV_BINARY=/usr/bin/llvm-cov-7
    - compiler: clang
@@ -162,6 +162,13 @@ script:
       docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && cmake --build . --target coverage";
     else
       docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG/build && ctest -V";
+    fi
+  - if [[ ! -z "${CPPLINT}" ]]; then
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG &&
+        python external/cpplint-1.3.0/cpplint.py --extensions=cpp,h,tpp --headers=h,tpp --recursive src/biomolecules/sprelay tests/biomolecules/sprelay";
+    fi
+  - if [[ ! -z "${CLANG_FORMAT}" ]]; then
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG && clang-format-7 -i \$(find src/biomolecules/sprelay tests/biomolecules/sprelay -name *.h -o -name *.cpp -o -name *.tpp | tr \"\\n\" \" \") && git diff --exit-code || (echo \"Code was not formatted using clang-format!\"; false)";
     fi
 
 after_success:

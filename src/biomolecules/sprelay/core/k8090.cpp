@@ -167,25 +167,25 @@ const int K8090::kDefaultMaxFailureCount_ = 3;
  * \brief Creates a new K8090 instance and sets the default values.
  * \param parent K8090 parent object in Qt ownership system.
  */
-K8090::K8090(QObject* parent) :
-    QObject{parent},
-    com_port_name_mutex_{new QMutex},
-    serial_port_{new UnifiedSerialPort},
-    pending_commands_{new impl_::ConcurentCommandQueue},
-    current_command_{new impl_::Command},
-    command_timer_{new QTimer},
-    failure_timer_{new QTimer},
-    failure_counter_{0},
-    connected_{false},
-    connecting_{false},
-    connected_mutex_{new QMutex},
-    command_delay_{kDefaultCommandDelay_},
-    factory_defaults_command_delay_{2 * kDefaultCommandDelay_},
-    command_delay_mutex_{new QMutex},
-    failure_delay_{kDefaultFailureDelay_},
-    failure_delay_mutex_{new QMutex},
-    failure_max_count_{kDefaultMaxFailureCount_},
-    failure_max_count_mutex_{new QMutex}
+K8090::K8090(QObject* parent)
+    : QObject{parent},
+      com_port_name_mutex_{new QMutex},
+      serial_port_{new UnifiedSerialPort},
+      pending_commands_{new impl_::ConcurentCommandQueue},
+      current_command_{new impl_::Command},
+      command_timer_{new QTimer},
+      failure_timer_{new QTimer},
+      failure_counter_{0},
+      connected_{false},
+      connecting_{false},
+      connected_mutex_{new QMutex},
+      command_delay_{kDefaultCommandDelay_},
+      factory_defaults_command_delay_{2 * kDefaultCommandDelay_},
+      command_delay_mutex_{new QMutex},
+      failure_delay_{kDefaultFailureDelay_},
+      failure_delay_mutex_{new QMutex},
+      failure_max_count_{kDefaultMaxFailureCount_},
+      failure_max_count_mutex_{new QMutex}
 {
     command_timer_->setSingleShot(true);
     failure_timer_->setSingleShot(true);
@@ -194,17 +194,20 @@ K8090::K8090(QObject* parent) :
     connect(command_timer_.get(), &QTimer::timeout, this, &K8090::dequeueCommand);
     connect(failure_timer_.get(), &QTimer::timeout, this, &K8090::onCommandFailed);
     connect(this, &K8090::doDisconnect, this, &K8090::onDoDisconnect);
-    connect(this, static_cast<void (K8090::*)(CommandID)>(&K8090::enqueueCommand),
+    connect(this, static_cast<void (K8090::*)(CommandID)>(&K8090::enqueueCommand),  // wrap
         this, [=](CommandID command_id) { this->onEnqueueCommand(command_id); });
-    connect(this, static_cast<void (K8090::*)(CommandID, RelayID)>(&K8090::enqueueCommand),
+    connect(this, static_cast<void (K8090::*)(CommandID, RelayID)>(&K8090::enqueueCommand),  // wrap
         this, [=](CommandID command_id, RelayID mask) { this->onEnqueueCommand(command_id, mask); });
-    connect(this, static_cast<void (K8090::*)(CommandID, RelayID, unsigned char)>(&K8090::enqueueCommand),
-        this, [=](CommandID command_id, RelayID mask, unsigned char param1)
-            { this->onEnqueueCommand(command_id, mask, param1); });
-    connect(this, static_cast<void (K8090::*)(CommandID, RelayID, unsigned char, unsigned char)>(
-            &K8090::enqueueCommand),
-        this, [=](CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
-            { this->onEnqueueCommand(command_id, mask, param1, param2); });
+    connect(this, static_cast<void (K8090::*)(CommandID, RelayID, unsigned char)>(&K8090::enqueueCommand),  // wrap
+        this, [=](CommandID command_id, RelayID mask, unsigned char param1) {
+            this->onEnqueueCommand(command_id, mask, param1);
+        });
+    connect(this,
+        static_cast<void (K8090::*)(CommandID, RelayID, unsigned char, unsigned char)>(&K8090::enqueueCommand),
+        this,
+        [=](CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2) {
+            this->onEnqueueCommand(command_id, mask, param1, param2);
+        });
 }
 
 
@@ -477,11 +480,9 @@ void K8090::connectK8090()
     connected_ = false;
     bool card_found = false;
     QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
-    foreach (const serial_utils::ComPortParams& params,  // NOLINT(whitespace/parens)
-            UnifiedSerialPort::availablePorts()) {
-        if (params.port_name == com_port_name_
-                && params.product_identifier == kProductID
-                && params.vendor_identifier == kVendorID) {
+    foreach (const serial_utils::ComPortParams& params, UnifiedSerialPort::availablePorts()) {
+        if (params.port_name == com_port_name_ && params.product_identifier == kProductID
+            && params.vendor_identifier == kVendorID) {
             card_found = true;
         }
     }
@@ -768,22 +769,22 @@ void K8090::onReadyData()
                 return;
             }
             switch (response->commandByte()) {
-                case impl_::kResponses[as_number(ResponseID::ButtonMode)] :
+                case impl_::kResponses[as_number(ResponseID::ButtonMode)]:
                     buttonModeResponse(std::move(response));
                     break;
-                case impl_::kResponses[as_number(ResponseID::Timer)] :
+                case impl_::kResponses[as_number(ResponseID::Timer)]:
                     timerResponse(std::move(response));
                     break;
-                case impl_::kResponses[as_number(ResponseID::ButtonStatus)] :
+                case impl_::kResponses[as_number(ResponseID::ButtonStatus)]:
                     buttonStatusResponse(std::move(response));
                     break;
-                case impl_::kResponses[as_number(ResponseID::RelayStatus)] :
+                case impl_::kResponses[as_number(ResponseID::RelayStatus)]:
                     relayStatusResponse(std::move(response));
                     break;
-                case impl_::kResponses[as_number(ResponseID::JumperStatus)] :
+                case impl_::kResponses[as_number(ResponseID::JumperStatus)]:
                     jumperStatusResponse(std::move(response));
                     break;
-                case impl_::kResponses[as_number(ResponseID::FirmwareVersion)] :
+                case impl_::kResponses[as_number(ResponseID::FirmwareVersion)]:
                     firmwareVersionResponse(std::move(response));
                     break;
                 default:
@@ -899,7 +900,7 @@ void K8090::onEnqueueCommand(CommandID command_id, RelayID mask, unsigned char p
 void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
     static const int n = 7;  // Number of command bytes.
-    std::unique_ptr<unsigned char []> cmd = std::unique_ptr<unsigned char []>{new unsigned char[n]};
+    std::unique_ptr<unsigned char[]> cmd = std::unique_ptr<unsigned char[]>{new unsigned char[n]};
     cmd[0] = impl_::kStxByte;
     cmd[1] = impl_::kCommands[as_number(command_id)];
     cmd[2] = as_number(mask);
@@ -924,7 +925,7 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
             // send the next command after command delays
             command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, command_delay_));
         }
-    // if there is some delay between commands specified and the command hasn't response, start the delay
+        // if there is some delay between commands specified and the command hasn't response, start the delay
     } else if (QMutexLocker{command_delay_mutex_.get()}, command_delay_) {
         if (command_id == CommandID::ResetFactoryDefaults) {
             // reset factory defaults execution takes longer
@@ -941,12 +942,12 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
 bool K8090::hasResponse(CommandID command_id)
 {
     switch (command_id) {
-        case CommandID::RelayOn :
-        case CommandID::RelayOff :
-        case CommandID::SetButtonMode :
-        case CommandID::StartTimer :
-        case CommandID::SetTimer :
-        case CommandID::ResetFactoryDefaults :
+        case CommandID::RelayOn:
+        case CommandID::RelayOff:
+        case CommandID::SetButtonMode:
+        case CommandID::StartTimer:
+        case CommandID::SetTimer:
+        case CommandID::ResetFactoryDefaults:
             return false;
         default:
             return true;
@@ -983,7 +984,7 @@ void K8090::buttonModeResponse(std::unique_ptr<impl_::CardMessage> response)
         emit buttonModes(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
             static_cast<RelayID>(response->data[4]));
         dequeueCommand();
-    } else if (QMutexLocker {connected_mutex_.get()}, connecting_) {
+    } else if (QMutexLocker{connected_mutex_.get()}, connecting_) {
         emit buttonModes(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
             static_cast<RelayID>(response->data[4]));
         if (pending_commands_->empty()) {
@@ -1035,8 +1036,8 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
         if (is_total) {
             emit totalTimerDelay(static_cast<RelayID>(response->data[2]), response->data[3] << 8 | response->data[4]);
         } else {
-            emit remainingTimerDelay(static_cast<RelayID>(response->data[2]),
-                    response->data[3] << 8 | response->data[4]);
+            emit remainingTimerDelay(
+                static_cast<RelayID>(response->data[2]), response->data[3] << 8 | response->data[4]);
         }
         if ((QMutexLocker{connected_mutex_.get()}, connecting_) && pending_commands_->empty()) {
             connectionSuccessful();
@@ -1055,7 +1056,7 @@ void K8090::buttonStatusResponse(std::unique_ptr<impl_::CardMessage> response)
 {
     if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit buttonStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
-                static_cast<RelayID>(response->data[4]));
+            static_cast<RelayID>(response->data[4]));
     }
     // button status is emited only after user interaction with physical buttons on the relay, no query command is
     // connected with it
@@ -1069,8 +1070,8 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
     if (current_command_->id == CommandID::QueryRelay) {
         current_command_->id = CommandID::None;
         failure_timer_->stop();
-    // switch relay on
     } else if (current_command_->id == CommandID::RelayOn) {
+        // switch relay on
         // test if all required relays are on:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
@@ -1084,8 +1085,8 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // TODO(lumik): think of testing, if the command was realy satisfied but beware of command merging by the card
         // or user interaction directly with the card
         failure_timer_->stop();
-    // switch relay off
     } else if (current_command_->id == CommandID::RelayOff) {
+        // switch relay off
         // test if all required relays are off:
         bool match = true;
         for (int i = 0; i < 8; ++i) {
@@ -1132,13 +1133,13 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
     }
     if (QMutexLocker{connected_mutex_.get()}, connected_) {
         emit relayStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
-                static_cast<RelayID>(response->data[4]));
+            static_cast<RelayID>(response->data[4]));
     } else if (QMutexLocker{connected_mutex_.get()}, connecting_) {
         // Beware, if the relay status message is obtained from the card as the reaction to the user interaction with
         // physical buttons, the relay status signal can be emited 2 times because of the message obtained as the
         // reaction to query message.
         emit relayStatus(static_cast<RelayID>(response->data[2]), static_cast<RelayID>(response->data[3]),
-                static_cast<RelayID>(response->data[4]));
+            static_cast<RelayID>(response->data[4]));
         if (pending_commands_->empty()) {
             connectionSuccessful();
         }

@@ -81,7 +81,7 @@ QList<serial_utils::ComPortParams> UnifiedSerialPort::availablePorts()
     QList<serial_utils::ComPortParams> com_port_params_list;
     // QSerialPortInfo::availablePorts() returns QList by value so it should be thread safe. Implicit sharing should
     // not be a problem because it makes copy on write.
-    for (const QSerialPortInfo& info : QSerialPortInfo::availablePorts()) {  // NOLINT(whitespace/parens)
+    for (const QSerialPortInfo& info : QSerialPortInfo::availablePorts()) {
         serial_utils::ComPortParams com_port_params;
         com_port_params.port_name = info.portName();
         com_port_params.description = info.description();
@@ -115,8 +115,7 @@ UnifiedSerialPort::UnifiedSerialPort(QObject* parent)
       parity_pristine_{true},
       stop_bits_pristine_{true},
       flow_control_pristine_{true}
-{
-}
+{}
 
 
 /*!
@@ -124,9 +123,7 @@ UnifiedSerialPort::UnifiedSerialPort(QObject* parent)
  *
  * Defined to enable forward declarations.
  */
-UnifiedSerialPort::~UnifiedSerialPort()
-{
-}
+UnifiedSerialPort::~UnifiedSerialPort() {}
 
 
 /*!
@@ -283,12 +280,12 @@ bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
                 return false;
             }
             return mock_serial_port_->open(mode);
-        // change only port name
         } else {
+            // change only port name
             return serial_port_->open(mode);
         }
-    // serial port is not connected
     } else {
+        // serial port is not connected
         // changing to mock serial, !!! mock port can't have pristine port name because the only way to set mock port
         // is by name
         if (!port_name_pristine_ && port_name_ == kMockPortName) {
@@ -296,8 +293,8 @@ bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
                 return false;
             }
             return mock_serial_port_->open(mode);
-        // creating new serial port
         } else {
+            // creating new serial port
             if (!createSerialPort()) {
                 return false;
             }

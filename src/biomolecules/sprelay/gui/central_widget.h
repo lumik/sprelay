@@ -64,7 +64,7 @@ namespace core {
 namespace serial_utils {
 struct ComPortParams;
 }
-}
+}  // namespace core
 namespace gui {
 class IndicatorButton;
 class IndicatorLight;
@@ -73,18 +73,17 @@ class IndicatorLight;
 class SPRELAY_EXPORT CentralWidget : public QWidget
 {
     Q_OBJECT
-public:  // NOLINT(whitespace/indent)
-    explicit CentralWidget(
-            core::k8090::K8090* k8090 = nullptr,
-            const QString& com_port_name = QString{},
-            QWidget* parent = 0);
+public:
+    explicit CentralWidget(core::k8090::K8090* k8090 = nullptr,
+        const QString& com_port_name = QString{},
+        QWidget* parent = 0);
     ~CentralWidget() override;
 
-signals:  // NOLINT(whitespace/indent)
+signals:
 
-public slots:  // NOLINT(whitespace/indent)
+public slots:
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     // reactions to user interaction with gui
     void onConnectButtonClicked();
     void onPortsComboBoxCurrentIndexChanged(const QString& port_name);
@@ -101,7 +100,7 @@ private slots:  // NOLINT(whitespace/indent)
     void onStartTimerButtonClicked(int relay);
     void onTimerSpinBoxValueChanged(int relay);
 
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     // reactions to signals from the relay
     void onRelayStatus(biomolecules::sprelay::core::k8090::RelayID previous,
         biomolecules::sprelay::core::k8090::RelayID current, biomolecules::sprelay::core::k8090::RelayID timed);
@@ -122,7 +121,7 @@ private slots:  // NOLINT(whitespace/indent)
     void onRefreshTimersDelay();
 
 
-private:  // NOLINT(whitespace/indent)
+private:
     static const int kNRelays = 8;
     static const int kRefreshTimersRateMs_ = 300;
     void constructGui();

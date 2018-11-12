@@ -61,9 +61,7 @@ MainWindow::MainWindow()
 /*!
  * \brief The destructor.
  */
-MainWindow::~MainWindow()
-{
-}
+MainWindow::~MainWindow() {}
 
 }  // namespace gui
 }  // namespace sprelay

@@ -51,8 +51,7 @@ namespace core {
 namespace k8090 {
 
 /// Scoped enumeration listing all commands.
-enum struct CommandID : unsigned int
-{
+enum struct CommandID : unsigned int {
     RelayOn,               ///< Switch realy on command.
     RelayOff,              ///< Switch realy off command.
     ToggleRelay,           ///< Toggle realy command.
@@ -70,8 +69,7 @@ enum struct CommandID : unsigned int
 
 
 /// Scoped enumeration listing all responses.
-enum struct ResponseID : unsigned int
-{
+enum struct ResponseID : unsigned int {
     ButtonMode,       ///< Response with button mode.
     Timer,            ///< Response with timer delay.
     ButtonStatus,     ///< Button status event.
@@ -83,23 +81,25 @@ enum struct ResponseID : unsigned int
 
 
 /// Scoped enumeration listing all 8 relays.
-enum struct RelayID : unsigned char
-{
-    None  = 0,       ///< None relay
-    One   = 1 << 0,  ///< First relay.
-    Two   = 1 << 1,  ///< Second relay.
+enum struct RelayID : unsigned char {
+    None = 0,        ///< None relay
+    One = 1 << 0,    ///< First relay.
+    Two = 1 << 1,    ///< Second relay.
     Three = 1 << 2,  ///< Third relay.
-    Four  = 1 << 3,  ///< Fourth relay.
-    Five  = 1 << 4,  ///< Fifth relay.
-    Six   = 1 << 5,  ///< Sixth relay.
+    Four = 1 << 3,   ///< Fourth relay.
+    Five = 1 << 4,   ///< Fifth relay.
+    Six = 1 << 5,    ///< Sixth relay.
     Seven = 1 << 6,  ///< Seventh relay.
     Eight = 1 << 7,  ///< Eigth relay.
-    All   = 0xff     ///< All relays.
+    All = 0xff       ///< All relays.
 };
 
 
 /// Converts number to RelayID scoped enumeration.
-constexpr RelayID from_number(unsigned int number) { return static_cast<RelayID>(1 << (number)); }
+constexpr RelayID from_number(unsigned int number)
+{
+    return static_cast<RelayID>(1 << (number));
+}
 
 
 /// Converts enumeration to its underlying type.
@@ -123,7 +123,8 @@ namespace enum_flags {
 /// \brief Struct specialization which enables bitwise operators for biomolecules::sprelay::core::k8090::RelayID
 /// enumeration. See the \ref group_enum_flags "enum_flags" documentation for more details.
 template<>
-struct EnableBitmaskOperators<biomolecules::sprelay::core::k8090::RelayID> {
+struct EnableBitmaskOperators<biomolecules::sprelay::core::k8090::RelayID>
+{
     static constexpr bool value = true;  ///< The `true` value enables bitmask operators on
                                          ///< biomolecules::sprelay::core::k8090::RelayID
 };

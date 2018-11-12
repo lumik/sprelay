@@ -59,10 +59,10 @@ namespace k8090 {
 // forward declarations
 class K8090;
 
-class K8090Test: public QObject
+class K8090Test : public QObject
 {
     Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void initTestCase();
     void init();
     void cleanup();
@@ -91,7 +91,7 @@ private slots:  // NOLINT(whitespace/indent)
     void priorities_data();
     void priorities();
 
-private:  // NOLINT(whitespace/indent)
+private:
     void createTestData();
     bool checkNoSpyData(QSignalSpy** spies, int n);
 
@@ -108,4 +108,3 @@ ADD_TEST(K8090Test)
 }  // namespace biomolecules
 
 #endif  // BIOMOLECULES_SPRELAY_CORE_K8090_TEST_H_
-

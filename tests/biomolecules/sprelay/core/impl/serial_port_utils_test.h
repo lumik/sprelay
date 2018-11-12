@@ -51,7 +51,7 @@ namespace serial_utils {
 class SerialPortUtilsTest : public QObject
 {
     Q_OBJECT
-private slots:  // NOLINT(whitespace/indent)
+private slots:
     void hexToByteTestCase();
 };
 

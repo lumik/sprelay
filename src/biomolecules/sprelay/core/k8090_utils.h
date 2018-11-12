@@ -49,11 +49,10 @@ namespace k8090 {
 namespace impl_ {
 
 /// Scoped enumeration listing timer delay types.
-enum struct TimerDelayType : unsigned char
-{
-    Total     = 0,       ///< Total timer time.
+enum struct TimerDelayType : unsigned char {
+    Total = 0,           ///< Total timer time.
     Remaining = 1 << 0,  ///< Currently remaining timer time.
-    All       = 0xff     ///< Determines the highest element.
+    All = 0xff           ///< Determines the highest element.
 };
 
 
@@ -65,9 +64,10 @@ struct Command
     using NumberType = typename std::underlying_type<IdType>::type;
 
     Command() : id(k8090::CommandID::None), priority{0} {}
-    explicit Command(IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0,
-            unsigned char param2 = 0)
-        : id(id), priority{priority}, params{mask, param1, param2} {}
+    explicit Command(
+        IdType id, int priority = 0, unsigned char mask = 0, unsigned char param1 = 0, unsigned char param2 = 0)
+        : id(id), priority{priority}, params{mask, param1, param2}
+    {}
     static NumberType idAsNumber(IdType id) { return as_number(id); }
 
     IdType id;

@@ -70,7 +70,7 @@ class UnifiedSerialPort : public QObject
 {
     Q_OBJECT
 
-public:  // NOLINT(whitespace/indent)
+public:
     static const char* kMockPortName;
 
     static QList<serial_utils::ComPortParams> availablePorts();
@@ -99,10 +99,10 @@ public:  // NOLINT(whitespace/indent)
     bool isMock();
     bool isReal();
 
-signals:  // NOLINT(whitespace/indent)
+signals:
     void readyRead();
 
-private:  // NOLINT(whitespace/indent)
+private:
     bool isMockImpl();
     bool isRealImpl();
     bool createSerialPort();
