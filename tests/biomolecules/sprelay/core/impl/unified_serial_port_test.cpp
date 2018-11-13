@@ -1157,7 +1157,7 @@ void UnifiedSerialPortTest::cleanupTestCase()
 }
 
 
-std::unique_ptr<UnifiedSerialPort> UnifiedSerialPortTest::createSerialPort(QString port_name) const
+std::unique_ptr<UnifiedSerialPort> UnifiedSerialPortTest::createSerialPort(const QString& port_name) const
 {
     std::unique_ptr<UnifiedSerialPort> serial_port{new UnifiedSerialPort};
     serial_port->setPortName(port_name);

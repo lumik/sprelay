@@ -78,7 +78,7 @@ private slots:
     void cleanupTestCase();
 
 private:
-    std::unique_ptr<UnifiedSerialPort> createSerialPort(QString port_name) const;
+    std::unique_ptr<UnifiedSerialPort> createSerialPort(const QString& port_name) const;
     void resetRelays(UnifiedSerialPort* serial_port) const;
     bool compareResponse(const unsigned char* response, const unsigned char* expected);
     void sendCommand(UnifiedSerialPort* serial_port, const unsigned char* command) const;

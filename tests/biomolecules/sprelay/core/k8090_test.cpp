@@ -79,7 +79,7 @@ void K8090Test::initTestCase()
     port_names << k8090::impl_::kMockPortName;
     qDebug() << "Virtual card port name:" << port_names.last();
 
-    for (auto port_name : port_names) {
+    for (const auto& port_name : port_names) {
         k8090_.reset(new K8090);
         k8090_->setComPortName(port_name);
         QSignalSpy spy_connect(k8090_.get(), SIGNAL(connected()));
