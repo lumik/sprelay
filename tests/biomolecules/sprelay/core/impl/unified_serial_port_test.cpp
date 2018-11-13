@@ -221,7 +221,7 @@ void UnifiedSerialPortTest::switchRealVirtual()
     qDebug() << QString("Real card command took: %1 ms").arg(real_elapsed_time / 2);
     qDebug() << QString("Mock card command took: %1 ms").arg(mock_elapsed_time);
 
-    QTest::setBenchmarkResult((real_elapsed_time + mock_elapsed_time) / 2, QTest::WalltimeMilliseconds);
+    QTest::setBenchmarkResult((real_elapsed_time + mock_elapsed_time) / 2.0, QTest::WalltimeMilliseconds);
 }
 
 
@@ -1023,7 +1023,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
                            .arg(serial_utils::byte_to_hex(buffer, 7))
                            .arg(serial_utils::byte_to_hex(on_status2, 7))));
     }
-    QTest::setBenchmarkResult(start_timer_elapsed_ms / 2, QTest::WalltimeMilliseconds);
+    QTest::setBenchmarkResult(start_timer_elapsed_ms / 2.0, QTest::WalltimeMilliseconds);
     // on command should not take any effect
     sendCommand(serial_port.get(), on);
 

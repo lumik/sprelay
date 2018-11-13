@@ -818,7 +818,7 @@ void MockSerialPortTest::moreDefaultTimers()
                            .arg(serial_utils::byte_to_hex(buffer, 7))
                            .arg(serial_utils::byte_to_hex(on_status2, 7))));
     }
-    QTest::setBenchmarkResult(start_timer_elapsed_ms / 2, QTest::WalltimeMilliseconds);
+    QTest::setBenchmarkResult(start_timer_elapsed_ms / 2.0, QTest::WalltimeMilliseconds);
     // on command should not take any effect
     sendCommand(mock_serial_port_.get(), on);
 

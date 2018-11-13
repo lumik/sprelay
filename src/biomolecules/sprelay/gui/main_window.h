@@ -42,10 +42,6 @@
 
 namespace biomolecules {
 namespace sprelay {
-namespace core {
-// forward declarations of core classes
-class K8090;
-}  // namespace core
 namespace gui {
 class CentralWidget;
 
