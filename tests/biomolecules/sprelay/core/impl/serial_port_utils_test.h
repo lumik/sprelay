@@ -55,7 +55,7 @@ private slots:
     void hexToByteTestCase();
 };
 
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(SerialPortUtilsTest)
 
 }  // namespace serial_utils

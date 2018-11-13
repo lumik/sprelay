@@ -57,7 +57,7 @@ private slots:
     void updateCommand();
 };
 
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(CommandQueueTest)
 
 }  // namespace command_queue

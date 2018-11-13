@@ -57,7 +57,7 @@ private slots:
     void checkSum();
 };
 
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(K8090UtilsTest)
 
 
@@ -78,7 +78,7 @@ private slots:
     void isNotCompatible();
 };
 
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(CommandTest)
 
 
@@ -93,7 +93,7 @@ private slots:
     void commandByte();
 };
 
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(CardMessageTest)
 
 }  // namespace impl_

@@ -84,7 +84,7 @@ private:
     std::unique_ptr<MockSerialPort> mock_serial_port_;
 };
 
-// NOLINTNEXTLINE(cert-err58-cpp)
+// NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(MockSerialPortTest)
 
 }  // namespace core
