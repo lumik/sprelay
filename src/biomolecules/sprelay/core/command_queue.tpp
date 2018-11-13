@@ -50,7 +50,6 @@ namespace command_queue {
  * \namespace biomolecules::sprelay::core::command_queue::impl_
  * \brief Namespace containing implementation details. Not intended for public use.
  */
-using namespace impl_;
 
 /*!
  * \class biomolecules::sprelay::core::command_queue::impl_::CommandPriority
@@ -250,19 +249,20 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool un
     }
     // TODO(lumik): treat overflows of stamp_counter.
     if (!unique || pending_commands_[id].empty()) {  // no command with this id is inside
-        CommandPriority<TCommand> command_priority{stamp_counter_++, std::unique_ptr<TCommand>{new TCommand{command}}};
+        impl_::CommandPriority<TCommand> command_priority{
+            stamp_counter_++, std::unique_ptr<TCommand>{new TCommand{command}}};
         pending_commands_[id].append(command_priority.command.get());
         unique_[id] = unique;
-        std::priority_queue<CommandPriority<TCommand>>::emplace(std::move(command_priority));
+        std::priority_queue<impl_::CommandPriority<TCommand>>::emplace(std::move(command_priority));
     } else if (unique && unique_[id]) {
         // unique push with different priorities
         updatePriorities(id, 0, command.priority);
         pending_commands_.updateEntry(0, command);
     } else if (unique && !unique_[id]) {  // wasn't unique but now it is
         // erase all previously inserted commands with the same id and copy all the remaining commands.
-        std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
+        std::priority_queue<impl_::CommandPriority<TCommand>> temp_command_queue;
         unsigned int stamp = std::numeric_limits<unsigned int>::max();
-        for (CommandPriority<TCommand>& command_priority : this->c) {
+        for (impl_::CommandPriority<TCommand>& command_priority : this->c) {
             if (command_priority.command->id != command.id) {
                 temp_command_queue.emplace(std::move(command_priority));
             } else if (command_priority.stamp < stamp) {
@@ -271,12 +271,12 @@ bool CommandQueue<TCommand, tSize, TList>::push(const TCommand& command, bool un
         }
         pending_commands_[id].clear();
         // insert new command
-        CommandPriority<TCommand> command_priority{stamp, std::unique_ptr<TCommand>{new TCommand{command}}};
+        impl_::CommandPriority<TCommand> command_priority{stamp, std::unique_ptr<TCommand>{new TCommand{command}}};
         pending_commands_[id].append(command_priority.command.get());
         unique_[id] = unique;
         temp_command_queue.emplace(std::move(command_priority));
         // move new temporary queue to stored one
-        std::priority_queue<CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
+        std::priority_queue<impl_::CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
     }
     return true;
 }
@@ -295,10 +295,10 @@ TCommand CommandQueue<TCommand, tSize, TList>::pop()
     if (empty()) {
         return TCommand{};
     } else {
-        TCommand command = *std::priority_queue<CommandPriority<TCommand>>::top().command;
+        TCommand command = *std::priority_queue<impl_::CommandPriority<TCommand>>::top().command;
         typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
-        pending_commands_[id].removeOne(std::priority_queue<CommandPriority<TCommand>>::top().command.get());
-        std::priority_queue<CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
+        pending_commands_[id].removeOne(std::priority_queue<impl_::CommandPriority<TCommand>>::top().command.get());
+        std::priority_queue<impl_::CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
         if (!pending_commands_[id].size()) {
             unique_[id] = true;
         }
@@ -368,9 +368,9 @@ void CommandQueue<TCommand, tSize, TList>::updatePriorities(
     typename TCommand::NumberType command_id, int idx, int priority)
 {
     if (pending_commands_[command_id].at(idx)->priority != priority) {
-        std::priority_queue<CommandPriority<TCommand>> temp_command_queue;
-        CommandPriority<TCommand> temp_priority;
-        for (CommandPriority<TCommand>& command_priority : this->c) {
+        std::priority_queue<impl_::CommandPriority<TCommand>> temp_command_queue;
+        impl_::CommandPriority<TCommand> temp_priority;
+        for (impl_::CommandPriority<TCommand>& command_priority : this->c) {
             if (command_priority.command.get() == pending_commands_[command_id].at(idx)) {
                 temp_priority = std::move(command_priority);
                 temp_priority.setPriority(priority);
@@ -379,7 +379,7 @@ void CommandQueue<TCommand, tSize, TList>::updatePriorities(
                 temp_command_queue.emplace(std::move(command_priority));
             }
         }
-        std::priority_queue<CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
+        std::priority_queue<impl_::CommandPriority<TCommand>>::operator=(std::move(temp_command_queue));
     }
 }
 

@@ -88,10 +88,10 @@ QString byte_to_hex(const unsigned char* buffer, int n)
 {
     QString msg;
     for (int ii = 0; ii < n - 1; ++ii) {
-        msg.append(QString("%1").arg((unsigned int)buffer[ii], 2, 16, QChar('0')).toUpper()).append(' ');
+        msg.append(QString("%1").arg(static_cast<unsigned int>(buffer[ii]), 2, 16, QChar('0')).toUpper()).append(' ');
     }
     if (n > 0) {
-        msg.append(QString("%1").arg((unsigned int)buffer[n - 1], 2, 16, QChar('0')).toUpper());
+        msg.append(QString("%1").arg(static_cast<unsigned int>(buffer[n - 1]), 2, 16, QChar('0')).toUpper());
     }
     return msg;
 }

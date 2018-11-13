@@ -261,11 +261,11 @@ unsigned char check_sum(const unsigned char* msg, int n)
 {
     unsigned int sum = 0u;
     for (int ii = 0; ii < n; ++ii) {
-        sum += (unsigned int)msg[ii];
+        sum += static_cast<unsigned int>(msg[ii]);
     }
     unsigned char sum_byte = sum % 256;
-    sum = (unsigned int)(~sum_byte) + 1u;
-    sum_byte = (unsigned char)sum % 256;
+    sum = static_cast<unsigned int>(~sum_byte) + 1u;
+    sum_byte = static_cast<unsigned char>(sum % 256);
 
     return sum_byte;
 }

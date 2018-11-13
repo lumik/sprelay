@@ -232,10 +232,11 @@ void CentralWidget::onRefreshPortsButtonClicked()
             ports_combo_box_->clear();
             ports_combo_box_->insertItems(1, comPortNames);
             int index;
-            if ((index = ports_combo_box_->findText(currPort)) >= 0)
+            if ((index = ports_combo_box_->findText(currPort)) >= 0) {
                 ports_combo_box_->setCurrentIndex(index);
-            else if ((index = ports_combo_box_->findText(com_port_name_)) >= 0)
+            } else if ((index = ports_combo_box_->findText(com_port_name_)) >= 0) {
                 ports_combo_box_->setCurrentIndex(index);
+            }
             if (!connected_ && index == -1) {
                 k8090_->setComPortName(ports_combo_box_->currentText());
             }
