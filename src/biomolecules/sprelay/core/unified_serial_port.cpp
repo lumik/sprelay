@@ -123,7 +123,7 @@ UnifiedSerialPort::UnifiedSerialPort(QObject* parent)
  *
  * Defined to enable forward declarations.
  */
-UnifiedSerialPort::~UnifiedSerialPort() {}
+UnifiedSerialPort::~UnifiedSerialPort() = default;
 
 
 /*!

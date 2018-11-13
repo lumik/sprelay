@@ -50,9 +50,9 @@ namespace impl_ {
 
 /// Scoped enumeration listing timer delay types.
 enum struct TimerDelayType : unsigned char {
-    Total = 0,           ///< Total timer time.
-    Remaining = 1 << 0,  ///< Currently remaining timer time.
-    All = 0xff           ///< Determines the highest element.
+    Total = 0u,            ///< Total timer time.
+    Remaining = 1u << 0u,  ///< Currently remaining timer time.
+    All = 0xFFu            ///< Determines the highest element.
 };
 
 

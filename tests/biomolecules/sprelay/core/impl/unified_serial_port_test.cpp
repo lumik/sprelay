@@ -70,7 +70,7 @@ const int UnifiedSerialPortTest::kDelayBetweenCommandsMs = 20;
 void UnifiedSerialPortTest::initTestCase()
 {
     real_card_present_ = false;
-    foreach (const serial_utils::ComPortParams& params, UnifiedSerialPort::availablePorts()) {
+    for (const serial_utils::ComPortParams& params : UnifiedSerialPort::availablePorts()) {
         if (params.product_identifier == k8090::impl_::kProductID
             && params.vendor_identifier == k8090::impl_::kVendorID) {
             if (params.port_name != UnifiedSerialPort::kMockPortName) {
@@ -87,7 +87,7 @@ void UnifiedSerialPortTest::availablePorts()
 {
     // test, if the mock port is always present
     bool mock_found = false;
-    foreach (const serial_utils::ComPortParams& params, UnifiedSerialPort::availablePorts()) {
+    for (const serial_utils::ComPortParams& params : UnifiedSerialPort::availablePorts()) {
         if (params.port_name == UnifiedSerialPort::kMockPortName
             && params.product_identifier == k8090::impl_::kProductID
             && params.vendor_identifier == k8090::impl_::kVendorID) {
@@ -145,7 +145,7 @@ void UnifiedSerialPortTest::switchRealVirtual()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
         }
@@ -178,7 +178,7 @@ void UnifiedSerialPortTest::switchRealVirtual()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
         }
@@ -209,7 +209,7 @@ void UnifiedSerialPortTest::switchRealVirtual()
         QByteArray data = serial_port->readAll();
         int n = data.size();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         if (n != 7) {
             QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
         }
@@ -436,7 +436,7 @@ void UnifiedSerialPortTest::realBenchmark()
     QByteArray data = serial_port->readAll();
     int n = data.size();
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
     }
@@ -471,7 +471,7 @@ void UnifiedSerialPortTest::realJumperStatus()
     QByteArray data = serial_port->readAll();
     int n = data.size();
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7"}.arg(n)));
     }
@@ -511,7 +511,7 @@ void UnifiedSerialPortTest::realFirmwareVersion()
     QByteArray data = serial_port->readAll();
     int n = data.size();
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+    auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
     if (n != 7) {
         QFAIL(qPrintable(QString{"Response has %1 but should have 7 bytes"}.arg(n)));
     }
@@ -577,7 +577,7 @@ void UnifiedSerialPortTest::realQueryAllTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         std::list<int>::iterator it;
         for (int i = 0; i < n; i += 7) {
             it = std::find_if(remaining_responses.begin(), remaining_responses.end(),
@@ -660,7 +660,7 @@ void UnifiedSerialPortTest::realSetMoreTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes which is not a multiple of 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         std::list<int>::iterator it;
         for (int i = 0; i < n; i += 7) {
             it = std::find_if(remaining_responses.begin(), remaining_responses.end(),
@@ -722,7 +722,7 @@ void UnifiedSerialPortTest::realTimer()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -742,7 +742,7 @@ void UnifiedSerialPortTest::realTimer()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(buffer[1] == remaining_timer,
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 1))
@@ -762,7 +762,7 @@ void UnifiedSerialPortTest::realTimer()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, total_timer),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -785,7 +785,7 @@ void UnifiedSerialPortTest::realTimer()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -835,7 +835,7 @@ void UnifiedSerialPortTest::realDefaultTimer()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -857,7 +857,7 @@ void UnifiedSerialPortTest::realDefaultTimer()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -903,7 +903,7 @@ void UnifiedSerialPortTest::realMoreTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -925,7 +925,7 @@ void UnifiedSerialPortTest::realMoreTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -997,7 +997,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status1),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -1017,7 +1017,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, on_status2),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -1043,7 +1043,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status0),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -1065,7 +1065,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, toggle_status),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -1087,7 +1087,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status1),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -1111,7 +1111,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status2),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))
@@ -1135,7 +1135,7 @@ void UnifiedSerialPortTest::realMoreDefaultTimers()
             QFAIL(qPrintable(QString{"Response has %1 bytes but expected 7."}.arg(n)));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        const unsigned char* buffer = reinterpret_cast<const unsigned char*>(data.constData());
+        auto buffer = reinterpret_cast<const unsigned char*>(data.constData());
         QVERIFY2(compareResponse(buffer, off_status3),
             qPrintable(QString{"The response '%1' does not match the expected %2."}
                            .arg(serial_utils::byte_to_hex(buffer, 7))

@@ -166,8 +166,8 @@ private:
     void firmwareVersionResponse(std::unique_ptr<impl_::CardMessage> response);
     void connectionSuccessful();
 
-    static inline unsigned char lowByte(quint16 delay) { return (delay) & (0xFF); }
-    static inline unsigned char highByte(quint16 delay) { return (delay >> 8) & (0xFF); }
+    static inline unsigned char lowByte(quint16 delay) { return delay & 0xFFu; }
+    static inline unsigned char highByte(quint16 delay) { return static_cast<quint16>(delay >> 8u) & 0xFFu; }
 
     static const int kDefaultCommandDelay_;
     static const int kDefaultFailureDelay_;

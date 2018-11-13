@@ -141,14 +141,14 @@ Command& Command::operator|=(const Command& other)
         // commands with special treatment
         case k8090::CommandID::RelayOn:
             if (other.id == k8090::CommandID::RelayOff) {
-                params[0] &= ~other.params[0];
+                params[0] &= static_cast<unsigned char>(~other.params[0]);
             } else {
                 params[0] |= other.params[0];
             }
             break;
         case k8090::CommandID::RelayOff:
             if (other.id == k8090::CommandID::RelayOn) {
-                params[0] &= ~other.params[0];
+                params[0] &= static_cast<unsigned char>(~other.params[0]);
             } else {
                 params[0] |= other.params[0];
             }
@@ -158,8 +158,11 @@ Command& Command::operator|=(const Command& other)
             break;
         case k8090::CommandID::SetButtonMode:
             params[0] |= other.params[0];
-            params[1] = (params[1] | other.params[1]) & ~params[0];
-            params[2] = (params[2] | other.params[2]) & ~params[1] & ~params[0];
+            params[1] =
+                static_cast<unsigned char>(params[1] | other.params[1]) & static_cast<unsigned char>(~params[0]);
+            params[2] = static_cast<unsigned char>(static_cast<unsigned char>(params[2] | other.params[2])
+                            & static_cast<unsigned char>(~params[1]))
+                & static_cast<unsigned char>(~params[0]);
             break;
         // commands with one relevant parameter mask
         case k8090::CommandID::StartTimer:
@@ -240,7 +243,7 @@ bool Command::isCompatible(const Command& other) const
             return true;
         case k8090::CommandID::Timer:
             // compare only first bits
-            if ((params[1] & 1) != (other.params[1] & 1)) {
+            if (static_cast<unsigned char>(params[1] & 1u) != static_cast<unsigned char>(other.params[1] & 1u)) {
                 return false;
             }
             return true;
@@ -340,10 +343,16 @@ void CardMessage::checksumMessage()
  */
 bool CardMessage::isValid() const
 {
-    if (data[0] != kStxByte) return false;
+    if (data[0] != kStxByte) {
+        return false;
+    }
     unsigned char chk = check_sum(data, 5);
-    if (chk != data[5]) return false;
-    if (data[6] != kEtxByte) return false;
+    if (chk != data[5]) {
+        return false;
+    }
+    if (data[6] != kEtxByte) {
+        return false;
+    }
     return true;
 }
 

@@ -480,7 +480,7 @@ void K8090::connectK8090()
     connected_ = false;
     bool card_found = false;
     QMutexLocker com_port_name_locker{com_port_name_mutex_.get()};
-    foreach (const serial_utils::ComPortParams& params, UnifiedSerialPort::availablePorts()) {
+    for (const serial_utils::ComPortParams& params : UnifiedSerialPort::availablePorts()) {
         if (params.port_name == com_port_name_ && params.product_identifier == kProductID
             && params.vendor_identifier == kVendorID) {
             card_found = true;
@@ -1011,10 +1011,10 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
     bool is_total;
     bool should_dequeue_next = false;
     // total timer
-    if (~(current_command_->params[1]) & (1 << 0)) {
+    if (static_cast<unsigned char>(~(current_command_->params[1])) & (1u << 0u)) {
         // remove current response from the list of waiting to response commands.
         is_total = true;
-        current_command_->params[0] &= ~response->data[2];
+        current_command_->params[0] &= static_cast<unsigned char>(~response->data[2]);
         if (!current_command_->params[0]) {
             current_command_->id = CommandID::None;
             failure_timer_->stop();
@@ -1024,7 +1024,7 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
         }
     } else {
         is_total = false;
-        current_command_->params[0] &= ~response->data[2];
+        current_command_->params[0] &= static_cast<unsigned char>(~response->data[2]);
         if (!current_command_->params[0]) {
             current_command_->id = CommandID::None;
             failure_timer_->stop();
@@ -1035,10 +1035,11 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
     }
     if (QMutexLocker{connected_mutex_.get()}, (connected_ | connecting_)) {
         if (is_total) {
-            emit totalTimerDelay(static_cast<RelayID>(response->data[2]), response->data[3] << 8 | response->data[4]);
+            emit totalTimerDelay(static_cast<RelayID>(response->data[2]),
+                static_cast<quint16>(response->data[3] << 8u) | response->data[4]);
         } else {
-            emit remainingTimerDelay(
-                static_cast<RelayID>(response->data[2]), response->data[3] << 8 | response->data[4]);
+            emit remainingTimerDelay(static_cast<RelayID>(response->data[2]),
+                static_cast<quint16>(response->data[3] << 8u) | response->data[4]);
         }
         if ((QMutexLocker{connected_mutex_.get()}, connecting_) && pending_commands_->empty()) {
             connectionSuccessful();
@@ -1075,8 +1076,8 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // switch relay on
         // test if all required relays are on:
         bool match = true;
-        for (int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1 << i) & ~response->data[3]) {
+        for (unsigned int i = 0; i < 8; ++i) {
+            if (current_command_->params[0] & (1u << i) & static_cast<unsigned char>(~response->data[3])) {
                 match = false;
             }
         }
@@ -1090,8 +1091,8 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // switch relay off
         // test if all required relays are off:
         bool match = true;
-        for (int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1 << i) & response->data[3]) {
+        for (unsigned int i = 0; i < 8; ++i) {
+            if (current_command_->params[0] & (1u << i) & response->data[3]) {
                 match = false;
             }
         }
@@ -1108,8 +1109,8 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
     } else if (current_command_->id == CommandID::StartTimer) {
         // test if all required relays are on:
         bool match = true;
-        for (int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1 << i) & ~response->data[3]) {
+        for (unsigned int i = 0; i < 8; ++i) {
+            if (current_command_->params[0] & (1u << i) & static_cast<unsigned char>(~response->data[3])) {
                 match = false;
             }
         }

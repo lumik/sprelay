@@ -425,23 +425,23 @@ void MockSerialPort::addToBuffer()
 // is it times it out too. This approach effectively merges close relay timeouts to one relay status event emission.
 void MockSerialPort::delayTimeout(int i)
 {
-    unsigned char relay = 1 << i;
+    unsigned char relay = 1u << static_cast<unsigned int>(i);
     unsigned char relay2;
     // time out also near timers
-    for (int j = 0; j < 8; ++j) {
-        if (j != i) {
-            relay2 = 1 << j;
+    for (unsigned int j = 0; j < 8; ++j) {
+        if (j != static_cast<unsigned int>(i)) {
+            relay2 = 1u << j;
             if (relay2 & active_timers_ && delay_timers_[j].remainingTime() < kTimerDeltaMs_) {
                 relay |= relay2;
                 delay_timers_[j].stop();
-                active_timers_ &= ~relay2;
+                active_timers_ &= static_cast<unsigned char>(~relay2);
             }
         }
     }
-    active_timers_ &= ~relay;
+    active_timers_ &= static_cast<unsigned char>(~relay);
 
     unsigned char previous = on_;
-    on_ &= ~relay;
+    on_ &= static_cast<unsigned char>(~relay);
     unsigned char current = on_;
 
     // insert response to queue with responses
@@ -576,14 +576,14 @@ void MockSerialPort::relayOn(std::unique_ptr<k8090::impl_::CardMessage> command)
 void MockSerialPort::relayOff(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     unsigned char previous = on_;
-    on_ &= ~command->data[2];
+    on_ &= static_cast<unsigned char>(~command->data[2]);
     unsigned char current = on_;
     if (previous != current) {
-        for (int i = 0; i < 8; ++i) {
-            unsigned char relay = 1 << i;
-            if (relay & active_timers_ & command->data[2]) {
+        for (unsigned int i = 0; i < 8; ++i) {
+            unsigned char relay = 1u << i;
+            if (static_cast<unsigned char>(relay & active_timers_) & command->data[2]) {
                 delay_timers_[i].stop();
-                active_timers_ &= ~relay;
+                active_timers_ &= static_cast<unsigned char>(~relay);
             }
         }
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
@@ -609,11 +609,12 @@ void MockSerialPort::toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> comm
     on_ ^= command->data[2];
     unsigned char current = on_;
     if (previous != current) {
-        for (int i = 0; i < 8; ++i) {
-            unsigned char relay = 1 << i;
-            if (relay & active_timers_ & previous & command->data[2]) {
+        for (unsigned int i = 0; i < 8; ++i) {
+            unsigned char relay = 1u << i;
+            if (static_cast<unsigned char>(static_cast<unsigned char>(relay & active_timers_) & previous)
+                & command->data[2]) {
                 delay_timers_[i].stop();
-                active_timers_ &= ~relay;
+                active_timers_ &= static_cast<unsigned char>(~relay);
             }
         }
         std::unique_ptr<unsigned char[]> response{new unsigned char[7]{k8090::impl_::kStxByte,  // wrap
@@ -636,8 +637,8 @@ void MockSerialPort::toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> comm
 void MockSerialPort::setButtonMode(std::unique_ptr<k8090::impl_::CardMessage> command)
 {
     momentary_ = command->data[2];
-    toggle_ = command->data[3] & ~momentary_;
-    timed_ = command->data[4] & ~(momentary_ | toggle_);
+    toggle_ = command->data[3] & static_cast<unsigned char>(~momentary_);
+    timed_ = command->data[4] & static_cast<unsigned char>(~static_cast<unsigned char>(momentary_ | toggle_));
 }
 
 
@@ -665,8 +666,8 @@ void MockSerialPort::startRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
     int delay_ms = (command->data[3] * 256 + command->data[4]) * 1000;
     int local_delay_ms;  // delay of each timer, changes inside the loop
     unsigned char relay;
-    for (int i = 0; i < 8; ++i) {
-        relay = 1 << i;
+    for (unsigned int i = 0; i < 8; ++i) {
+        relay = 1u << i;
         if (relay & command->data[2]) {
             if (delay_ms) {
                 local_delay_ms = delay_ms;

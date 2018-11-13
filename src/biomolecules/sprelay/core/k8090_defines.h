@@ -82,23 +82,23 @@ enum struct ResponseID : unsigned int {
 
 /// Scoped enumeration listing all 8 relays.
 enum struct RelayID : unsigned char {
-    None = 0,        ///< None relay
-    One = 1 << 0,    ///< First relay.
-    Two = 1 << 1,    ///< Second relay.
-    Three = 1 << 2,  ///< Third relay.
-    Four = 1 << 3,   ///< Fourth relay.
-    Five = 1 << 4,   ///< Fifth relay.
-    Six = 1 << 5,    ///< Sixth relay.
-    Seven = 1 << 6,  ///< Seventh relay.
-    Eight = 1 << 7,  ///< Eigth relay.
-    All = 0xff       ///< All relays.
+    None = 0u,         ///< None relay
+    One = 1u << 0u,    ///< First relay.
+    Two = 1u << 1u,    ///< Second relay.
+    Three = 1u << 2u,  ///< Third relay.
+    Four = 1u << 3u,   ///< Fourth relay.
+    Five = 1u << 4u,   ///< Fifth relay.
+    Six = 1u << 5u,    ///< Sixth relay.
+    Seven = 1u << 6u,  ///< Seventh relay.
+    Eight = 1u << 7u,  ///< Eigth relay.
+    All = 0xFFu        ///< All relays.
 };
 
 
 /// Converts number to RelayID scoped enumeration.
 constexpr RelayID from_number(unsigned int number)
 {
-    return static_cast<RelayID>(1 << (number));
+    return static_cast<RelayID>(1u << (number));
 }
 
 

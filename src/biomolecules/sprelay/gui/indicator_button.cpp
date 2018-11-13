@@ -218,7 +218,7 @@ QSize IndicatorButton::sizeHint() const
 
 void IndicatorButton::initialize(const QString& text)
 {
-    QHBoxLayout* layout = new QHBoxLayout{this};
+    auto layout = new QHBoxLayout{this};
     indicator_ = new IndicatorLight{this};
     label_ = new QLabel{text, this};
 

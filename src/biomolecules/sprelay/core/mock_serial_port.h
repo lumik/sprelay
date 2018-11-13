@@ -113,8 +113,8 @@ private:
 
     bool verifyPortParameters();
     void sendData(const unsigned char* buffer, qint64 max_size);
-    static inline unsigned char lowByte(quint16 delay) { return (delay) & (0xFF); }
-    static inline unsigned char highByte(quint16 delay) { return (delay >> 8) & (0xFF); }
+    static inline unsigned char lowByte(quint16 delay) { return delay & 0xFFu; }
+    static inline unsigned char highByte(quint16 delay) { return static_cast<quint16>(delay >> 8u) & 0xFFu; }
     static int getRandomDelay();
 
     void relayOn(std::unique_ptr<k8090::impl_::CardMessage> command);

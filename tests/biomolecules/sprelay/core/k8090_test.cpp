@@ -60,7 +60,7 @@ namespace k8090 {
 void K8090Test::initTestCase()
 {
     real_card_present_ = false;
-    foreach (const serial_utils::ComPortParams& params, K8090::availablePorts()) {
+    for (const serial_utils::ComPortParams& params : K8090::availablePorts()) {
         if (params.product_identifier == K8090::kProductID && params.vendor_identifier == K8090::kVendorID) {
             if (params.port_name != k8090::impl_::kMockPortName) {
                 real_card_port_name_ = params.port_name;
@@ -235,7 +235,7 @@ void K8090Test::refreshRelaysInfo()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         qDebug() << QString("        relay %1: %2s")
@@ -256,7 +256,7 @@ void K8090Test::refreshRelaysInfo()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         qDebug() << QString("        relay %1: %2s")
@@ -314,13 +314,13 @@ void K8090Test::switchRelayOnOff()
     QList<QVariant> relay_status_arguments = spy_relay_status.takeFirst();
     // test if the right arguments came
     // save the previous state of the relay 1
-    RelayID previous = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
+    auto previous = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
     if (static_cast<bool>(previous & RelayID::One)) {
         qDebug() << "The relay 1 was initialy on.";
         initial_on = true;
     }
     // test if the relay 1 is realy currently off
-    RelayID current = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
+    auto current = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
     QVERIFY2(static_cast<bool>(~current & RelayID::One), "The relay 1 should be now set off.");
 
     // switch relay 1 on
@@ -386,9 +386,9 @@ void K8090Test::toggleRelay()
     QList<QVariant> relay_status_arguments = spy_relay_status.takeFirst();
     // test if the right arguments came
     // save the previous state of the relay 1
-    RelayID previous = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
+    auto previous = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
     // test if the relay 1 is realy currently off
-    RelayID current = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
+    auto current = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
     QVERIFY2(static_cast<bool>((current ^ previous) & RelayID::Two), "The status of relay 1 should change.");
 
     // toggle relay back
@@ -550,7 +550,7 @@ void K8090Test::totalTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments[i].at(1));
@@ -568,7 +568,7 @@ void K8090Test::totalTimer()
     id = as_number(relay_id1);
     number = 0;
     while (id) {
-        id >>= 1;
+        id >>= 1u;
         ++number;
     }
     total_timers[number - 1] = initial_total_timers[number - 1] + 5;
@@ -631,7 +631,7 @@ void K8090Test::totalTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(merged_total_timer_delay_arguments.at(1));
@@ -659,7 +659,7 @@ void K8090Test::totalTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(merged_total_timer_delay_arguments.at(1));
@@ -691,7 +691,7 @@ void K8090Test::totalTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(merged_total_timer_delay_arguments.at(1));
@@ -755,7 +755,7 @@ void K8090Test::startTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -785,7 +785,7 @@ void K8090Test::startTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -806,8 +806,7 @@ void K8090Test::startTimer()
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     QCOMPARE(spy_relay_status.count(), 1);
-    RelayID initially_on =
-        qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
+    auto initially_on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
     qDebug() << QString("These relays are on: %1").arg(as_number(initially_on), 8, 2, QChar('0'));
 
     // switch affected relays off
@@ -817,8 +816,7 @@ void K8090Test::startTimer()
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     QCOMPARE(spy_relay_status.count(), 1);
-    RelayID currently_on =
-        qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
+    auto currently_on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
     for (int i = 0; i < 8; ++i) {
         if (static_cast<bool>(from_number(i) & relay_ids)) {
             QVERIFY2(static_cast<bool>(from_number(i) & ~currently_on),
@@ -833,7 +831,7 @@ void K8090Test::startTimer()
     }
     QCOMPARE(spy_relay_status.count(), 1);
     QList<QVariant> relay_status_arguments = spy_relay_status.takeFirst();
-    RelayID previously_on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
+    auto previously_on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(0));
     currently_on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(relay_status_arguments.at(1));
     QCOMPARE(relay_ids, currently_on & ~previously_on);
 
@@ -860,7 +858,7 @@ void K8090Test::startTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         qDebug() << QString("Relay %1: remaining delay = %2s")
@@ -957,7 +955,7 @@ void K8090Test::startTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         qDebug() << QString("Relay %1: remaining delay = %2s")
@@ -1015,7 +1013,7 @@ void K8090Test::startTimer()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -1056,7 +1054,7 @@ void K8090Test::factoryDefaults()
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     QCOMPARE(spy_relay_status.count(), 1);
-    const RelayID initially_on =
+    const auto initially_on =
         qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
 
     // get current button modes
@@ -1067,11 +1065,11 @@ void K8090Test::factoryDefaults()
     }
     QCOMPARE(spy_button_modes.count(), 1);
     QList<QVariant> button_modes_arguments = spy_button_modes.takeFirst();
-    const RelayID previous_momentary =
+    const auto previous_momentary =
         qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(button_modes_arguments.at(0));
-    const RelayID previous_toggle =
+    const auto previous_toggle =
         qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(button_modes_arguments.at(1));
-    const RelayID previous_timed =
+    const auto previous_timed =
         qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(button_modes_arguments.at(2));
     qDebug() << QString("Previous modes: momentary: %1, toggle: %2, timed: %3")
                     .arg(as_number(previous_momentary), 8, 2, QChar('0'))
@@ -1100,7 +1098,7 @@ void K8090Test::factoryDefaults()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -1133,7 +1131,7 @@ void K8090Test::factoryDefaults()
     total_timer_delay_arguments = spy_total_timer_delay.takeFirst();
     temp_id = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(total_timer_delay_arguments.at(0));
     QCOMPARE(temp_id, RelayID::One);
-    quint16 temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
+    auto temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
     QCOMPARE(temp_total_timer, timer1_delay);
 
     // reset factory defaults
@@ -1142,7 +1140,7 @@ void K8090Test::factoryDefaults()
         QVERIFY2(spy_relay_status.wait(), "Button modes signal not received!");
     }
     QCOMPARE(spy_relay_status.count(), 1);
-    RelayID on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
+    auto on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
     QCOMPARE(on, RelayID::None);
 
     k8090_->queryButtonModes();
@@ -1179,7 +1177,7 @@ void K8090Test::factoryDefaults()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -1225,7 +1223,7 @@ void K8090Test::factoryDefaults()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -1311,8 +1309,7 @@ void K8090Test::priorities()
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     QCOMPARE(spy_relay_status.count(), 1);
-    RelayID initially_on =
-        qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
+    auto initially_on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
     qDebug() << QString("These relays are on: %1").arg(as_number(initially_on), 8, 2, QChar('0'));
 
     RelayID previous_momentary;
@@ -1355,7 +1352,7 @@ void K8090Test::priorities()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
@@ -1484,7 +1481,7 @@ void K8090Test::priorities()
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();  // remove first status, which does not accont for switch relay off command
-    RelayID on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
+    auto on = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(spy_relay_status.takeFirst().at(1));
     QCOMPARE(on, initially_on);
 
     k8090_->setButtonMode(previous_momentary, previous_toggle, previous_timed);
@@ -1515,7 +1512,7 @@ void K8090Test::priorities()
         // calculate relay number from byte representation
         number = 0;
         while (id) {
-            id >>= 1;
+            id >>= 1u;
             ++number;
         }
         temp_total_timer = qvariant_cast<quint16>(total_timer_delay_arguments.at(1));
