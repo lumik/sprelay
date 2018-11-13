@@ -40,6 +40,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <utility>
 
 #include <QComboBox>
 #include <QGroupBox>
@@ -150,8 +151,8 @@ namespace gui {
  * \param com_port_name Predefined COM port name.
  * \param parent The widget's parent object in Qt ownership system.
  */
-CentralWidget::CentralWidget(core::k8090::K8090* k8090, const QString& com_port_name, QWidget* parent)
-    : QWidget{parent}, com_port_name_{com_port_name}, refresh_delay_timer_{new QTimer}
+CentralWidget::CentralWidget(core::k8090::K8090* k8090, QString com_port_name, QWidget* parent)
+    : QWidget{parent}, com_port_name_{std::move(com_port_name)}, refresh_delay_timer_{new QTimer}
 {
     // gets K8090 class from the user or sets it to the private one.
     if (k8090) {
@@ -796,16 +797,16 @@ void CentralWidget::makeLayout()
         button_status_grid_layout, relay_number_grid_layout, power_grid_layout, mode_grid_layout, timer_grid_layout};
     int relay_label_min_width = std::numeric_limits<int>::min();
     int relay_label_width;
-    for (int i = 0; i < layout_no; ++i) {
-        for (int j = 0; j < grid_layouts[i]->rowCount(); ++j) {
-            relay_label_width = grid_layouts[i]->itemAtPosition(j, 0)->sizeHint().width();
+    for (const auto& grid_layout : grid_layouts) {
+        for (int j = 0; j < grid_layout->rowCount(); ++j) {
+            relay_label_width = grid_layout->itemAtPosition(j, 0)->sizeHint().width();
             if (relay_label_width > relay_label_min_width) {
                 relay_label_min_width = relay_label_width;
             }
         }
     }
-    for (int i = 0; i < layout_no; ++i) {
-        grid_layouts[i]->setColumnMinimumWidth(0, relay_label_min_width);
+    for (auto& grid_layout : grid_layouts) {
+        grid_layout->setColumnMinimumWidth(0, relay_label_min_width);
     }
 
     relays_grid_v_layout->addStretch();

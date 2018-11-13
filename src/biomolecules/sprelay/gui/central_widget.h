@@ -75,7 +75,7 @@ class SPRELAY_EXPORT CentralWidget : public QWidget
     Q_OBJECT
 public:
     explicit CentralWidget(core::k8090::K8090* k8090 = nullptr,
-        const QString& com_port_name = QString{},
+        QString com_port_name = QString{},
         QWidget* parent = nullptr);
     CentralWidget(const CentralWidget&) = delete;
     CentralWidget(CentralWidget&&) = delete;

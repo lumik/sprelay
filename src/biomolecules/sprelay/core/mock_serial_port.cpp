@@ -777,8 +777,8 @@ void MockSerialPort::factoryDefaults()
     momentary_ = as_number(k8090::RelayID::None);
     toggle_ = as_number(k8090::RelayID::All);
     timed_ = as_number(k8090::RelayID::None);
-    for (int i = 0; i < 8; ++i) {
-        default_delays_[i] = 5;
+    for (quint16& default_delay : default_delays_) {
+        default_delay = 5;
     }
     if (on_ != k8090::as_number(k8090::RelayID::None)) {
         // TODO(lumik): switch to PIMPL and remove unnecessary heap usage

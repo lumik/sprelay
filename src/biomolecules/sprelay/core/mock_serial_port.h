@@ -144,8 +144,8 @@ private:
     unsigned char toggle_;
     unsigned char timed_;
     unsigned char pressed_;
-    qint16 default_delays_[8];
-    qint16 remaining_delays_[8];  // default value for remaining delay if the timer is not running
+    quint16 default_delays_[8];
+    quint16 remaining_delays_[8];  // default value for remaining delay if the timer is not running
     QTimer delay_timers_[8];
     int delay_timer_delays_[8];  // delay, with which the timer was started
     unsigned char active_timers_;

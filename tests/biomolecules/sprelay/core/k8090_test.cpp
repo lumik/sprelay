@@ -229,9 +229,9 @@ void K8090Test::refreshRelaysInfo()
     unsigned int number;
     unsigned int id;
     qDebug() << "Total timer delay:";
-    for (int i = 0; i < kTimerCount; ++i) {
-        total_timer_delay_arguments[i] = spy_total_timer_delay.takeFirst();
-        id = qvariant_cast<unsigned char>(total_timer_delay_arguments[i].at(0));
+    for (auto& total_timer_delay_argument : total_timer_delay_arguments) {
+        total_timer_delay_argument = spy_total_timer_delay.takeFirst();
+        id = qvariant_cast<unsigned char>(total_timer_delay_argument.at(0));
         // calculate relay number from byte representation
         number = 0;
         while (id) {
@@ -240,7 +240,7 @@ void K8090Test::refreshRelaysInfo()
         }
         qDebug() << QString("        relay %1: %2s")
                         .arg(number)
-                        .arg(qvariant_cast<quint16>(total_timer_delay_arguments[i].at(1)));
+                        .arg(qvariant_cast<quint16>(total_timer_delay_argument.at(1)));
     }
 
     // test remaining timer signals
@@ -250,9 +250,9 @@ void K8090Test::refreshRelaysInfo()
     QCOMPARE(spy_remaining_timer_delay.count(), 8);
     QList<QVariant> remaining_timer_delay_arguments[kTimerCount];
     qDebug() << "Remaining timer delay:";
-    for (int i = 0; i < kTimerCount; ++i) {
-        remaining_timer_delay_arguments[i] = spy_remaining_timer_delay.takeFirst();
-        id = qvariant_cast<unsigned char>(remaining_timer_delay_arguments[i].at(0));
+    for (auto& remaining_timer_delay_argument : remaining_timer_delay_arguments) {
+        remaining_timer_delay_argument = spy_remaining_timer_delay.takeFirst();
+        id = qvariant_cast<unsigned char>(remaining_timer_delay_argument.at(0));
         // calculate relay number from byte representation
         number = 0;
         while (id) {
@@ -261,7 +261,7 @@ void K8090Test::refreshRelaysInfo()
         }
         qDebug() << QString("        relay %1: %2s")
                         .arg(number)
-                        .arg(qvariant_cast<quint16>(remaining_timer_delay_arguments[i].at(1)));
+                        .arg(qvariant_cast<quint16>(remaining_timer_delay_argument.at(1)));
     }
 
     // test jumper status signal
@@ -542,9 +542,9 @@ void K8090Test::totalTimer()
     unsigned int number;
     unsigned int id;
     qDebug() << "Total timer delay:";
-    for (int i = 0; i < kTimerCount; ++i) {
-        total_timer_delay_arguments[i] = spy_total_timer_delay.takeFirst();
-        temp_id = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(total_timer_delay_arguments[i].at(0));
+    for (auto& total_timer_delay_argument : total_timer_delay_arguments) {
+        total_timer_delay_argument = spy_total_timer_delay.takeFirst();
+        temp_id = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(total_timer_delay_argument.at(0));
         relay_ids &= ~temp_id;
         id = as_number(temp_id);
         // calculate relay number from byte representation
@@ -553,7 +553,7 @@ void K8090Test::totalTimer()
             id >>= 1u;
             ++number;
         }
-        initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_arguments[i].at(1));
+        initial_total_timers[number - 1] = qvariant_cast<quint16>(total_timer_delay_argument.at(1));
         total_timers[number - 1] = initial_total_timers[number - 1];
         qDebug() << QString("        relay %1: %2s").arg(number).arg(initial_total_timers[number - 1]);
     }
