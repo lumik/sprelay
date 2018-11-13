@@ -51,21 +51,23 @@ namespace serial_utils {
 
 void SerialPortUtilsTest::hexToByteTestCase()
 {
-    std::unique_ptr<unsigned char[]> bMsg;
-    int n;
+    const int expected_n = 3;
 
     // testing message
-    unsigned char nMsg[3] = {0x1, 0xFF, 0xF};
+    unsigned char nMsg[expected_n] = {0x1, 0xFF, 0xF};
     QString msg = "01 FF 0F";
 
-    bool ok = hex_to_byte(msg, &bMsg, &n);
+    int n;
+    bool ok;
+    std::unique_ptr<unsigned char[]> bMsg = hex_to_byte(msg, &n, &ok);
+    QCOMPARE(n, expected_n);
+    QCOMPARE(ok, true);
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < expected_n; i++) {
         if (bMsg[i] != nMsg[i]) {
-            ok = 0;
+            ok = false;
         }
     }
-
     QCOMPARE(ok, true);
 }
 

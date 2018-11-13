@@ -2,7 +2,7 @@
 #Checks:          'abseil-*,-android-*,boost-*,bugprone-*,cert-*,clang-analyzer-*,cppcoreguidelines-*,fuchsia-*,google-*,hicpp-*,llvm-*,misc-*,modernize-*,mpi-*,-objc-*,preformance-*,portability-*,readability-*,zircon-*'
 #Checks:          '-*,bugprone-*,clang-analyzer-*,clang-diagnostic-*,google-*,misc-*,modernize-*,llvm-*,preformance-*,portability-*,readability-*'
 #Checks:          '*,-llvm-header-guard,-fuchsia-*,-hicpp-vararg,-hicpp-special-member-functions,-hicpp-use-equals-delete'
-Checks:          '-*,abseil-*,-android-*,boost-*,bugprone-*,cert-*,cppcoreguidelines-*,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-member-init'
+Checks:          '-*,abseil-*,-android-*,boost-*,bugprone-*,cert-*,cppcoreguidelines-*,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-member-init,clang-analyzer-*'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

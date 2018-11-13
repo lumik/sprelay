@@ -53,7 +53,7 @@ namespace serial_utils {
  * \param n Pointer to variable, where the number of bytes will be stored.
  * \return True if the conversion was successful.
  */
-bool hex_to_byte(const QString& msg, std::unique_ptr<unsigned char[]>* buffer, int* n)
+std::unique_ptr<unsigned char[]> hex_to_byte(const QString& msg, int* n, bool* ok)
 {
     // remove white spaces
     QString newMsg = msg;
@@ -65,17 +65,17 @@ bool hex_to_byte(const QString& msg, std::unique_ptr<unsigned char[]>* buffer, i
     if (msgSize % 2) {
         *n = 0;
         // TODO(lumik): change to exception
-        return false;
+        *ok = false;
+        return std::unique_ptr<unsigned char[]>{};
     }
     *n = msgSize / 2;
-    buffer->reset(new unsigned char[*n]);
+    std::unique_ptr<unsigned char[]> buffer{new unsigned char[*n]};
     // TODO(lumik): change to exception
-    bool ok = false;
+    *ok = false;
     for (int ii = 0; ii < *n; ++ii) {
-        (*buffer)[ii] = newMsg.midRef(2 * ii, 2).toUInt(&ok, 16);
+        buffer[ii] = newMsg.midRef(2 * ii, 2).toUInt(ok, 16);
     }
-
-    return ok;
+    return buffer;
 }
 
 
