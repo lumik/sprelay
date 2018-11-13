@@ -171,7 +171,7 @@ script:
       docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG && clang-format-7 -i \$(find src/biomolecules/sprelay tests/biomolecules/sprelay -name *.h -o -name *.cpp -o -name *.tpp | tr \"\\n\" \" \") && git diff --exit-code || (echo \"Code was not formatted using clang-format!\"; false)";
     fi
   - if [[ ! -z "${CLANG_TIDY}" ]]; then
-      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG && run-clang-tidy-7 -p build -header-filter=.*/sprelay/.*";
+      docker exec -t ci bash -c "cd /home/travis/build/$TRAVIS_REPO_SLUG && run-clang-tidy-7 -p build -header-filter='.*(src|tests)/biomolecules/sprelay/.*'";
     fi
 
 after_success:

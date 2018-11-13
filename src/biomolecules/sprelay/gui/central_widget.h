@@ -63,7 +63,7 @@ namespace core {
 // forward declarations of serial_utils classes
 namespace serial_utils {
 struct ComPortParams;
-}
+}  // namespace serial_utils
 }  // namespace core
 namespace gui {
 class IndicatorButton;
