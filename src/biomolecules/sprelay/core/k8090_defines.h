@@ -104,7 +104,8 @@ constexpr RelayID from_number(unsigned int number)
 
 /// Converts enumeration to its underlying type.
 template<typename E>
-constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E>>::type::type as_number(const E e)
+constexpr typename std::enable_if<std::is_enum<E>::value, std::underlying_type<E>>::type::type as_number(
+    const E e) noexcept
 {
     return static_cast<typename std::underlying_type<E>::type>(e);
 }
@@ -167,7 +168,7 @@ Q_DECLARE_METATYPE(biomolecules::sprelay::core::k8090::RelayID)
  */
 
 /*!
- * \fn constexpr std::underlying_type<E> biomolecules::sprelay::core::k8090::as_number(const E e)
+ * \fn constexpr std::underlying_type<E> biomolecules::sprelay::core::k8090::as_number(const E e) noexcept
  * \ingroup group_biomolecules_sprelay_core_public
  * \param e Enumerator to be converted.
  * \return The enum value as underlying type.

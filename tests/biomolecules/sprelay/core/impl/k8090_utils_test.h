@@ -57,6 +57,7 @@ private slots:
     void checkSum();
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 ADD_TEST(K8090UtilsTest)
 
 
@@ -77,6 +78,7 @@ private slots:
     void isNotCompatible();
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 ADD_TEST(CommandTest)
 
 
@@ -91,6 +93,7 @@ private slots:
     void commandByte();
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 ADD_TEST(CardMessageTest)
 
 }  // namespace impl_

@@ -59,11 +59,19 @@ namespace core {
 
 // random device on MinGW does not work, a seed is always same.
 #ifdef __MINGW32__
-static std::mt19937_64 random_generator{
-    static_cast<std::uint_fast64_t>(std::chrono::system_clock::now().time_since_epoch().count())};
+static std::mt19937_64& get_random_generator()
+{
+    thread_local std::mt19937_64 random_generator{
+        static_cast<std::uint_fast64_t>(std::chrono::system_clock::now().time_since_epoch().count())};
+    return random_generator;
+}
 #else   // ifdef __MINGW32__
-static std::random_device random_device;
-static std::mt19937_64 random_generator{random_device()};
+static std::mt19937_64& get_random_generator()
+{
+    thread_local std::random_device random_device;
+    thread_local std::mt19937_64 random_generator{random_device()};
+    return random_generator;
+}
 #endif  // ifdef __MINGW32__
 
 
@@ -164,7 +172,7 @@ MockSerialPort::MockSerialPort(QObject* parent)
     std::uniform_int_distribution<int> distribution{
         std::numeric_limits<quint16>::min(), std::numeric_limits<quint16>::max()};
     for (int i = 0; i < 8; ++i) {
-        remaining_delays_[i] = distribution(random_generator);
+        remaining_delays_[i] = distribution(get_random_generator());
         delay_timers_[i].setSingleShot(true);
         connect(&delay_timers_[i], &QTimer::timeout,  // wrap
             delay_timer_mapper_.get(), static_cast<void (QSignalMapper::*)()>(&QSignalMapper::map));
@@ -396,7 +404,7 @@ void MockSerialPort::addToBuffer()
 {
     if (mode_ & QIODevice::ReadOnly) {
         std::uniform_int_distribution<int> distribution{1, 3};
-        int max_responses = distribution(random_generator);
+        int max_responses = distribution(get_random_generator());
         int counter = 0;
         while (!stored_responses_.empty() && counter < max_responses) {
             std::unique_ptr<unsigned char[]> response = std::move(stored_responses_.front());
@@ -531,7 +539,7 @@ int MockSerialPort::getRandomDelay()
 {
     std::binomial_distribution<int> distribution{
         kMaxResponseDelayMs_ - kMinResponseDelayMs_, kResponseDelayDistributionP};
-    return kMinResponseDelayMs_ + distribution(random_generator);
+    return kMinResponseDelayMs_ + distribution(get_random_generator());
 }
 
 

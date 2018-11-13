@@ -87,6 +87,7 @@ private:
     QString real_card_port_name_;
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 ADD_TEST(UnifiedSerialPortTest)
 
 }  // namespace core

@@ -57,6 +57,7 @@ private slots:
     void updateCommand();
 };
 
+// NOLINTNEXTLINE(cert-err58-cpp)
 ADD_TEST(CommandQueueTest)
 
 }  // namespace command_queue
