@@ -294,19 +294,18 @@ TCommand CommandQueue<TCommand, tSize, TList>::pop()
 {
     if (empty()) {
         return TCommand{};
-    } else {
-        TCommand command = *std::priority_queue<impl_::CommandPriority<TCommand>>::top().command;
-        typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
-        pending_commands_[id].removeOne(std::priority_queue<impl_::CommandPriority<TCommand>>::top().command.get());
-        std::priority_queue<impl_::CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
-        if (!pending_commands_[id].size()) {
-            unique_[id] = true;
-        }
-        if (empty()) {
-            stamp_counter_ = 0;
-        }
-        return command;
     }
+    TCommand command = *std::priority_queue<impl_::CommandPriority<TCommand>>::top().command;
+    typename TCommand::NumberType id = TCommand::idAsNumber(command.id);
+    pending_commands_[id].removeOne(std::priority_queue<impl_::CommandPriority<TCommand>>::top().command.get());
+    std::priority_queue<impl_::CommandPriority<TCommand>>::pop();  // erases command which is holded in unique_ptr
+    if (pending_commands_[id].isEmpty()) {
+        unique_[id] = true;
+    }
+    if (empty()) {
+        stamp_counter_ = 0;
+    }
+    return command;
 }
 
 

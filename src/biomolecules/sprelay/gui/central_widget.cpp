@@ -155,7 +155,7 @@ CentralWidget::CentralWidget(core::k8090::K8090* k8090, QString com_port_name, Q
     : QWidget{parent}, com_port_name_{std::move(com_port_name)}, refresh_delay_timer_{new QTimer}
 {
     // gets K8090 class from the user or sets it to the private one.
-    if (k8090) {
+    if (k8090 != nullptr) {
         k8090_ = k8090;
     } else {
         k8090_ = new core::k8090::K8090{this};
@@ -201,7 +201,7 @@ void CentralWidget::onPortsComboBoxCurrentIndexChanged(const QString& port_name)
 
 void CentralWidget::onRefreshPortsButtonClicked()
 {
-    if (!k8090_->availablePorts().isEmpty()) {
+    if (!core::k8090::K8090::availablePorts().isEmpty()) {
         QString msg;
         QString currPort = ports_combo_box_->currentText();
         QStringList comPortNames;
@@ -527,7 +527,7 @@ void CentralWidget::onRefreshTimersDelay()
             k8090_->queryRemainingTimerDelay(core::k8090::from_number(i));
         }
     }
-    if (is_timed & !refresh_delay_timer_->isActive()) {
+    if (is_timed && !refresh_delay_timer_->isActive()) {
         refresh_delay_timer_->start(kRefreshTimersRateMs_);
     }
 }

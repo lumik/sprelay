@@ -155,11 +155,11 @@ bool UnifiedSerialPort::setBaudRate(qint32 baud_rate)
     baud_rate_pristine_ = false;
     if (isRealImpl()) {
         return serial_port_->setBaudRate(baud_rate);
-    } else if (isMockImpl()) {
-        return mock_serial_port_->setBaudRate(baud_rate);
-    } else {
-        return true;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->setBaudRate(baud_rate);
+    }
+    return true;
 }
 
 
@@ -175,11 +175,11 @@ bool UnifiedSerialPort::setDataBits(QSerialPort::DataBits data_bits)
     data_bits_pristine_ = false;
     if (isRealImpl()) {
         return serial_port_->setDataBits(data_bits);
-    } else if (isMockImpl()) {
-        return mock_serial_port_->setDataBits(data_bits);
-    } else {
-        return true;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->setDataBits(data_bits);
+    }
+    return true;
 }
 
 
@@ -195,11 +195,11 @@ bool UnifiedSerialPort::setParity(QSerialPort::Parity parity)
     parity_pristine_ = false;
     if (isRealImpl()) {
         return serial_port_->setParity(parity);
-    } else if (isMockImpl()) {
-        return mock_serial_port_->setParity(parity);
-    } else {
-        return true;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->setParity(parity);
+    }
+    return true;
 }
 
 
@@ -215,11 +215,11 @@ bool UnifiedSerialPort::setStopBits(QSerialPort::StopBits stop_bits)
     stop_bits_pristine_ = false;
     if (isRealImpl()) {
         return serial_port_->setStopBits(stop_bits);
-    } else if (isMockImpl()) {
-        return mock_serial_port_->setStopBits(stop_bits);
-    } else {
-        return true;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->setStopBits(stop_bits);
+    }
+    return true;
 }
 
 
@@ -235,11 +235,11 @@ bool UnifiedSerialPort::setFlowControl(QSerialPort::FlowControl flow_control)
     flow_control_pristine_ = false;
     if (isRealImpl()) {
         return serial_port_->setFlowControl(flow_control);
-    } else if (isMockImpl()) {
-        return mock_serial_port_->setFlowControl(flow_control);
-    } else {
-        return true;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->setFlowControl(flow_control);
+    }
+    return true;
 }
 
 
@@ -252,11 +252,11 @@ bool UnifiedSerialPort::isOpen()
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
         return serial_port_->isOpen();
-    } else if (isMockImpl()) {
-        return mock_serial_port_->isOpen();
-    } else {
-        return false;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->isOpen();
+    }
+    return false;
 }
 
 
@@ -280,27 +280,24 @@ bool UnifiedSerialPort::open(QIODevice::OpenMode mode)
                 return false;
             }
             return mock_serial_port_->open(mode);
-        } else {
-            // change only port name
-            return serial_port_->open(mode);
         }
-    } else {
-        // serial port is not connected
-        // changing to mock serial, !!! mock port can't have pristine port name because the only way to set mock port
-        // is by name
-        if (!port_name_pristine_ && port_name_ == kMockPortName) {
-            if (!mock_serial_port_ && !createMockPort()) {
-                return false;
-            }
-            return mock_serial_port_->open(mode);
-        } else {
-            // creating new serial port
-            if (!createSerialPort()) {
-                return false;
-            }
-            return serial_port_->open(mode);
-        }
+        // change only port name
+        return serial_port_->open(mode);
     }
+    // serial port is not connected
+    // changing to mock serial, !!! mock port can't have pristine port name because the only way to set mock port
+    // is by name
+    if (!port_name_pristine_ && port_name_ == kMockPortName) {
+        if (!mock_serial_port_ && !createMockPort()) {
+            return false;
+        }
+        return mock_serial_port_->open(mode);
+    }
+    // creating new serial port
+    if (!createSerialPort()) {
+        return false;
+    }
+    return serial_port_->open(mode);
 }
 
 
@@ -329,11 +326,11 @@ QByteArray UnifiedSerialPort::readAll()
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
         return serial_port_->readAll();
-    } else if (isMockImpl()) {
-        return mock_serial_port_->readAll();
-    } else {
-        return QByteArray{};
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->readAll();
+    }
+    return QByteArray{};
 }
 
 
@@ -348,11 +345,11 @@ qint64 UnifiedSerialPort::write(const char* data, qint64 max_size)
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
         return serial_port_->write(data, max_size);
-    } else if (isMockImpl()) {
-        return mock_serial_port_->write(data, max_size);
-    } else {
-        return -1;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->write(data, max_size);
+    }
+    return -1;
 }
 
 
@@ -366,11 +363,11 @@ bool UnifiedSerialPort::flush()
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
         return serial_port_->flush();
-    } else if (isMockImpl()) {
-        return mock_serial_port_->flush();
-    } else {
-        return false;
     }
+    if (isMockImpl()) {
+        return mock_serial_port_->flush();
+    }
+    return false;
 }
 
 /*!
@@ -383,7 +380,8 @@ QSerialPort::SerialPortError UnifiedSerialPort::error()
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
         return serial_port_->error();
-    } else if (isMockImpl()) {
+    }
+    if (isMockImpl()) {
         return mock_serial_port_->error();
     }
     return QSerialPort::NoError;
@@ -399,9 +397,8 @@ void UnifiedSerialPort::clearError()
     QMutexLocker serial_port_locker{serial_port_mutex_.get()};
     if (isRealImpl()) {
         return serial_port_->clearError();
-    } else {
-        return mock_serial_port_->clearError();
     }
+    return mock_serial_port_->clearError();
 }
 
 
@@ -488,30 +485,20 @@ bool UnifiedSerialPort::setupPort(TSerialPort* serial_port)
     if (!port_name_pristine_) {
         serial_port->setPortName(port_name_);
     }
-    if (!baud_rate_pristine_) {
-        if (!serial_port->setBaudRate(baud_rate_)) {
-            return false;
-        }
+    if (!baud_rate_pristine_ && !serial_port->setBaudRate(baud_rate_)) {
+        return false;
     }
-    if (!data_bits_pristine_) {
-        if (!serial_port->setDataBits(data_bits_)) {
-            return false;
-        }
+    if (!data_bits_pristine_ && !serial_port->setDataBits(data_bits_)) {
+        return false;
     }
-    if (!parity_pristine_) {
-        if (!serial_port->setParity(parity_)) {
-            return false;
-        }
+    if (!parity_pristine_ && !serial_port->setParity(parity_)) {
+        return false;
     }
-    if (!stop_bits_pristine_) {
-        if (!serial_port->setStopBits(stop_bits_)) {
-            return false;
-        }
+    if (!stop_bits_pristine_ && !serial_port->setStopBits(stop_bits_)) {
+        return false;
     }
-    if (!flow_control_pristine_) {
-        if (!serial_port->setFlowControl(flow_control_)) {
-            return false;
-        }
+    if (!flow_control_pristine_ && !serial_port->setFlowControl(flow_control_)) {
+        return false;
     }
     return true;
 }

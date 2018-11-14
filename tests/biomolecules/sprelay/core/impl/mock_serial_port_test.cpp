@@ -286,7 +286,7 @@ void MockSerialPortTest::commandBenchmark()
 
     // benchmark the command
     qint64 elapsed_time;
-    if (!measureCommandWithResponse(mock_serial_port_.get(), message, &elapsed_time)) {
+    if (measureCommandWithResponse(mock_serial_port_.get(), message, &elapsed_time)) {
         QFAIL("There is no response from the card.");
     }
     QTest::setBenchmarkResult(elapsed_time, QTest::WalltimeMilliseconds);
@@ -313,7 +313,7 @@ void MockSerialPortTest::jumperStatus()
     static const unsigned char query_jumper[] /**/ = {0x04, 0x70, 0x00, 0x00, 0x00, 0x8c, 0x0f};
     static const unsigned char jumper_off[] /*  */ = {0x04, 0x70, 0x00, 0x00, 0x00, 0x8c, 0x0f};
     qint64 elapsed_time;
-    if (!measureCommandWithResponse(mock_serial_port_.get(), query_jumper, &elapsed_time)) {
+    if (measureCommandWithResponse(mock_serial_port_.get(), query_jumper, &elapsed_time)) {
         QFAIL("There is no response from the card.");
     }
     QTest::setBenchmarkResult(elapsed_time, QTest::WalltimeMilliseconds);
@@ -330,7 +330,7 @@ void MockSerialPortTest::jumperStatus()
         qPrintable(QString{"The response '%1' does not match the expected %2."}
                        .arg(serial_utils::byte_to_hex(&buffer[1], 1))
                        .arg(serial_utils::byte_to_hex(&jumper_off[1], 1))));
-    if (buffer[3]) {
+    if (buffer[3] != 0u) {
         qDebug() << "Jumper is switched on.";
     } else {
         qDebug() << "Jumper is switched off.";
@@ -345,7 +345,7 @@ void MockSerialPortTest::firmwareVersion()
     static const unsigned char query_version[] /**/ = {0x04, 0x71, 0x00, 0x00, 0x00, 0x8b, 0x0f};
     static const unsigned char version[] /*      */ = {0x04, 0x71, 0x00, 0x00, 0x00, 0x8b, 0x0f};
     qint64 elapsed_time;
-    if (!measureCommandWithResponse(mock_serial_port_.get(), query_version, &elapsed_time)) {
+    if (measureCommandWithResponse(mock_serial_port_.get(), query_version, &elapsed_time)) {
         QFAIL("There is no response from the card.");
     }
     QTest::setBenchmarkResult(elapsed_time, QTest::WalltimeMilliseconds);
@@ -529,7 +529,7 @@ void MockSerialPortTest::startTimer()
     elapsed_timer.start();
     {  // start timer
         qint64 start_timer_elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         QTest::setBenchmarkResult(start_timer_elapsed_ms, QTest::WalltimeMilliseconds);
@@ -550,7 +550,7 @@ void MockSerialPortTest::startTimer()
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     {  // query remaining time
         qint64 dummy_elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), query_timer, &dummy_elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), query_timer, &dummy_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
 
@@ -570,7 +570,7 @@ void MockSerialPortTest::startTimer()
     }
     {  // query remaining time
         qint64 dummy_elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), query_total, &dummy_elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), query_total, &dummy_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
 
@@ -634,7 +634,7 @@ void MockSerialPortTest::defaultTimer()
     elapsed_timer.start();
     {  // start timer
         qint64 start_timer_elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         QTest::setBenchmarkResult(start_timer_elapsed_ms, QTest::WalltimeMilliseconds);
@@ -694,7 +694,7 @@ void MockSerialPortTest::moreTimers()
     elapsed_timer.start();
     {  // start timer
         qint64 start_timer_elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), start_timer, &start_timer_elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         QTest::setBenchmarkResult(start_timer_elapsed_ms, QTest::WalltimeMilliseconds);
@@ -780,7 +780,7 @@ void MockSerialPortTest::moreDefaultTimers()
     qint64 start_timer_elapsed_ms = 0;
     {  // start timers 1
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer1, &elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), start_timer1, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         start_timer_elapsed_ms += elapsed_ms;
@@ -800,7 +800,7 @@ void MockSerialPortTest::moreDefaultTimers()
     }
     {  // start timers 2
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), start_timer2, &elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), start_timer2, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         start_timer_elapsed_ms += elapsed_ms;
@@ -825,7 +825,7 @@ void MockSerialPortTest::moreDefaultTimers()
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     {  // interupt one timer
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), off, &elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), off, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         elapsed_ms = off_elapsed_timer.elapsed();
@@ -847,7 +847,7 @@ void MockSerialPortTest::moreDefaultTimers()
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     {  // interupt one timer
         qint64 elapsed_ms;
-        if (!measureCommandWithResponse(mock_serial_port_.get(), toggle, &elapsed_ms)) {
+        if (measureCommandWithResponse(mock_serial_port_.get(), toggle, &elapsed_ms)) {
             QFAIL("There is no response from the card.");
         }
         elapsed_ms = toggle_elapsed_timer.elapsed();
@@ -985,11 +985,7 @@ bool MockSerialPortTest::measureCommandWithResponse(
     timer.start(kCommandTimeoutMs);
     loop.exec();
     *elapsed_ms = elapsed_timer.elapsed();
-    if (!timer.isActive()) {
-        return false;
-    } else {
-        return true;
-    }
+    return !timer.isActive();
 }
 
 }  // namespace core

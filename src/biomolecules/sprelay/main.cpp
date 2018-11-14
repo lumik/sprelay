@@ -49,5 +49,5 @@ int main(int argc, char* argv[])
     biomolecules::sprelay::gui::MainWindow w;
     w.show();
 
-    return a.exec();
+    return QApplication::exec();
 }

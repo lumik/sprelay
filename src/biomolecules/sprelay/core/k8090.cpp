@@ -755,41 +755,40 @@ void K8090::onReadyData()
         if (n - i < 7) {
             onCommandFailed();
             return;
-        } else {
-            // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
-            std::unique_ptr<impl_::CardMessage> response;
-            try {
-                response.reset(new impl_::CardMessage{data.constBegin() + i, data.constBegin() + i + 7});
-            } catch (const std::out_of_range&) {
+        }
+        // TODO(lumik): switch to PIMPL and remove unnecessary heap usage
+        std::unique_ptr<impl_::CardMessage> response;
+        try {
+            response.reset(new impl_::CardMessage{data.constBegin() + i, data.constBegin() + i + 7});
+        } catch (const std::out_of_range&) {
+            onCommandFailed();
+            return;
+        }
+        if (!response->isValid()) {
+            onCommandFailed();
+            return;
+        }
+        switch (response->commandByte()) {
+            case impl_::kResponses[as_number(ResponseID::ButtonMode)]:
+                buttonModeResponse(std::move(response));
+                break;
+            case impl_::kResponses[as_number(ResponseID::Timer)]:
+                timerResponse(std::move(response));
+                break;
+            case impl_::kResponses[as_number(ResponseID::ButtonStatus)]:
+                buttonStatusResponse(std::move(response));
+                break;
+            case impl_::kResponses[as_number(ResponseID::RelayStatus)]:
+                relayStatusResponse(std::move(response));
+                break;
+            case impl_::kResponses[as_number(ResponseID::JumperStatus)]:
+                jumperStatusResponse(std::move(response));
+                break;
+            case impl_::kResponses[as_number(ResponseID::FirmwareVersion)]:
+                firmwareVersionResponse(std::move(response));
+                break;
+            default:
                 onCommandFailed();
-                return;
-            }
-            if (!response->isValid()) {
-                onCommandFailed();
-                return;
-            }
-            switch (response->commandByte()) {
-                case impl_::kResponses[as_number(ResponseID::ButtonMode)]:
-                    buttonModeResponse(std::move(response));
-                    break;
-                case impl_::kResponses[as_number(ResponseID::Timer)]:
-                    timerResponse(std::move(response));
-                    break;
-                case impl_::kResponses[as_number(ResponseID::ButtonStatus)]:
-                    buttonStatusResponse(std::move(response));
-                    break;
-                case impl_::kResponses[as_number(ResponseID::RelayStatus)]:
-                    relayStatusResponse(std::move(response));
-                    break;
-                case impl_::kResponses[as_number(ResponseID::JumperStatus)]:
-                    jumperStatusResponse(std::move(response));
-                    break;
-                case impl_::kResponses[as_number(ResponseID::FirmwareVersion)]:
-                    firmwareVersionResponse(std::move(response));
-                    break;
-                default:
-                    onCommandFailed();
-            }
         }
     }
 }
@@ -845,7 +844,7 @@ void K8090::onCommandFailed()
 void K8090::onDoDisconnect(bool failure)
 {
     QMutexLocker connected_locker{connected_mutex_.get()};
-    if (connected_ | connecting_) {
+    if (connected_ || connecting_) {
         serial_port_->close();
         // erase all pending commands
         pending_commands_.reset(new impl_::ConcurentCommandQueue);
@@ -925,8 +924,8 @@ void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char 
             // send the next command after command delays
             command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, command_delay_));
         }
+    } else if (QMutexLocker{command_delay_mutex_.get()}, command_delay_ != 0) {
         // if there is some delay between commands specified and the command hasn't response, start the delay
-    } else if (QMutexLocker{command_delay_mutex_.get()}, command_delay_) {
         if (command_id == CommandID::ResetFactoryDefaults) {
             // reset factory defaults execution takes longer
             command_timer_->start((QMutexLocker{command_delay_mutex_.get()}, factory_defaults_command_delay_));
@@ -1011,11 +1010,11 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
     bool is_total;
     bool should_dequeue_next = false;
     // total timer
-    if (static_cast<unsigned char>(~(current_command_->params[1])) & (1u << 0u)) {
+    if ((static_cast<unsigned char>(~(current_command_->params[1])) & (1u << 0u)) != 0u) {
         // remove current response from the list of waiting to response commands.
         is_total = true;
         current_command_->params[0] &= static_cast<unsigned char>(~response->data[2]);
-        if (!current_command_->params[0]) {
+        if (current_command_->params[0] == 0u) {
             current_command_->id = CommandID::None;
             failure_timer_->stop();
             should_dequeue_next = true;
@@ -1025,7 +1024,7 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
     } else {
         is_total = false;
         current_command_->params[0] &= static_cast<unsigned char>(~response->data[2]);
-        if (!current_command_->params[0]) {
+        if (current_command_->params[0] == 0u) {
             current_command_->id = CommandID::None;
             failure_timer_->stop();
             should_dequeue_next = true;
@@ -1033,7 +1032,7 @@ void K8090::timerResponse(std::unique_ptr<impl_::CardMessage> response)
             failure_timer_->start();
         }
     }
-    if (QMutexLocker{connected_mutex_.get()}, (connected_ | connecting_)) {
+    if (QMutexLocker{connected_mutex_.get()}, (connected_ || connecting_)) {
         if (is_total) {
             emit totalTimerDelay(static_cast<RelayID>(response->data[2]),
                 static_cast<quint16>(response->data[3] << 8u) | response->data[4]);
@@ -1077,7 +1076,7 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // test if all required relays are on:
         bool match = true;
         for (unsigned int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1u << i) & static_cast<unsigned char>(~response->data[3])) {
+            if ((current_command_->params[0] & (1u << i) & static_cast<unsigned char>(~response->data[3])) != 0u) {
                 match = false;
             }
         }
@@ -1092,7 +1091,7 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // test if all required relays are off:
         bool match = true;
         for (unsigned int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1u << i) & response->data[3]) {
+            if ((current_command_->params[0] & (1u << i) & response->data[3]) != 0u) {
                 match = false;
             }
         }
@@ -1110,7 +1109,7 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
         // test if all required relays are on:
         bool match = true;
         for (unsigned int i = 0; i < 8; ++i) {
-            if (current_command_->params[0] & (1u << i) & static_cast<unsigned char>(~response->data[3])) {
+            if ((current_command_->params[0] & (1u << i) & static_cast<unsigned char>(~response->data[3])) != 0u) {
                 match = false;
             }
         }
@@ -1123,7 +1122,7 @@ void K8090::relayStatusResponse(std::unique_ptr<impl_::CardMessage> response)
     } else if (current_command_->id == CommandID::ResetFactoryDefaults) {
         // test if all required relays are off:
         bool match = true;
-        if (response->data[3]) {
+        if (response->data[3] != 0u) {
             match = false;
         }
         if (match) {

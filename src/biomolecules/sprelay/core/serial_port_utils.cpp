@@ -62,7 +62,7 @@ std::unique_ptr<unsigned char[]> hex_to_byte(const QString& msg, int* n, bool* o
     int msgSize = newMsg.size();
 
     // test correct size of msg, all hex codes consit of 2 characters
-    if (msgSize % 2) {
+    if (msgSize % 2 != 0) {
         *n = 0;
         // TODO(lumik): change to exception
         *ok = false;

@@ -65,9 +65,8 @@ struct CommandPriority
     {
         if (command->priority != other.command->priority) {
             return command->priority < other.command->priority;
-        } else {
-            return stamp > other.stamp;
         }
+        return stamp > other.stamp;
     }
 
     void setPriority(int p) { command->priority = p; }

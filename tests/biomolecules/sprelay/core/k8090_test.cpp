@@ -234,7 +234,7 @@ void K8090Test::refreshRelaysInfo()
         id = qvariant_cast<unsigned char>(total_timer_delay_argument.at(0));
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -255,7 +255,7 @@ void K8090Test::refreshRelaysInfo()
         id = qvariant_cast<unsigned char>(remaining_timer_delay_argument.at(0));
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -549,7 +549,7 @@ void K8090Test::totalTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -567,7 +567,7 @@ void K8090Test::totalTimer()
     // set relay_id1 timer
     id = as_number(relay_id1);
     number = 0;
-    while (id) {
+    while (id != 0u) {
         id >>= 1u;
         ++number;
     }
@@ -630,7 +630,7 @@ void K8090Test::totalTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -658,7 +658,7 @@ void K8090Test::totalTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -690,7 +690,7 @@ void K8090Test::totalTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -754,7 +754,7 @@ void K8090Test::startTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -784,7 +784,7 @@ void K8090Test::startTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -857,7 +857,7 @@ void K8090Test::startTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -954,7 +954,7 @@ void K8090Test::startTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -1012,7 +1012,7 @@ void K8090Test::startTimer()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -1097,7 +1097,7 @@ void K8090Test::factoryDefaults()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -1176,7 +1176,7 @@ void K8090Test::factoryDefaults()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -1222,7 +1222,7 @@ void K8090Test::factoryDefaults()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -1351,7 +1351,7 @@ void K8090Test::priorities()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }
@@ -1511,7 +1511,7 @@ void K8090Test::priorities()
         id = as_number(temp_id);
         // calculate relay number from byte representation
         number = 0;
-        while (id) {
+        while (id != 0u) {
             id >>= 1u;
             ++number;
         }

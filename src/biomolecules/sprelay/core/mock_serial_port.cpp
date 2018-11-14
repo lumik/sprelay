@@ -320,11 +320,10 @@ void MockSerialPort::close()
  */
 QByteArray MockSerialPort::readAll()
 {
-    if (open_ && mode_ & QIODevice::ReadOnly) {
+    if (open_ && ((mode_ & QIODevice::ReadOnly) != 0)) {
         return std::move(buffer_);
-    } else {
-        return QByteArray{};
     }
+    return QByteArray{};
 }
 
 
@@ -341,14 +340,13 @@ QByteArray MockSerialPort::readAll()
 qint64 MockSerialPort::write(const char* data, qint64 max_size)
 {
     if (open_ && error_ == QSerialPort::NoError) {
-        if (mode_ & QIODevice::WriteOnly && verifyPortParameters()) {
+        if (((mode_ & QIODevice::WriteOnly) != 0) && verifyPortParameters()) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             sendData(reinterpret_cast<const unsigned char*>(data), max_size);
         }
         return max_size;
-    } else {
-        return -1;
     }
+    return -1;
 }
 
 
@@ -402,7 +400,7 @@ void MockSerialPort::clearError()
 // read by readAll() method.
 void MockSerialPort::addToBuffer()
 {
-    if (mode_ & QIODevice::ReadOnly) {
+    if ((mode_ & QIODevice::ReadOnly) != 0u) {
         std::uniform_int_distribution<int> distribution{1, 3};
         int max_responses = distribution(get_random_generator());
         int counter = 0;
@@ -431,7 +429,7 @@ void MockSerialPort::delayTimeout(int i)
     for (unsigned int j = 0; j < 8; ++j) {
         if (j != static_cast<unsigned int>(i)) {
             relay2 = 1u << j;
-            if (relay2 & active_timers_ && delay_timers_[j].remainingTime() < kTimerDeltaMs_) {
+            if (((relay2 & active_timers_) != 0) && delay_timers_[j].remainingTime() < kTimerDeltaMs_) {
                 relay |= relay2;
                 delay_timers_[j].stop();
                 active_timers_ &= static_cast<unsigned char>(~relay2);
@@ -466,12 +464,8 @@ void MockSerialPort::delayTimeout(int i)
 // checks port parameters validity
 bool MockSerialPort::verifyPortParameters()
 {
-    if (baud_rate_ != kNeededBaudRate_ || data_bits_ != kNeededDataBits_ || parity_ != kNeededParity_
-        || stop_bits_ != kNeedeStopBits_ || flow_control_ != kNeededFlowControl_) {
-        return false;
-    } else {
-        return true;
-    }
+    return baud_rate_ == kNeededBaudRate_ && data_bits_ == kNeededDataBits_ && parity_ == kNeededParity_
+        && stop_bits_ == kNeedeStopBits_ && flow_control_ == kNeededFlowControl_;
 }
 
 
@@ -581,7 +575,7 @@ void MockSerialPort::relayOff(std::unique_ptr<k8090::impl_::CardMessage> command
     if (previous != current) {
         for (unsigned int i = 0; i < 8; ++i) {
             unsigned char relay = 1u << i;
-            if (static_cast<unsigned char>(relay & active_timers_) & command->data[2]) {
+            if ((static_cast<unsigned char>(relay & active_timers_) & command->data[2]) != 0) {
                 delay_timers_[i].stop();
                 active_timers_ &= static_cast<unsigned char>(~relay);
             }
@@ -611,8 +605,9 @@ void MockSerialPort::toggleRelay(std::unique_ptr<k8090::impl_::CardMessage> comm
     if (previous != current) {
         for (unsigned int i = 0; i < 8; ++i) {
             unsigned char relay = 1u << i;
-            if (static_cast<unsigned char>(static_cast<unsigned char>(relay & active_timers_) & previous)
-                & command->data[2]) {
+            if ((static_cast<unsigned char>(static_cast<unsigned char>(relay & active_timers_) & previous)
+                    & command->data[2])
+                != 0) {
                 delay_timers_[i].stop();
                 active_timers_ &= static_cast<unsigned char>(~relay);
             }
@@ -668,8 +663,8 @@ void MockSerialPort::startRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
     unsigned char relay;
     for (unsigned int i = 0; i < 8; ++i) {
         relay = 1u << i;
-        if (relay & command->data[2]) {
-            if (delay_ms) {
+        if ((relay & command->data[2]) != 0u) {
+            if (delay_ms != 0) {
                 local_delay_ms = delay_ms;
             } else {
                 local_delay_ms = default_delays_[i] * 1000;
@@ -705,7 +700,7 @@ void MockSerialPort::setRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> co
     k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command->data[2])};
     quint16 delay = 256 * command->data[3] + command->data[4];
     for (unsigned int i = 0; i < 8; ++i) {
-        if (as_number(k8090::from_number(i)) & as_number(relay_ids)) {
+        if ((as_number(k8090::from_number(i)) & as_number(relay_ids)) != 0u) {
             default_delays_[i] = delay;
         }
     }
@@ -717,17 +712,18 @@ void MockSerialPort::queryRelayTimer(std::unique_ptr<k8090::impl_::CardMessage> 
 {
     k8090::RelayID relay_ids{static_cast<k8090::RelayID>(command->data[2])};
     for (unsigned int i = 0; i < 8; ++i) {
-        if (as_number(k8090::from_number(i)) & as_number(relay_ids)) {
+        if ((as_number(k8090::from_number(i)) & as_number(relay_ids)) != 0u) {
             unsigned char high_byte;
             unsigned char low_byte;
             // total timer
-            if (!command->data[3]) {
+            if (command->data[3] == 0u) {
                 high_byte = highByte(default_delays_[i]);
                 low_byte = lowByte(default_delays_[i]);
             } else {
                 quint16 delay;
                 if (delay_timers_[i].isActive()) {
-                    delay = delay_timers_[i].remainingTime() / 1000 + (delay_timers_[i].remainingTime() % 1000 != 0);
+                    delay = delay_timers_[i].remainingTime() / 1000
+                        + static_cast<int>(delay_timers_[i].remainingTime() % 1000 != 0);
                 } else {
                     delay = remaining_delays_[i];
                 }
