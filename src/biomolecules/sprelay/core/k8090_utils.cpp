@@ -310,7 +310,7 @@ CardMessage::CardMessage(QByteArray::const_iterator begin, QByteArray::const_ite
 
 
 /*!
- * \brief The constructor unsigned char message.
+ * \brief The constructor from unsigned char message.
  * \param begin The pointer to the beginning of the message.
  * \param end The pointer to one after the end of the message.
  * \throws std::out_of_range exception if the length of response between begin and end is not 7 bytes.
@@ -328,12 +328,19 @@ CardMessage::CardMessage(const unsigned char* begin, const unsigned char* end)
 
 
 /*!
+ * \brief The constructor from std::array message.
+ * \param data The message.
+ */
+CardMessage::CardMessage(const std::array<unsigned char, 7>& message) : data(message) {}
+
+
+/*!
  * \brief Sets the checksum byte to the message checksum
  * \sa check_sum
  */
 void CardMessage::checksumMessage()
 {
-    data[5] = check_sum(data, 5);
+    data[5] = check_sum(data.data(), 5);
 }
 
 
@@ -346,7 +353,7 @@ bool CardMessage::isValid() const
     if (data[0] != kStxByte) {
         return false;
     }
-    unsigned char chk = check_sum(data, 5);
+    unsigned char chk = check_sum(data.data(), 5);
     if (chk != data[5]) {
         return false;
     }

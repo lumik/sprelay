@@ -102,11 +102,6 @@ namespace command_queue {
 
 
 /*!
- * \fn PendingCommands::PendingCommands()
- * \brief Default constructor.
- */
-
-/*!
  * \fn const TList<const TCommand*>& PendingCommands::operator[](std::size_t id) const
  * \brief Direct constant member access.
  *
@@ -204,9 +199,10 @@ namespace command_queue {
  * \brief Default constructor
  */
 template<typename TCommand, int tSize, template<typename> class TList>
-CommandQueue<TCommand, tSize, TList>::CommandQueue()
-    : unique_{true}, none_command_{}, none_list_{&none_command_}, stamp_counter_{0}
-{}
+CommandQueue<TCommand, tSize, TList>::CommandQueue() : none_command_{}, none_list_{&none_command_}, stamp_counter_{0}
+{
+    unique_.fill(true);
+}
 
 
 /*!

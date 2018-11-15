@@ -40,6 +40,7 @@
 #ifndef BIOMOLECULES_SPRELAY_GUI_CENTRAL_WIDGET_H_
 #define BIOMOLECULES_SPRELAY_GUI_CENTRAL_WIDGET_H_
 
+#include <array>
 #include <memory>
 
 #include <QString>
@@ -154,24 +155,24 @@ private:
     IndicatorLight* jumper_status_light_;
     // relay button status
     QGroupBox* relay_button_status_settings_box_;
-    IndicatorLight* pushed_indicators_arr_[kNRelays];
+    std::array<IndicatorLight*, kNRelays> pushed_indicators_arr_;
     // power settings
     QGroupBox* relay_power_settings_box_;
-    IndicatorButton* relay_on_buttons_arr_[kNRelays];
-    QPushButton* relay_off_buttons_arr_[kNRelays];
-    QPushButton* toggle_relay_buttons_arr_[kNRelays];
+    std::array<IndicatorButton*, kNRelays> relay_on_buttons_arr_;
+    std::array<QPushButton*, kNRelays> relay_off_buttons_arr_;
+    std::array<QPushButton*, kNRelays> toggle_relay_buttons_arr_;
     // mode settings
     QGroupBox* relay_mode_settings_box_;
-    IndicatorButton* momentary_buttons_arr_[kNRelays];
-    IndicatorButton* toggle_mode_buttons_arr_[kNRelays];
-    IndicatorButton* timed_buttons_arr_[kNRelays];
+    std::array<IndicatorButton*, kNRelays> momentary_buttons_arr_;
+    std::array<IndicatorButton*, kNRelays> toggle_mode_buttons_arr_;
+    std::array<IndicatorButton*, kNRelays> timed_buttons_arr_;
     // timer settings
     QGroupBox* relay_timers_settings_box_;
-    QLabel* default_timer_labels_arr_[kNRelays];
-    QLabel* remaining_time_labels_arr_[kNRelays];
-    QPushButton* set_default_timer_buttons_arr_[kNRelays];
-    IndicatorButton* start_timer_buttons_arr_[kNRelays];
-    QSpinBox* timer_spin_box_arr_[kNRelays];
+    std::array<QLabel*, kNRelays> default_timer_labels_arr_;
+    std::array<QLabel*, kNRelays> remaining_time_labels_arr_;
+    std::array<QPushButton*, kNRelays> set_default_timer_buttons_arr_;
+    std::array<IndicatorButton*, kNRelays> start_timer_buttons_arr_;
+    std::array<QSpinBox*, kNRelays> timer_spin_box_arr_;
 
     // signal mappers
     std::unique_ptr<QSignalMapper> relay_on_mapper_;

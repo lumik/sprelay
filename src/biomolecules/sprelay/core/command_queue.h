@@ -38,6 +38,7 @@
 #ifndef BIOMOLECULES_SPRELAY_CORE_COMMAND_QUEUE_H_
 #define BIOMOLECULES_SPRELAY_CORE_COMMAND_QUEUE_H_
 
+#include <array>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -79,7 +80,6 @@ template<typename TCommand, int tSize, template<typename> class TList = QList>
 class PendingCommands
 {
 public:
-    PendingCommands() : pending_commands_{} {}
     const TList<const TCommand*>& operator[](std::size_t id) const { return pending_commands_[id]; }
     TList<const TCommand*>& operator[](std::size_t id) { return pending_commands_[id]; }
     void updateEntry(int idx, const TCommand& command)
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    TList<const TCommand*> pending_commands_[tSize];
+    std::array<TList<const TCommand*>, tSize> pending_commands_;
 };
 
 }  // namespace impl_
@@ -114,7 +114,7 @@ private:
     void updatePriorities(typename TCommand::NumberType command_id, int idx, int priority);
 
     impl_::PendingCommands<TCommand, tSize, TList> pending_commands_;
-    bool unique_[tSize];
+    std::array<bool, tSize> unique_;
     const TCommand none_command_;
     const TList<const TCommand*> none_list_;
 

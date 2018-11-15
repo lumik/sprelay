@@ -84,11 +84,11 @@ namespace k8090 {
  * // ...
  *     biomolecules::sprelay::core::k8090::K8090* k8090_;
  *     // buttons to swith the relay on
- *     QPushButton* relay_on_buttons_arr_[8];
+ *     std::array<QPushButton*, 8> relay_on_buttons_arr_;
  *     // signal mappers
  *     std::unique_ptr<QSignalMapper> relay_on_mapper_;
- *     bool relays_on_[8];
- *     bool relays_timed_[8];
+ *     std::array<bool, 8> relays_on_;
+ *     std::array<bool, 8> relays_timed_;
  * // ...
  * }
  * \endcode
@@ -898,8 +898,8 @@ void K8090::onEnqueueCommand(CommandID command_id, RelayID mask, unsigned char p
 // constructs command
 void K8090::sendCommandHelper(CommandID command_id, RelayID mask, unsigned char param1, unsigned char param2)
 {
-    static const int n = 7;  // Number of command bytes.
-    std::unique_ptr<unsigned char[]> cmd = std::unique_ptr<unsigned char[]>{new unsigned char[n]};
+    const int n = 7;  // Number of command bytes.
+    std::unique_ptr<unsigned char[]> cmd{new unsigned char[n]};
     cmd[0] = impl_::kStxByte;
     cmd[1] = impl_::kCommands[as_number(command_id)];
     cmd[2] = as_number(mask);

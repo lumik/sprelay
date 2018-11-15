@@ -793,7 +793,7 @@ void CentralWidget::makeLayout()
     }
 
     const int layout_no = 5;
-    QGridLayout* grid_layouts[layout_no] = {
+    std::array<QGridLayout*, layout_no> grid_layouts = {
         button_status_grid_layout, relay_number_grid_layout, power_grid_layout, mode_grid_layout, timer_grid_layout};
     int relay_label_min_width = std::numeric_limits<int>::min();
     int relay_label_width;

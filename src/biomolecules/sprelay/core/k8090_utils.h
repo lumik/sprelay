@@ -38,6 +38,8 @@
 #ifndef BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_H_
 #define BIOMOLECULES_SPRELAY_CORE_K8090_UTILS_H_
 
+#include <array>
+
 #include <QByteArray>
 
 #include "k8090_defines.h"
@@ -72,7 +74,7 @@ struct Command
 
     IdType id{k8090::CommandID::None};
     int priority{0};
-    unsigned char params[3];
+    std::array<unsigned char, 3> params;
 
     Command& operator|=(const Command& other);
 
@@ -106,11 +108,12 @@ struct CardMessage
         unsigned char chk, unsigned char etx);
     CardMessage(QByteArray::const_iterator begin, QByteArray::const_iterator end);
     CardMessage(const unsigned char* begin, const unsigned char* end);
+    explicit CardMessage(const std::array<unsigned char, 7>& message);
 
     void checksumMessage();
     bool isValid() const;
     unsigned char commandByte() const;
-    unsigned char data[7];
+    std::array<unsigned char, 7> data;
 };
 
 }  // namespace impl_

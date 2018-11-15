@@ -38,6 +38,7 @@
 #ifndef BIOMOLECULES_SPRELAY_CORE_MOCK_SERIAL_PORT_H_
 #define BIOMOLECULES_SPRELAY_CORE_MOCK_SERIAL_PORT_H_
 
+#include <array>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -144,13 +145,13 @@ private:
     unsigned char toggle_;
     unsigned char timed_;
     unsigned char pressed_;
-    quint16 default_delays_[8];
-    quint16 remaining_delays_[8];  // default value for remaining delay if the timer is not running
-    QTimer delay_timers_[8];
-    int delay_timer_delays_[8];  // delay, with which the timer was started
+    std::array<quint16, 8> default_delays_;
+    std::array<quint16, 8> remaining_delays_;  // default value for remaining delay if the timer is not running
+    std::array<QTimer, 8> delay_timers_;
+    std::array<int, 8> delay_timer_delays_;  // delay, with which the timer was started
     unsigned char active_timers_;
     unsigned char jumper_status_;
-    unsigned char firmware_version_[2];
+    std::array<unsigned char, 2> firmware_version_;
 
     std::unique_ptr<QSignalMapper> delay_timer_mapper_;
     std::queue<std::unique_ptr<unsigned char[]>> stored_responses_;

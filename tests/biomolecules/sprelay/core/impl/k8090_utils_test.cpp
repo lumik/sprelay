@@ -38,6 +38,8 @@
 
 #include "k8090_utils_test.h"
 
+#include <array>
+
 #include <QByteArray>
 #include <QString>
 #include <QtTest>
@@ -646,7 +648,7 @@ void CardMessageTest::constructors()
     const unsigned char param2 = 0x20;  // timed = relay 6
     const unsigned char chk = 0xdc;     // check sum
     const unsigned char etx = 0x0f;     // ETX byte
-    const unsigned char expected[7] = {stx, cmd, mask, param1, param2, chk, etx};
+    const std::array<unsigned char, 7> expected{stx, cmd, mask, param1, param2, chk, etx};
 
     // test constructor from data
     {
@@ -663,7 +665,7 @@ void CardMessageTest::constructors()
     // test constructor from QByteArray
     {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        QByteArray byte_array = QByteArray::fromRawData(reinterpret_cast<const char*>(expected), 7);
+        QByteArray byte_array = QByteArray::fromRawData(reinterpret_cast<const char*>(expected.data()), 7);
         const CardMessage message{byte_array.constBegin(), byte_array.constEnd()};
         for (int i = 0; i < 7; ++i) {
             QVERIFY2(message.data[i] == expected[i],
@@ -677,7 +679,7 @@ void CardMessageTest::constructors()
 
     // test constructor from raw C array
     {
-        const CardMessage message{expected, &expected[7]};
+        const CardMessage message{expected};
         for (int i = 0; i < 7; ++i) {
             QVERIFY2(message.data[i] == expected[i],
                 qPrintable(QString{"data[%1] = '%2' does not match the expected %3."}

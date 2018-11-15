@@ -225,12 +225,11 @@ void K8090Test::refreshRelaysInfo()
         QVERIFY2(spy_total_timer_delay.wait(), "Total timer signal not received!");
     }
     QCOMPARE(spy_total_timer_delay.count(), kTimerCount);
-    QList<QVariant> total_timer_delay_arguments[kTimerCount];
     unsigned int number;
     unsigned int id;
     qDebug() << "Total timer delay:";
-    for (auto& total_timer_delay_argument : total_timer_delay_arguments) {
-        total_timer_delay_argument = spy_total_timer_delay.takeFirst();
+    for (int i = 0; i < kTimerCount; ++i) {
+        QList<QVariant> total_timer_delay_argument = spy_total_timer_delay.takeFirst();
         id = qvariant_cast<unsigned char>(total_timer_delay_argument.at(0));
         // calculate relay number from byte representation
         number = 0;
@@ -248,10 +247,9 @@ void K8090Test::refreshRelaysInfo()
         QVERIFY2(spy_remaining_timer_delay.wait(), "Remaining timer signal not received!");
     }
     QCOMPARE(spy_remaining_timer_delay.count(), 8);
-    QList<QVariant> remaining_timer_delay_arguments[kTimerCount];
     qDebug() << "Remaining timer delay:";
-    for (auto& remaining_timer_delay_argument : remaining_timer_delay_arguments) {
-        remaining_timer_delay_argument = spy_remaining_timer_delay.takeFirst();
+    for (int i = 0; i < kTimerCount; ++i) {
+        QList<QVariant> remaining_timer_delay_argument = spy_remaining_timer_delay.takeFirst();
         id = qvariant_cast<unsigned char>(remaining_timer_delay_argument.at(0));
         // calculate relay number from byte representation
         number = 0;
@@ -535,15 +533,14 @@ void K8090Test::totalTimer()
         QVERIFY2(spy_total_timer_delay.wait(), "Total timer signal not received!");
     }
     QCOMPARE(spy_total_timer_delay.count(), kTimerCount);
-    QList<QVariant> total_timer_delay_arguments[kTimerCount];
-    quint16 initial_total_timers[kTimerCount];
-    quint16 total_timers[kTimerCount];
+    std::array<quint16, kTimerCount> initial_total_timers;
+    std::array<quint16, kTimerCount> total_timers;
     RelayID temp_id;
     unsigned int number;
     unsigned int id;
     qDebug() << "Total timer delay:";
-    for (auto& total_timer_delay_argument : total_timer_delay_arguments) {
-        total_timer_delay_argument = spy_total_timer_delay.takeFirst();
+    for (int i = 0; i < kTimerCount; ++i) {
+        QList<QVariant> total_timer_delay_argument = spy_total_timer_delay.takeFirst();
         temp_id = qvariant_cast<biomolecules::sprelay::core::k8090::RelayID>(total_timer_delay_argument.at(0));
         relay_ids &= ~temp_id;
         id = as_number(temp_id);
@@ -743,7 +740,7 @@ void K8090Test::startTimer()
     }
     QCOMPARE(spy_total_timer_delay.count(), timer_count);
     QList<QVariant> total_timer_delay_arguments;
-    quint16 initial_total_timers[kTimerCount];
+    std::array<quint16, kTimerCount> initial_total_timers;
     RelayID temp_id;
     unsigned int number;
     unsigned int id;
@@ -1085,7 +1082,7 @@ void K8090Test::factoryDefaults()
     }
     QCOMPARE(spy_total_timer_delay.count(), kTimerCount);
     QList<QVariant> total_timer_delay_arguments;
-    quint16 initial_total_timers[kTimerCount];
+    std::array<quint16, kTimerCount> initial_total_timers;
     RelayID temp_id;
     unsigned int number;
     unsigned int id;
@@ -1299,7 +1296,7 @@ void K8090Test::priorities()
         k8090_.get(), SIGNAL(remainingTimerDelay(biomolecules::sprelay::core::k8090::RelayID, quint16)));
     QSignalSpy spy_jumper_status(k8090_.get(), SIGNAL(jumperStatus(bool)));
     QSignalSpy spy_firmware_version(k8090_.get(), SIGNAL(firmwareVersion(int, int)));
-    QSignalSpy* spies[kSpyNo] = {&spy_relay_status, &spy_button_modes, &spy_total_timer_delay,
+    std::array<QSignalSpy*, kSpyNo> spies{&spy_relay_status, &spy_button_modes, &spy_total_timer_delay,
         &spy_remaining_timer_delay, &spy_jumper_status, &spy_firmware_version};
 
     // store initial state
@@ -1339,7 +1336,7 @@ void K8090Test::priorities()
     }
     QCOMPARE(spy_total_timer_delay.count(), kTimerCount);
     QList<QVariant> total_timer_delay_arguments;
-    quint16 initial_total_timers[kTimerCount];
+    std::array<quint16, kTimerCount> initial_total_timers;
     RelayID temp_id;
     unsigned int number;
     unsigned int id;
@@ -1388,91 +1385,91 @@ void K8090Test::priorities()
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // queryRelayStatus
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // queryTotalTimerDelay
     if (spy_total_timer_delay.count() < 1) {
         QVERIFY2(spy_total_timer_delay.wait(), "Total timer delay signal not received!");
     }
     spy_total_timer_delay.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // queryRemainingTimerDelay
     if (spy_remaining_timer_delay.count() < 1) {
         QVERIFY2(spy_remaining_timer_delay.wait(), "Remaining timer delay signal not received!");
     }
     spy_remaining_timer_delay.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // queryButtonModes
     if (spy_button_modes.count() < 1) {
         QVERIFY2(spy_button_modes.wait(), "Button modes signal not received!");
     }
     spy_button_modes.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // resetFactoryDefaults
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // switchRelayOn
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // switchRelayOff
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // toggleRelay
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // setButtonMode
     if (spy_button_modes.count() < 1) {
         QVERIFY2(spy_button_modes.wait(), "Button modes signal not received!");
     }
     spy_button_modes.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // queryJumperStatus
     if (spy_jumper_status.count() < 1) {
         QVERIFY2(spy_jumper_status.wait(), "Jumper status signal not received!");
     }
     spy_jumper_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // queryFirmwareVersion
     if (spy_firmware_version.count() < 1) {
         QVERIFY2(spy_firmware_version.wait(), "Firmware version signal not received!");
     }
     spy_firmware_version.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // setRelayTimerDelay
     if (spy_total_timer_delay.count() < 1) {
         QVERIFY2(spy_total_timer_delay.wait(), "Total timer delay signal not received!");
     }
     spy_total_timer_delay.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // startRelayTimer
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
     // timer elapsed
     if (spy_relay_status.count() < 1) {
         QVERIFY2(spy_relay_status.wait(1000 + kTimerWaitLimit), "Relay status signal not received!");
     }
     spy_relay_status.takeFirst();
-    QVERIFY2(checkNoSpyData(spies, kSpyNo), "There shouldn't be any signal waiting now!");
+    QVERIFY2(checkNoSpyData(spies), "There shouldn't be any signal waiting now!");
 
     // reset initial values
     k8090_->switchRelayOn(initially_on);
@@ -1531,18 +1528,6 @@ void K8090Test::createTestData()
         QTest::newRow("real card") << real_card_port_name_;
     }
     QTest::newRow("virtual card") << k8090::impl_::kMockPortName;
-}
-
-
-bool K8090Test::checkNoSpyData(QSignalSpy** spies, int n)
-{
-    for (int i = 0; i < n; ++i) {
-        if (spies[i]->count() > 0) {
-            qDebug() << QString("Spy no. %1 has %2 signals waiting!").arg(i).arg(spies[i]->count());
-            return false;
-        }
-    }
-    return true;
 }
 
 }  // namespace k8090

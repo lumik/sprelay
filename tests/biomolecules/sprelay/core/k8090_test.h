@@ -39,10 +39,12 @@
 #ifndef BIOMOLECULES_SPRELAY_CORE_K8090_TEST_H_
 #define BIOMOLECULES_SPRELAY_CORE_K8090_TEST_H_
 
+#include <array>
+#include <cstddef>
+#include <memory>
+
 #include <QObject>
 #include <QString>
-
-#include <memory>
 
 #include "lumik/qtest_suite/qtest_suite.h"
 
@@ -93,7 +95,8 @@ private slots:
 
 private:
     void createTestData();
-    bool checkNoSpyData(QSignalSpy** spies, int n);
+    template<std::size_t N>
+    bool checkNoSpyData(const std::array<QSignalSpy*, N>& spies);
 
     std::unique_ptr<K8090> k8090_;
     bool real_card_present_;
@@ -102,6 +105,18 @@ private:
 
 // NOLINTNEXTLINE(cert-err58-cpp, fuchsia-statically-constructed-objects)
 ADD_TEST(K8090Test)
+
+template<std::size_t N>
+bool K8090Test::checkNoSpyData(const std::array<QSignalSpy*, N>& spies)
+{
+    for (std::size_t i = 0; i < N; ++i) {
+        if (spies[i]->count() > 0) {
+            qDebug() << QString("Spy no. %1 has %2 signals waiting!").arg(i).arg(spies[i]->count());
+            return false;
+        }
+    }
+    return true;
+}
 
 }  // namespace k8090
 }  // namespace core
